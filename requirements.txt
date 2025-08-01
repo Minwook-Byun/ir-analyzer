@@ -1,6 +1,5 @@
 # 웹 프레임워크
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
+streamlit==1.28.1
 
 # PDF 처리
 PyPDF2==3.0.1
@@ -13,9 +12,6 @@ google-generativeai==0.3.2
 
 # 환경변수 관리
 python-dotenv==1.0.0
-
-# 파일 업로드
-python-multipart==0.0.6
 
 # 기타 유틸리티
 pydantic==2.5.0
