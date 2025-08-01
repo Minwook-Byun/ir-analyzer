@@ -8,7 +8,8 @@
       "Bash(pip install:*)",
       "Bash(streamlit run:*)",
       "Bash(python -m pip install:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(grep:*)"
     ],
     "deny": []
   }
