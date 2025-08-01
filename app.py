@@ -10,8 +10,11 @@ import re
 # 환경변수 로드
 load_dotenv()
 
-# Gemini API 설정
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+# Session state 초기화
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+if 'api_key' not in st.session_state:
+    st.session_state.api_key = ""
 
 # 페이지 설정
 st.set_page_config(
@@ -57,133 +60,212 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# 헤더
-st.markdown("""
-<div class="main-header">
-    <h1>📊 IR 투자심사보고서 분석기</h1>
-    <p>AI 기반 투자심사보고서 자동 생성 시스템</p>
-</div>
-""", unsafe_allow_html=True)
-
-# 사이드바 설정
-with st.sidebar:
-    st.header("⚙️ 설정")
-    st.info("💡 **사용법**\n\n1. 회사명을 입력하세요\n2. IR 자료를 업로드하거나 URL을 입력하세요\n3. '분석하기' 버튼을 클릭하세요")
+# 로그인 함수
+def login_page():
+    st.markdown("""
+    <div class="main-header">
+        <h1>🔐 IR 투자심사보고서 분석기</h1>
+        <p>Gemini API 키로 로그인하세요</p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    # API 키 확인
-    if os.getenv("GEMINI_API_KEY"):
-        st.success("✅ Gemini API 연결됨")
-    else:
-        st.error("❌ Gemini API 키가 필요합니다")
-
-# 메인 컨텐츠
-col1, col2 = st.columns([2, 1])
-
-with col1:
-    st.header("📋 분석 설정")
-    
-    # 회사명 입력
-    company_name = st.text_input("🏢 회사명", placeholder="분석할 회사명을 입력하세요")
-    
-    # 파일 업로드 또는 URL 입력 선택
-    input_method = st.radio("📁 입력 방식 선택", ["파일 업로드", "URL 입력"])
-    
-    uploaded_file = None
-    ir_url = None
-    
-    if input_method == "파일 업로드":
+    with st.container():
+        st.markdown("### 🔑 API 키 입력")
+        
+        col1, col2 = st.columns([3, 1])
+        
+        with col1:
+            api_key_input = st.text_input(
+                "Gemini API 키를 입력하세요",
+                type="password",
+                placeholder="AIzaSy...",
+                help="Google AI Studio에서 발급받은 Gemini API 키를 입력하세요"
+            )
+        
+        with col2:
+            st.markdown("<br>", unsafe_allow_html=True)  # 버튼 정렬을 위한 공간
+            login_btn = st.button("🚀 로그인", type="primary")
+        
+        if login_btn and api_key_input:
+            # API 키 유효성 검사
+            if validate_api_key(api_key_input):
+                st.session_state.logged_in = True
+                st.session_state.api_key = api_key_input
+                genai.configure(api_key=api_key_input)
+                st.success("✅ 로그인 성공!")
+                st.rerun()
+            else:
+                st.error("❌ 유효하지 않은 API 키입니다. 다시 확인해주세요.")
+        elif login_btn and not api_key_input:
+            st.error("❌ API 키를 입력해주세요.")
+        
+        # API 키 발급 안내
+        st.markdown("---")
         st.markdown("""
-        <div class="upload-section">
-            <h4>📎 IR 자료 업로드</h4>
-            <p>PDF, Excel, Word 파일을 업로드하세요</p>
+        ### 📝 API 키 발급 방법
+        
+        1. **Google AI Studio** 접속: https://aistudio.google.com/
+        2. **Get API Key** 클릭
+        3. **Create API Key** 선택
+        4. 생성된 키를 복사하여 위에 입력
+        
+        **💡 팁**: API 키는 안전하게 보관하시고, 다른 사람과 공유하지 마세요!
+        """)
+
+def validate_api_key(api_key):
+    """API 키 유효성 검사"""
+    try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        # 간단한 테스트 요청
+        response = model.generate_content("Hello")
+        return True
+    except Exception as e:
+        print(f"API 키 검증 실패: {e}")
+        return False
+
+# 로그아웃 함수
+def logout():
+    st.session_state.logged_in = False
+    st.session_state.api_key = ""
+    st.rerun()
+
+# 메인 앱
+def main_app():
+    # 헤더
+    col1, col2 = st.columns([4, 1])
+    
+    with col1:
+        st.markdown("""
+        <div class="main-header">
+            <h1>📊 IR 투자심사보고서 분석기</h1>
+            <p>AI 기반 투자심사보고서 자동 생성 시스템</p>
         </div>
         """, unsafe_allow_html=True)
-        
-        uploaded_file = st.file_uploader(
-            "파일 선택",
-            type=['pdf', 'xlsx', 'xls', 'docx', 'doc'],
-            help="PDF, Excel, Word 파일을 지원합니다"
-        )
-        
-        if uploaded_file:
-            st.success(f"✅ 파일 업로드됨: {uploaded_file.name} ({uploaded_file.size:,} bytes)")
     
-    else:
-        ir_url = st.text_input("🔗 IR 자료 URL", placeholder="https://example.com/ir-report.pdf")
-        
-        if ir_url:
-            st.success(f"✅ URL 입력됨: {ir_url}")
+    with col2:
+        st.markdown("<br><br>", unsafe_allow_html=True)  # 정렬을 위한 공간
+        if st.button("🚪 로그아웃", type="secondary"):
+            logout()
 
-with col2:
-    st.header("📊 분석 상태")
-    status_placeholder = st.empty()
+# 로그인 여부에 따른 페이지 분기
+if not st.session_state.logged_in:
+    login_page()
+else:
+    main_app()
     
-    with status_placeholder.container():
-        st.info("⏳ 분석 대기 중...")
+    # 사이드바 설정
+    with st.sidebar:
+        st.header("⚙️ 설정")
+        st.success(f"✅ 로그인됨 ({st.session_state.api_key[:8]}...)")
+        st.info("💡 **사용법**\n\n1. 회사명을 입력하세요\n2. IR 자료를 업로드하거나 URL을 입력하세요\n3. '분석하기' 버튼을 클릭하세요")
 
-# 분석 실행 버튼
-if st.button("🚀 투자심사보고서 생성하기", type="primary"):
-    if not company_name:
-        st.error("❌ 회사명을 입력해주세요")
-    elif not uploaded_file and not ir_url:
-        st.error("❌ IR 자료를 업로드하거나 URL을 입력해주세요")
-    elif not os.getenv("GEMINI_API_KEY"):
-        st.error("❌ Gemini API 키가 설정되지 않았습니다")
-    else:
-        # 분석 실행
-        with st.spinner("🤖 AI가 투자심사보고서를 생성하고 있습니다..."):
-            try:
-                # 상태 업데이트
-                with status_placeholder.container():
-                    st.warning("🔄 분석 진행 중...")
-                
-                # IR 자료 처리
-                if uploaded_file:
-                    # 파일 처리
-                    ir_summary = process_uploaded_file(uploaded_file)
-                    st.info("📄 파일 처리 완료")
-                else:
-                    # URL 처리
-                    ir_summary = download_and_extract_ir(ir_url)
-                    st.info("📥 URL 자료 다운로드 완료")
-                
-                # 투자심사보고서 생성
-                investment_report = generate_investment_report(ir_summary, company_name)
-                
-                # 결과 표시
-                with status_placeholder.container():
-                    st.success("✅ 분석 완료!")
-                
-                st.markdown("""
-                <div class="result-section">
-                    <h3>📋 투자심사보고서 생성 완료</h3>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # 결과 탭
-                tab1, tab2 = st.tabs(["📊 투자심사보고서", "📁 원본 자료"])
-                
-                with tab1:
-                    st.markdown(f"### 🏢 {company_name} 투자심사보고서")
-                    st.markdown("---")
-                    st.markdown(investment_report)
+    # 메인 컨텐츠
+    col1, col2 = st.columns([2, 1])
+
+    with col1:
+        st.header("📋 분석 설정")
+        
+        # 회사명 입력
+        company_name = st.text_input("🏢 회사명", placeholder="분석할 회사명을 입력하세요")
+        
+        # 파일 업로드 또는 URL 입력 선택
+        input_method = st.radio("📁 입력 방식 선택", ["파일 업로드", "URL 입력"])
+        
+        uploaded_file = None
+        ir_url = None
+        
+        if input_method == "파일 업로드":
+            st.markdown("""
+            <div class="upload-section">
+                <h4>📎 IR 자료 업로드</h4>
+                <p>PDF, Excel, Word 파일을 업로드하세요</p>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            uploaded_file = st.file_uploader(
+                "파일 선택",
+                type=['pdf', 'xlsx', 'xls', 'docx', 'doc'],
+                help="PDF, Excel, Word 파일을 지원합니다"
+            )
+            
+            if uploaded_file:
+                st.success(f"✅ 파일 업로드됨: {uploaded_file.name} ({uploaded_file.size:,} bytes)")
+        
+        else:
+            ir_url = st.text_input("🔗 IR 자료 URL", placeholder="https://example.com/ir-report.pdf")
+            
+            if ir_url:
+                st.success(f"✅ URL 입력됨: {ir_url}")
+
+    with col2:
+        st.header("📊 분석 상태")
+        status_placeholder = st.empty()
+        
+        with status_placeholder.container():
+            st.info("⏳ 분석 대기 중...")
+
+    # 분석 실행 버튼
+    if st.button("🚀 투자심사보고서 생성하기", type="primary"):
+        if not company_name:
+            st.error("❌ 회사명을 입력해주세요")
+        elif not uploaded_file and not ir_url:
+            st.error("❌ IR 자료를 업로드하거나 URL을 입력해주세요")
+        else:
+            # 분석 실행
+            with st.spinner("🤖 AI가 투자심사보고서를 생성하고 있습니다..."):
+                try:
+                    # 상태 업데이트
+                    with status_placeholder.container():
+                        st.warning("🔄 분석 진행 중...")
                     
-                    # 다운로드 버튼
-                    st.download_button(
-                        label="💾 보고서 다운로드 (텍스트)",
-                        data=investment_report,
-                        file_name=f"{company_name}_투자심사보고서_{datetime.now().strftime('%Y%m%d')}.txt",
-                        mime="text/plain"
-                    )
-                
-                with tab2:
-                    st.markdown("### 📄 원본 IR 자료 요약")
-                    st.text_area("원본 자료", value=ir_summary[:2000] + "..." if len(ir_summary) > 2000 else ir_summary, height=300)
-                
-            except Exception as e:
-                with status_placeholder.container():
-                    st.error(f"❌ 분석 실패: {str(e)}")
-                st.error(f"분석 중 오류가 발생했습니다: {str(e)}")
+                    # IR 자료 처리
+                    if uploaded_file:
+                        # 파일 처리
+                        ir_summary = process_uploaded_file(uploaded_file)
+                        st.info("📄 파일 처리 완료")
+                    else:
+                        # URL 처리
+                        ir_summary = download_and_extract_ir(ir_url)
+                        st.info("📥 URL 자료 다운로드 완료")
+                    
+                    # 투자심사보고서 생성 (session state의 API 키 사용)
+                    investment_report = generate_investment_report(ir_summary, company_name, st.session_state.api_key)
+                    
+                    # 결과 표시
+                    with status_placeholder.container():
+                        st.success("✅ 분석 완료!")
+                    
+                    st.markdown("""
+                    <div class="result-section">
+                        <h3>📋 투자심사보고서 생성 완료</h3>
+                    </div>
+                    """, unsafe_allow_html=True)
+                    
+                    # 결과 탭
+                    tab1, tab2 = st.tabs(["📊 투자심사보고서", "📁 원본 자료"])
+                    
+                    with tab1:
+                        st.markdown(f"### 🏢 {company_name} 투자심사보고서")
+                        st.markdown("---")
+                        st.markdown(investment_report)
+                        
+                        # 다운로드 버튼
+                        st.download_button(
+                            label="💾 보고서 다운로드 (텍스트)",
+                            data=investment_report,
+                            file_name=f"{company_name}_투자심사보고서_{datetime.now().strftime('%Y%m%d')}.txt",
+                            mime="text/plain"
+                        )
+                    
+                    with tab2:
+                        st.markdown("### 📄 원본 IR 자료 요약")
+                        st.text_area("원본 자료", value=ir_summary[:2000] + "..." if len(ir_summary) > 2000 else ir_summary, height=300)
+                    
+                except Exception as e:
+                    with status_placeholder.container():
+                        st.error(f"❌ 분석 실패: {str(e)}")
+                    st.error(f"분석 중 오류가 발생했습니다: {str(e)}")
 
 def process_uploaded_file(uploaded_file):
     """업로드된 파일 처리"""
@@ -316,7 +398,7 @@ PDF 처리 모듈을 설치해주세요: pip install PyPDF2
     except Exception as e:
         raise Exception(f"파일 다운로드 실패: {str(e)}")
 
-def generate_investment_report(ir_summary: str, company_name: str) -> str:
+def generate_investment_report(ir_summary: str, company_name: str, api_key: str) -> str:
     """JSONL 학습 데이터를 바탕으로 투자심사보고서 생성"""
     try:
         # JSONL 학습 데이터 로드
@@ -387,6 +469,9 @@ def generate_investment_report(ir_summary: str, company_name: str) -> str:
 - 투자 의견은 긍정적이되 객관적인 리스크도 함께 제시하세요
 - 전체 길이는 A4 5-7페이지 분량으로 작성하세요
 """
+        
+        # 사용자 API 키로 Gemini 설정
+        genai.configure(api_key=api_key)
         
         # Gemini API 호출
         model = genai.GenerativeModel('gemini-2.0-flash-exp')
