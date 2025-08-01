@@ -15,6 +15,14 @@ if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
 if 'api_key' not in st.session_state:
     st.session_state.api_key = ""
+if 'analysis_complete' not in st.session_state:
+    st.session_state.analysis_complete = False
+if 'investment_report' not in st.session_state:
+    st.session_state.investment_report = ""
+if 'ir_summary' not in st.session_state:
+    st.session_state.ir_summary = ""
+if 'company_name' not in st.session_state:
+    st.session_state.company_name = ""
 
 # 페이지 설정
 st.set_page_config(
@@ -287,6 +295,12 @@ else:
                 # 투자심사보고서 생성 (session state의 API 키 사용)
                 investment_report = generate_investment_report(ir_summary, company_name, st.session_state.api_key)
                 
+                # 결과를 session state에 저장
+                st.session_state.investment_report = investment_report
+                st.session_state.ir_summary = ir_summary
+                st.session_state.company_name = company_name
+                st.session_state.analysis_complete = True
+                
                 # 5단계: 완료
                 update_progress(5, 5, "분석 완료")
                 update_log("✅ 투자심사보고서 생성이 완료되었습니다!")
@@ -296,57 +310,88 @@ else:
                 with status_placeholder.container():
                     st.success("✅ 분석 완료!")
                 
-                st.markdown("""
-                <div class="result-section">
-                    <h3>📋 투자심사보고서 생성 완료</h3>
-                </div>
-                """, unsafe_allow_html=True)
-                
-                # 결과 탭
-                tab1, tab2, tab3 = st.tabs(["📊 투자심사보고서", "📁 원본 자료", "🔍 처리 로그"])
-                
-                with tab1:
-                    st.markdown(f"### 🏢 {company_name} 투자심사보고서")
-                    st.markdown("---")
-                    st.markdown(investment_report)
-                    
-                    # 다운로드 버튼
-                    st.download_button(
-                        label="💾 보고서 다운로드 (텍스트)",
-                        data=investment_report,
-                        file_name=f"{company_name}_투자심사보고서_{datetime.now().strftime('%Y%m%d')}.txt",
-                        mime="text/plain"
-                    )
-                
-                with tab2:
-                    st.markdown("### 📄 원본 IR 자료 요약")
-                    st.text_area("원본 자료", value=ir_summary[:2000] + "..." if len(ir_summary) > 2000 else ir_summary, height=300)
-                    
-                    # 원본 자료 다운로드
-                    st.download_button(
-                        label="💾 원본 자료 다운로드",
-                        data=ir_summary,
-                        file_name=f"{company_name}_원본자료_{datetime.now().strftime('%Y%m%d')}.txt",
-                        mime="text/plain"
-                    )
-                
-                with tab3:
-                    st.markdown("### 🔍 상세 처리 로그")
-                    for log in st.session_state.logs:
-                        if "✅" in log or "완료" in log:
-                            st.success(log)
-                        elif "⚠️" in log or "진행" in log or "⏱️" in log:
-                            st.warning(log)
-                        elif "❌" in log or "실패" in log:
-                            st.error(log)
-                        else:
-                            st.info(log)
+                # 페이지 새로고침하여 결과 표시
+                st.rerun()
                 
             except Exception as e:
                 update_log(f"❌ 오류 발생: {str(e)}")
                 with status_placeholder.container():
                     st.error(f"❌ 분석 실패: {str(e)}")
                 st.error(f"분석 중 오류가 발생했습니다: {str(e)}")
+                return
+    
+    # 분석 완료 결과가 있을 때 전체 화면에 표시
+    if st.session_state.analysis_complete and st.session_state.investment_report:
+        st.markdown("---")
+        st.markdown("""
+        <div class="result-section">
+            <h2>📋 투자심사보고서 생성 완료</h2>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # 새 분석 시작 버튼을 상단에 배치
+        col_reset1, col_reset2, col_reset3 = st.columns([1, 1, 1])
+        with col_reset2:
+            if st.button("🔄 새 분석 시작", type="secondary"):
+                # 분석 결과 초기화
+                st.session_state.analysis_complete = False
+                st.session_state.investment_report = ""
+                st.session_state.ir_summary = ""
+                st.session_state.company_name = ""
+                if 'logs' in st.session_state:
+                    st.session_state.logs = []
+                st.rerun()
+        
+        # 결과 탭 (전체 화면에 표시)
+        tab1, tab2, tab3 = st.tabs(["📊 투자심사보고서", "📁 원본 자료", "🔍 처리 로그"])
+        
+        with tab1:
+            st.markdown(f"## 🏢 {st.session_state.company_name} 투자심사보고서")
+            st.markdown("---")
+            st.markdown(st.session_state.investment_report)
+            
+            # 다운로드 버튼
+            st.download_button(
+                label="💾 보고서 다운로드 (텍스트)",
+                data=st.session_state.investment_report,
+                file_name=f"{st.session_state.company_name}_투자심사보고서_{datetime.now().strftime('%Y%m%d')}.txt",
+                mime="text/plain",
+                type="primary",
+                use_container_width=True
+            )
+        
+        with tab2:
+            st.markdown("## 📄 원본 IR 자료 요약")
+            st.text_area(
+                "원본 자료", 
+                value=st.session_state.ir_summary[:5000] + "..." if len(st.session_state.ir_summary) > 5000 else st.session_state.ir_summary, 
+                height=400,
+                disabled=True
+            )
+            
+            # 원본 자료 다운로드
+            st.download_button(
+                label="💾 원본 자료 다운로드",
+                data=st.session_state.ir_summary,
+                file_name=f"{st.session_state.company_name}_원본자료_{datetime.now().strftime('%Y%m%d')}.txt",
+                mime="text/plain",
+                use_container_width=True
+            )
+        
+        with tab3:
+            st.markdown("## 🔍 상세 처리 로그")
+            if 'logs' in st.session_state and st.session_state.logs:
+                for log in st.session_state.logs:
+                    if "✅" in log or "완료" in log:
+                        st.success(log)
+                    elif "⚠️" in log or "진행" in log or "⏱️" in log:
+                        st.warning(log)
+                    elif "❌" in log or "실패" in log:
+                        st.error(log)
+                    else:
+                        st.info(log)
+            else:
+                st.info("처리 로그가 없습니다.")
 
 def process_uploaded_file(uploaded_file):
     """업로드된 파일 처리"""
