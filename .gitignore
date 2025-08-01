@@ -1,0 +1,93 @@
+# 환경변수 및 설정 파일
+.env
+.env.local
+.env.production
+.env.staging
+*.env
+
+# JSONL 학습 데이터 (보안상 중요!)
+jsonl_data/
+*.jsonl
+InvestmentReportDataset.jsonl
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# 가상환경
+venv/
+.venv/
+env/
+.env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE 설정
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 운영체제
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# 로그 파일
+*.log
+logs/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# 테스트 및 커버리지
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+.coverage.*
+
+# 업로드된 파일들
+uploads/
+temp/
+tmp/
+
+# 민감한 데이터
+sensitive_data/
+private/
+secret/
+
+# 백업 파일
+*.bak
+*.backup
+*~
+
+# 압축 파일
+*.zip
+*.tar.gz
+*.rar
