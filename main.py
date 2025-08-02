@@ -169,15 +169,6 @@ Word 파일이 업로드되었습니다.
     except Exception as e:
         raise Exception(f"파일 처리 실패: {str(e)}")
 
-@app.get("/", response_class=HTMLResponse)
-async def root():
-    """메인 홈페이지 - 위의 HTML 인터페이스 반환"""
-    # 실제 HTML 파일을 읽어서 반환하거나, 위의 artifacts HTML을 사용
-    return HTMLResponse(content="""
-    <!-- 여기에 위의 web_interface HTML 내용을 복사해서 넣으면 됩니다 -->
-    <h1>IR 분석기가 곧 업데이트됩니다!</h1>
-    <p>API 문서는 <a href="/docs">/docs</a>에서 확인하세요.</p>
-    """)
 
 @app.post("/api/analyze-ir")
 async def analyze_ir(request: IRAnalysisRequest):
