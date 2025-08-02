@@ -1,6 +1,8 @@
-// MYSC AI Agent - Investment Report Analysis Platform JavaScript
+// MYSC AI Agent - Linear-Inspired Investment Report Analysis Platform JavaScript
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize theme
+    initTheme();
     // Initialize Lucide icons
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
@@ -46,6 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initForm();
     initImpactForm();
     initTheoryDownloads();
+    initThemeToggle();
     updateUsageStats();
 
     function initNavigation() {
@@ -1161,6 +1164,61 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.removeChild(downloadLink);
         URL.revokeObjectURL(jsonUrl);
     }
+});
+
+    // Theme Management
+    function initTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const theme = savedTheme || (systemDark ? 'dark' : 'light');
+        
+        setTheme(theme);
+        
+        // Listen for system theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            if (!localStorage.getItem('theme')) {
+                setTheme(e.matches ? 'dark' : 'light');
+            }
+        });
+    }
+    
+    function setTheme(theme) {
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('theme', theme);
+        
+        // Update theme toggle icon
+        updateThemeToggleIcon(theme);
+    }
+    
+    function toggleTheme() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        setTheme(newTheme);
+    }
+    
+    function initThemeToggle() {
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) {
+            themeToggle.addEventListener('click', toggleTheme);
+        }
+    }
+    
+    function updateThemeToggleIcon(theme) {
+        const themeToggle = document.getElementById('themeToggle');
+        if (!themeToggle) return;
+        
+        const iconHtml = theme === 'dark' 
+            ? '<i data-lucide="sun" style="width: 20px; height: 20px;"></i>'
+            : '<i data-lucide="moon" style="width: 20px; height: 20px;"></i>';
+        
+        themeToggle.innerHTML = iconHtml;
+        
+        // Re-initialize Lucide icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+
 });
 
 // CSS for loading animation
