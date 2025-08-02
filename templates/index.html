@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IR Pro - 전문 투자심사보고서 분석 플랫폼</title>
+    <title> MYSC 투자심사보고서 분석 플랫폼</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
@@ -172,6 +172,12 @@
             background: var(--bg-tertiary);
         }
 
+        .nav-item.active {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border-accent);
+        }
+
         .status-indicator {
             display: flex;
             align-items: center;
@@ -207,6 +213,14 @@
             gap: var(--space-8);
             padding: var(--space-8) var(--space-6);
             min-height: calc(100vh - 80px);
+        }
+
+        .section-content {
+            display: none;
+        }
+
+        .section-content.active {
+            display: block;
         }
 
         /* Sidebar */
@@ -1004,19 +1018,23 @@
     <header class="header">
         <div class="header-content">
             <div class="brand">
-                <div class="brand-logo">IR</div>
-                <div class="brand-text">IR Pro</div>
+                <div class="brand-logo">M</div>
+                <div class="brand-text">MYSC AI Agent</div>
             </div>
             <nav class="header-nav">
-                <a href="#" class="nav-item">
-                    <i data-lucide="home" style="width: 16px; height: 16px;"></i>
-                    <span>대시보드</span>
+                <a href="#" class="nav-item active" data-section="investment">
+                    <i data-lucide="trending-up" style="width: 16px; height: 16px;"></i>
+                    <span>투자</span>
                 </a>
-                <a href="#" class="nav-item">
-                    <i data-lucide="file-text" style="width: 16px; height: 16px;"></i>
-                    <span>보고서</span>
+                <a href="#" class="nav-item" data-section="consulting">
+                    <i data-lucide="users" style="width: 16px; height: 16px;"></i>
+                    <span>컨설팅</span>
                 </a>
-                <a href="#" class="nav-item">
+                <a href="#" class="nav-item" data-section="impact">
+                    <i data-lucide="heart" style="width: 16px; height: 16px;"></i>
+                    <span>임팩트 진단</span>
+                </a>
+                <a href="#" class="nav-item" data-section="settings">
                     <i data-lucide="settings" style="width: 16px; height: 16px;"></i>
                     <span>설정</span>
                 </a>
@@ -1034,34 +1052,66 @@
         <aside class="sidebar">
             <div class="sidebar-section">
                 <h3 class="sidebar-title">
-                    <i data-lucide="clock" style="width: 16px; height: 16px;"></i>
-                    최근 분석
+                    <i data-lucide="activity" style="width: 16px; height: 16px;"></i>
+                    API 사용량
                 </h3>
-                <div class="history-item">
-                    <div class="history-icon">
-                        <i data-lucide="file-text" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+                
+                <!-- API 상태 표시 -->
+                <div class="api-status-card" style="background: var(--success-bg); border: 1px solid var(--success); border-radius: var(--radius-lg); padding: var(--space-4); margin-bottom: var(--space-4);">
+                    <div style="display: flex; align-items: center; gap: var(--space-2); margin-bottom: var(--space-2);">
+                        <div class="status-dot" style="width: 8px; height: 8px; background: var(--success); border-radius: 50%;"></div>
+                        <span style="font-size: 0.875rem; font-weight: 500; color: var(--success);">API 연결됨</span>
                     </div>
-                    <div class="history-details">
-                        <div class="history-name">삼성전자 IR 분석</div>
-                        <div class="history-date">2시간 전</div>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin: 0;">Gemini Pro</p>
+                </div>
+
+                <!-- 사용량 통계 -->
+                <div class="usage-stats">
+                    <!-- 오늘 사용량 -->
+                    <div class="usage-item" style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); border-radius: var(--radius-lg); transition: var(--transition-fast); margin-bottom: var(--space-2);">
+                        <div class="usage-icon" style="width: 32px; height: 32px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="zap" style="width: 16px; height: 16px; color: white;"></i>
+                        </div>
+                        <div class="usage-details" style="flex: 1; min-width: 0;">
+                            <div class="usage-label" style="font-size: 0.875rem; font-weight: 500; color: var(--text-primary);">오늘 사용량</div>
+                            <div class="usage-value" style="font-size: 0.75rem; color: var(--text-muted);" id="todayUsage">0 토큰</div>
+                        </div>
+                    </div>
+
+                    <!-- 이번 달 사용량 -->
+                    <div class="usage-item" style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); border-radius: var(--radius-lg); transition: var(--transition-fast); margin-bottom: var(--space-2);">
+                        <div class="usage-icon" style="width: 32px; height: 32px; background: linear-gradient(135deg, var(--info), var(--secondary)); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="calendar" style="width: 16px; height: 16px; color: white;"></i>
+                        </div>
+                        <div class="usage-details" style="flex: 1; min-width: 0;">
+                            <div class="usage-label" style="font-size: 0.875rem; font-weight: 500; color: var(--text-primary);">이번 달</div>
+                            <div class="usage-value" style="font-size: 0.75rem; color: var(--text-muted);" id="monthlyUsage">0 토큰</div>
+                        </div>
+                    </div>
+
+                    <!-- 총 분석 횟수 -->
+                    <div class="usage-item" style="display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); border-radius: var(--radius-lg); transition: var(--transition-fast); margin-bottom: var(--space-4);">
+                        <div class="usage-icon" style="width: 32px; height: 32px; background: linear-gradient(135deg, var(--accent-success), #10b981); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                            <i data-lucide="file-check" style="width: 16px; height: 16px; color: white;"></i>
+                        </div>
+                        <div class="usage-details" style="flex: 1; min-width: 0;">
+                            <div class="usage-label" style="font-size: 0.875rem; font-weight: 500; color: var(--text-primary);">총 분석</div>
+                            <div class="usage-value" style="font-size: 0.75rem; color: var(--text-muted);" id="totalAnalyses">0회</div>
+                        </div>
                     </div>
                 </div>
-                <div class="history-item">
-                    <div class="history-icon">
-                        <i data-lucide="file-text" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+
+                <!-- 사용량 차트 (간단한 프로그레스 바) -->
+                <div class="usage-chart" style="background: var(--bg-tertiary); border-radius: var(--radius-lg); padding: var(--space-4);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-2);">
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);">월간 한도</span>
+                        <span style="font-size: 0.75rem; color: var(--text-secondary);" id="usagePercent">0%</span>
                     </div>
-                    <div class="history-details">
-                        <div class="history-name">카카오 투자보고서</div>
-                        <div class="history-date">1일 전</div>
+                    <div class="progress-bar" style="width: 100%; height: 6px; background: var(--bg-elevated); border-radius: var(--radius-sm); overflow: hidden;">
+                        <div class="progress-fill" id="usageProgress" style="height: 100%; background: linear-gradient(90deg, var(--success), var(--primary)); width: 0%; transition: width 0.5s ease; border-radius: var(--radius-sm);"></div>
                     </div>
-                </div>
-                <div class="history-item">
-                    <div class="history-icon">
-                        <i data-lucide="file-text" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
-                    </div>
-                    <div class="history-details">
-                        <div class="history-name">네이버 분석 리포트</div>
-                        <div class="history-date">3일 전</div>
+                    <div style="font-size: 0.6875rem; color: var(--text-muted); margin-top: var(--space-1); text-align: center;">
+                        무료 한도: 1,500 RPD
                     </div>
                 </div>
             </div>
@@ -1088,12 +1138,14 @@
 
         <!-- Main Content -->
         <main class="main-content">
-            <div class="page-header">
-                <h1 class="page-title">전문 투자심사보고서 분석</h1>
-                <p class="page-subtitle">AI 기반 투자심사보고서 자동 생성으로 더 빠르고 정확한 투자 의사결정을 지원합니다</p>
-            </div>
+            <!-- Investment Section -->
+            <div class="section-content active" id="investment-section">
+                <div class="page-header">
+                    <h1 class="page-title">전문 투자심사보고서 분석</h1>
+                    <p class="page-subtitle">AI 기반 투자심사보고서 자동 생성으로 더 빠르고 정확한 투자 의사결정을 지원합니다</p>
+                </div>
 
-            <div class="analysis-card">
+                <div class="analysis-card" style="width: 100%;">
                 <form id="analysisForm" enctype="multipart/form-data">
                     <!-- Upload Section -->
                     <div class="upload-area" id="uploadArea">
@@ -1268,6 +1320,72 @@
                         <div class="report-content" id="recommendationsReport">
                             권고사항이 여기에 표시됩니다...
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Consulting Section -->
+            <div class="section-content" id="consulting-section">
+                <div class="page-header">
+                    <h1 class="page-title">컨설팅 서비스</h1>
+                    <p class="page-subtitle">전문가 컨설팅을 통한 맞춤형 비즈니스 솔루션을 제공합니다</p>
+                </div>
+
+                <div class="analysis-card" style="width: 100%;">
+                    <div style="text-align: center; padding: var(--space-16);">
+                        <div style="width: 64px; height: 64px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-6);">
+                            <i data-lucide="users" style="width: 32px; height: 32px; color: white;"></i>
+                        </div>
+                        <h3 style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-4);">컨설팅 서비스 준비 중</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: var(--space-6);">전문가와의 1:1 컨설팅 서비스를 준비하고 있습니다.</p>
+                        <button class="btn-primary" disabled>
+                            <i data-lucide="clock" style="width: 20px; height: 20px; margin-right: 8px;"></i>
+                            서비스 준비 중
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Impact Assessment Section -->
+            <div class="section-content" id="impact-section">
+                <div class="page-header">
+                    <h1 class="page-title">임팩트 진단</h1>
+                    <p class="page-subtitle">사회적 임팩트를 측정하고 개선 방안을 제시합니다</p>
+                </div>
+
+                <div class="analysis-card" style="width: 100%;">
+                    <div style="text-align: center; padding: var(--space-16);">
+                        <div style="width: 64px; height: 64px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-6);">
+                            <i data-lucide="heart" style="width: 32px; height: 32px; color: white;"></i>
+                        </div>
+                        <h3 style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-4);">임팩트 진단 도구 개발 중</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: var(--space-6);">사회적 임팩트 측정 및 진단 도구를 개발하고 있습니다.</p>
+                        <button class="btn-primary" disabled>
+                            <i data-lucide="clock" style="width: 20px; height: 20px; margin-right: 8px;"></i>
+                            서비스 준비 중
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div class="section-content" id="settings-section">
+                <div class="page-header">
+                    <h1 class="page-title">설정</h1>
+                    <p class="page-subtitle">계정 및 서비스 설정을 관리합니다</p>
+                </div>
+
+                <div class="analysis-card" style="width: 100%;">
+                    <div style="text-align: center; padding: var(--space-16);">
+                        <div style="width: 64px; height: 64px; background: linear-gradient(135deg, var(--primary), var(--accent)); border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center; margin: 0 auto var(--space-6);">
+                            <i data-lucide="settings" style="width: 32px; height: 32px; color: white;"></i>
+                        </div>
+                        <h3 style="font-size: 1.5rem; font-weight: 600; color: var(--text-primary); margin-bottom: var(--space-4);">설정 페이지 준비 중</h3>
+                        <p style="color: var(--text-secondary); margin-bottom: var(--space-6);">사용자 설정 및 환경 설정 기능을 준비하고 있습니다.</p>
+                        <button class="btn-primary" disabled>
+                            <i data-lucide="clock" style="width: 20px; height: 20px; margin-right: 8px;"></i>
+                            서비스 준비 중
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1629,9 +1747,191 @@
             }
         }
 
+        // API Usage Tracking
+        class APIUsageTracker {
+            constructor() {
+                this.initializeStorage();
+                this.updateDisplay();
+            }
+
+            initializeStorage() {
+                if (!localStorage.getItem('apiUsage')) {
+                    localStorage.setItem('apiUsage', JSON.stringify({
+                        dailyUsage: {},
+                        monthlyUsage: {},
+                        totalAnalyses: 0,
+                        lastReset: new Date().toDateString()
+                    }));
+                }
+            }
+
+            getUsageData() {
+                return JSON.parse(localStorage.getItem('apiUsage'));
+            }
+
+            saveUsageData(data) {
+                localStorage.setItem('apiUsage', JSON.stringify(data));
+            }
+
+            getCurrentDate() {
+                return new Date().toDateString();
+            }
+
+            getCurrentMonth() {
+                const date = new Date();
+                return `${date.getFullYear()}-${date.getMonth() + 1}`;
+            }
+
+            recordUsage(tokensUsed = 1000) {
+                const data = this.getUsageData();
+                const today = this.getCurrentDate();
+                const thisMonth = this.getCurrentMonth();
+
+                // 일간 사용량 업데이트
+                if (!data.dailyUsage[today]) {
+                    data.dailyUsage[today] = 0;
+                }
+                data.dailyUsage[today] += tokensUsed;
+
+                // 월간 사용량 업데이트
+                if (!data.monthlyUsage[thisMonth]) {
+                    data.monthlyUsage[thisMonth] = 0;
+                }
+                data.monthlyUsage[thisMonth] += tokensUsed;
+
+                // 총 분석 횟수 증가
+                data.totalAnalyses += 1;
+
+                this.saveUsageData(data);
+                this.updateDisplay();
+            }
+
+            getTodayUsage() {
+                const data = this.getUsageData();
+                const today = this.getCurrentDate();
+                return data.dailyUsage[today] || 0;
+            }
+
+            getMonthlyUsage() {
+                const data = this.getUsageData();
+                const thisMonth = this.getCurrentMonth();
+                return data.monthlyUsage[thisMonth] || 0;
+            }
+
+            getTotalAnalyses() {
+                const data = this.getUsageData();
+                return data.totalAnalyses || 0;
+            }
+
+            formatTokens(tokens) {
+                if (tokens >= 1000000) {
+                    return (tokens / 1000000).toFixed(1) + 'M 토큰';
+                } else if (tokens >= 1000) {
+                    return (tokens / 1000).toFixed(1) + 'K 토큰';
+                } else {
+                    return tokens + ' 토큰';
+                }
+            }
+
+            updateDisplay() {
+                const todayUsage = this.getTodayUsage();
+                const monthlyUsage = this.getMonthlyUsage();
+                const totalAnalyses = this.getTotalAnalyses();
+
+                // DOM 업데이트
+                const todayElement = document.getElementById('todayUsage');
+                const monthlyElement = document.getElementById('monthlyUsage');
+                const totalElement = document.getElementById('totalAnalyses');
+                const percentElement = document.getElementById('usagePercent');
+                const progressElement = document.getElementById('usageProgress');
+
+                if (todayElement) todayElement.textContent = this.formatTokens(todayUsage);
+                if (monthlyElement) monthlyElement.textContent = this.formatTokens(monthlyUsage);
+                if (totalElement) totalElement.textContent = totalAnalyses + '회';
+
+                // 월간 한도 대비 퍼센트 계산 (1,500 RPD = 약 45,000 토큰/월로 추정)
+                const monthlyLimit = 45000;
+                const usagePercent = Math.min((monthlyUsage / monthlyLimit) * 100, 100);
+                
+                if (percentElement) percentElement.textContent = usagePercent.toFixed(1) + '%';
+                if (progressElement) {
+                    progressElement.style.width = usagePercent + '%';
+                    
+                    // 사용량에 따른 색상 변경
+                    if (usagePercent >= 90) {
+                        progressElement.style.background = 'linear-gradient(90deg, var(--warning), var(--accent-error))';
+                    } else if (usagePercent >= 70) {
+                        progressElement.style.background = 'linear-gradient(90deg, var(--accent-warning), var(--warning))';
+                    } else {
+                        progressElement.style.background = 'linear-gradient(90deg, var(--success), var(--primary))';
+                    }
+                }
+            }
+
+            // 분석 실행 시 호출할 메서드
+            onAnalysisComplete(estimatedTokens = 1000) {
+                this.recordUsage(estimatedTokens);
+                
+                // 사용량 업데이트 애니메이션
+                setTimeout(() => {
+                    this.updateDisplay();
+                }, 500);
+            }
+        }
+
+        // Usage tracker 인스턴스 생성
+        const usageTracker = new APIUsageTracker();
+
+        // InvestmentAnalysisApp 클래스 수정하여 사용량 추적 연동
+        const originalShowResults = InvestmentAnalysisApp.prototype.showResults;
+        InvestmentAnalysisApp.prototype.showResults = function(result) {
+            // 기존 결과 표시 로직 실행
+            originalShowResults.call(this, result);
+            
+            // 사용량 추적 (보고서 길이에 따라 토큰 수 추정)
+            const reportLength = result.investment_report ? result.investment_report.length : 1000;
+            const estimatedTokens = Math.max(500, Math.min(2000, reportLength / 2)); // 대략적인 토큰 추정
+            
+            usageTracker.onAnalysisComplete(estimatedTokens);
+        };
+
+        // Navigation functionality
+        class NavigationManager {
+            constructor() {
+                this.navItems = document.querySelectorAll('.nav-item');
+                this.sections = document.querySelectorAll('.section-content');
+                this.bindEvents();
+            }
+
+            bindEvents() {
+                this.navItems.forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        const sectionName = e.currentTarget.dataset.section;
+                        if (sectionName) {
+                            this.switchSection(sectionName);
+                        }
+                    });
+                });
+            }
+
+            switchSection(sectionName) {
+                // Update nav items
+                this.navItems.forEach(item => item.classList.remove('active'));
+                const activeNav = document.querySelector(`[data-section="${sectionName}"]`);
+                if (activeNav) activeNav.classList.add('active');
+
+                // Update sections
+                this.sections.forEach(section => section.classList.remove('active'));
+                const activeSection = document.getElementById(`${sectionName}-section`);
+                if (activeSection) activeSection.classList.add('active');
+            }
+        }
+
         // Initialize the application
         document.addEventListener('DOMContentLoaded', () => {
             new InvestmentAnalysisApp();
+            new NavigationManager();
         });
     </script>
 </body>
