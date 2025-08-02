@@ -1176,7 +1176,6 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.removeChild(downloadLink);
         URL.revokeObjectURL(jsonUrl);
     }
-});
 
     // Theme Management
     function initTheme() {
@@ -1240,3 +1239,8 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+    // Initialize theme on page load
+    initTheme();
+    initThemeToggle();
+});
