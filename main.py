@@ -31,8 +31,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 정적 파일 마운트
-app.mount("/static", StaticFiles(directory=FRONTEND_DIR / "static"), name="static")
+# 정적 파일 마운트 - public 폴더 사용
+PUBLIC_DIR = BASE_DIR / "public"
+app.mount("/static", StaticFiles(directory=PUBLIC_DIR / "static"), name="static")
 
 # JSON 데이터 파일 서빙을 위한 루트 정적 파일 마운트
 from fastapi.responses import FileResponse
