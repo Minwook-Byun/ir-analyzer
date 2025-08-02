@@ -10,13 +10,18 @@ from dotenv import load_dotenv
 import re
 from typing import Optional
 from datetime import datetime
+import pathlib
+
+# 현재 파일의 경로를 기준으로 frontend 폴더 경로 설정
+BASE_DIR = pathlib.Path(__file__).resolve().parent
+FRONTEND_DIR = BASE_DIR / "frontend"
 
 # 환경변수 로드
 load_dotenv()
 
 app = FastAPI(title="IR Analyzer", version="1.0.0")
 
-# CORS 설정 (Google Sites에서 호출하기 위해)
+# CORS 설정
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,6 +29,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# 정적 파일 마운트
+app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
+
 
 # Gemini API 설정
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
@@ -41,23 +50,10 @@ class JandiWebhookRequest(BaseModel):
 @app.get("/", response_class=HTMLResponse)
 async def get_homepage():
     """메인 홈페이지 반환"""
-    # HTML 파일을 읽어서 반환 (나중에 별도 파일로 분리 가능)
-    html_content = """
-    <!DOCTYPE html>
-    <html lang="ko">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>IR 투자심사보고서 분석기</title>
-        <!-- 여기에 위의 HTML/CSS 내용을 넣으면 됩니다 -->
-    </head>
-    <body>
-        <h1>IR 분석기 홈페이지</h1>
-        <p>곧 업데이트 예정입니다!</p>
-    </body>
-    </html>
-    """
-    return HTMLResponse(content=html_content)
+    index_path = FRONTEND_DIR / "index.html"
+    if not index_path.is_file():
+        return HTMLResponse(content="<h1>Frontend file not found</h1>", status_code=404)
+    return HTMLResponse(content=index_path.read_text(encoding="utf-8"))
 
 @app.post("/api/analyze-ir-file")
 async def analyze_ir_file(
