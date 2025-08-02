@@ -9,7 +9,15 @@
       "Bash(streamlit run:*)",
       "Bash(python -m pip install:*)",
       "Bash(python:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git rm:*)",
+      "Bash(mkdir:*)",
+      "WebFetch(domain:ir-analyzer-zwao.vercel.app)",
+      "Bash(find:*)",
+      "Bash(copy:*)",
+      "Bash(cp:*)",
+      "Bash(cp:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

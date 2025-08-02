@@ -5,4 +5,3 @@ requests>=2.31.0
 PyPDF2>=3.0.0
 pydantic>=2.5.0
 python-multipart
-nest_asyncio

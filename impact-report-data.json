@@ -1,0 +1,607 @@
+{
+  "reportInfo": {
+    "title": "소셜임팩트 체인저스 6기 임팩트 리포트",
+    "organization": "소브 (SOBR)",
+    "period": "2024",
+    "version": "1.0",
+    "lastUpdated": "2024-12-31"
+  },
+  "organizationProfile": {
+    "name": "소브 (SOBR)",
+    "mission": "사회적 임팩트를 통한 긍정적 변화 창출",
+    "vision": "지속가능한 사회 혁신 생태계 구축",
+    "establishedYear": 2024,
+    "teamSize": 10,
+    "location": "대한민국",
+    "contact": {
+      "email": "contact@sobr.org",
+      "phone": "+82-10-0000-0000",
+      "website": "https://sobr.org"
+    }
+  },
+  "theoryOfChange": {
+    "structure": {
+      "layers": [
+        {
+          "id": "inputs",
+          "name": "투입(Inputs)",
+          "layer": 1,
+          "yPosition": 100,
+          "height": 120,
+          "backgroundColor": "#E8F4FD",
+          "borderColor": "#2196F3",
+          "items": [
+            {
+              "id": "funding",
+              "title": "자금",
+              "value": "5천만원",
+              "description": "정부지원금, 기부금, 파트너십 자금",
+              "position": { "x": 50, "y": 100, "width": 200, "height": 80 },
+              "icon": "💰"
+            },
+            {
+              "id": "team",
+              "title": "인력",
+              "value": "10명",
+              "description": "전문가 팀, 자원봉사자",
+              "position": { "x": 300, "y": 100, "width": 200, "height": 80 },
+              "icon": "👥"
+            },
+            {
+              "id": "technology",
+              "title": "기술",
+              "value": "디지털 플랫폼",
+              "description": "웹/모바일 기술, 데이터 분석",
+              "position": { "x": 550, "y": 100, "width": 200, "height": 80 },
+              "icon": "💻"
+            }
+          ]
+        },
+        {
+          "id": "activities",
+          "name": "활동(Activities)",
+          "layer": 2,
+          "yPosition": 280,
+          "height": 120,
+          "backgroundColor": "#F3E5F5",
+          "borderColor": "#9C27B0",
+          "items": [
+            {
+              "id": "education",
+              "title": "디지털 교육",
+              "value": "8개 과정",
+              "description": "코딩, 디지털 리터러시 교육",
+              "position": { "x": 50, "y": 280, "width": 180, "height": 80 },
+              "icon": "📚"
+            },
+            {
+              "id": "platform",
+              "title": "플랫폼 구축",
+              "value": "3개 플랫폼",
+              "description": "지역상권, 교육, 환경 플랫폼",
+              "position": { "x": 250, "y": 280, "width": 180, "height": 80 },
+              "icon": "🔧"
+            },
+            {
+              "id": "campaign",
+              "title": "인식개선 캠페인",
+              "value": "15회",
+              "description": "환경보호, 사회혁신 캠페인",
+              "position": { "x": 450, "y": 280, "width": 180, "height": 80 },
+              "icon": "📢"
+            },
+            {
+              "id": "networking",
+              "title": "네트워킹",
+              "value": "12개 파트너",
+              "description": "기관 간 협력체계 구축",
+              "position": { "x": 650, "y": 280, "width": 180, "height": 80 },
+              "icon": "🤝"
+            }
+          ]
+        },
+        {
+          "id": "outputs",
+          "name": "산출(Outputs)",
+          "layer": 3,
+          "yPosition": 460,
+          "height": 120,
+          "backgroundColor": "#E8F5E8",
+          "borderColor": "#4CAF50",
+          "items": [
+            {
+              "id": "trained_people",
+              "title": "교육 이수자",
+              "value": "400명",
+              "description": "디지털 기술 습득 완료",
+              "position": { "x": 80, "y": 460, "width": 160, "height": 80 },
+              "icon": "🎓"
+            },
+            {
+              "id": "businesses_supported",
+              "title": "지원 사업체",
+              "value": "150개",
+              "description": "디지털 전환 완료 사업체",
+              "position": { "x": 260, "y": 460, "width": 160, "height": 80 },
+              "icon": "🏪"
+            },
+            {
+              "id": "platforms_launched",
+              "title": "구축 플랫폼",
+              "value": "3개",
+              "description": "운영 중인 디지털 플랫폼",
+              "position": { "x": 440, "y": 460, "width": 160, "height": 80 },
+              "icon": "🚀"
+            },
+            {
+              "id": "events_held",
+              "title": "개최 이벤트",
+              "value": "25회",
+              "description": "교육, 캠페인, 네트워킹 이벤트",
+              "position": { "x": 620, "y": 460, "width": 160, "height": 80 },
+              "icon": "📅"
+            }
+          ]
+        },
+        {
+          "id": "outcomes",
+          "name": "성과(Outcomes)",
+          "layer": 4,
+          "yPosition": 640,
+          "height": 120,
+          "backgroundColor": "#FFF3E0",
+          "borderColor": "#FF9800",
+          "items": [
+            {
+              "id": "employment_increase",
+              "title": "취업률 향상",
+              "value": "75%",
+              "description": "교육 참여자 취업률",
+              "position": { "x": 50, "y": 640, "width": 180, "height": 80 },
+              "icon": "💼",
+              "sameLayer": true
+            },
+            {
+              "id": "sales_increase",
+              "title": "매출 증가",
+              "value": "35%",
+              "description": "참여 사업체 평균 매출 증가",
+              "position": { "x": 250, "y": 640, "width": 180, "height": 80 },
+              "icon": "📈",
+              "sameLayer": true
+            },
+            {
+              "id": "digital_literacy",
+              "title": "디지털 역량 강화",
+              "value": "85%",
+              "description": "참여자 디지털 역량 향상도",
+              "position": { "x": 450, "y": 640, "width": 180, "height": 80 },
+              "icon": "🎯",
+              "sameLayer": true
+            },
+            {
+              "id": "community_engagement",
+              "title": "지역사회 참여",
+              "value": "60%",
+              "description": "지역사회 활동 참여도 증가",
+              "position": { "x": 650, "y": 640, "width": 180, "height": 80 },
+              "icon": "🌍",
+              "sameLayer": true
+            }
+          ]
+        },
+        {
+          "id": "impact",
+          "name": "임팩트(Impact)",
+          "layer": 5,
+          "yPosition": 820,
+          "height": 120,
+          "backgroundColor": "#FFEBEE",
+          "borderColor": "#F44336",
+          "items": [
+            {
+              "id": "social_cohesion",
+              "title": "사회적 결속력 강화",
+              "value": "장기적 변화",
+              "description": "지역사회 내 협력과 상호부조 문화 확산",
+              "position": { "x": 100, "y": 820, "width": 250, "height": 80 },
+              "icon": "🤲"
+            },
+            {
+              "id": "economic_sustainability",
+              "title": "경제적 지속가능성",
+              "value": "생태계 구축",
+              "description": "지역 경제 활성화 및 자립적 성장 기반 마련",
+              "position": { "x": 400, "y": 820, "width": 250, "height": 80 },
+              "icon": "♻️"
+            },
+            {
+              "id": "digital_inclusion",
+              "title": "디지털 포용성 확대",
+              "value": "격차 해소",
+              "description": "디지털 격차 해소를 통한 사회적 형평성 증진",
+              "position": { "x": 700, "y": 820, "width": 250, "height": 80 },
+              "icon": "🌐"
+            }
+          ]
+        }
+      ],
+      "connections": [
+        {
+          "from": "funding",
+          "to": "education",
+          "type": "arrow",
+          "style": "solid"
+        },
+        {
+          "from": "team",
+          "to": "platform",
+          "type": "arrow",
+          "style": "solid"
+        },
+        {
+          "from": "technology",
+          "to": "campaign",
+          "type": "arrow",
+          "style": "solid"
+        },
+        {
+          "from": "education",
+          "to": "trained_people",
+          "type": "arrow",
+          "style": "solid"
+        },
+        {
+          "from": "platform",
+          "to": "businesses_supported",
+          "type": "arrow",
+          "style": "solid"
+        },
+        {
+          "from": "trained_people",
+          "to": "employment_increase",
+          "type": "arrow",
+          "style": "solid"
+        },
+        {
+          "from": "businesses_supported",
+          "to": "sales_increase",
+          "type": "arrow",
+          "style": "solid"
+        },
+        {
+          "from": "employment_increase",
+          "to": "economic_sustainability",
+          "type": "arrow",
+          "style": "solid"
+        },
+        {
+          "from": "sales_increase",
+          "to": "economic_sustainability",
+          "type": "arrow",
+          "style": "solid"
+        }
+      ]
+    },
+    "designSpecs": {
+      "container": {
+        "width": "1200px",
+        "height": "1000px",
+        "background": "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+        "padding": "40px"
+      },
+      "layerSpacing": 140,
+      "itemSpacing": 20,
+      "animations": {
+        "fadeIn": {
+          "duration": "0.6s",
+          "delay": "0.1s",
+          "easing": "ease-out"
+        },
+        "slideUp": {
+          "duration": "0.8s",
+          "distance": "30px"
+        }
+      },
+      "responsive": {
+        "mobile": {
+          "containerWidth": "100%",
+          "layerSpacing": 100,
+          "itemsPerRow": 1
+        },
+        "tablet": {
+          "containerWidth": "768px",
+          "layerSpacing": 120,
+          "itemsPerRow": 2
+        }
+      }
+    }
+  },
+  "keyMetrics": {
+    "summary": {
+      "totalBeneficiaries": 1500,
+      "projectsCompleted": 8,
+      "partnershipsFormed": 12,
+      "fundingRaised": 50000000,
+      "volunteersEngaged": 150
+    }
+  },
+  "projects": [
+    {
+      "id": 1,
+      "title": "디지털 교육 격차 해소 프로젝트",
+      "description": "소외계층 청소년 대상 디지털 리터러시 교육",
+      "status": "completed",
+      "startDate": "2024-03-01",
+      "endDate": "2024-11-30",
+      "beneficiaries": 400,
+      "budget": 15000000,
+      "impact": {
+        "studentsEducated": 400,
+        "certificationsEarned": 320,
+        "employmentRate": 0.75
+      },
+      "partners": ["교육청", "IT기업 A", "지역사회센터"],
+      "gallery": [
+        "/images/project1/education-session.jpg",
+        "/images/project1/certificate-ceremony.jpg"
+      ]
+    },
+    {
+      "id": 2,
+      "title": "지역상권 활성화 플랫폼",
+      "description": "로컬 비즈니스 디지털 전환 지원",
+      "status": "ongoing",
+      "startDate": "2024-06-01",
+      "endDate": "2025-05-31",
+      "beneficiaries": 150,
+      "budget": 20000000,
+      "impact": {
+        "businessesSupported": 150,
+        "salesIncrease": 0.35,
+        "digitalPresenceCreated": 150
+      },
+      "partners": ["지역상공회의소", "테크 스타트업 B"],
+      "gallery": [
+        "/images/project2/platform-demo.jpg",
+        "/images/project2/merchant-training.jpg"
+      ]
+    },
+    {
+      "id": 3,
+      "title": "환경 보호 캠페인",
+      "description": "시민 참여형 환경 보호 활동 및 교육",
+      "status": "completed",
+      "startDate": "2024-04-01",
+      "endDate": "2024-10-31",
+      "beneficiaries": 950,
+      "budget": 8000000,
+      "impact": {
+        "participantsEngaged": 950,
+        "wasteCollected": 1000,
+        "awarenessEventsHeld": 15
+      },
+      "partners": ["환경단체 C", "지역정부"],
+      "gallery": [
+        "/images/project3/cleanup-event.jpg",
+        "/images/project3/awareness-campaign.jpg"
+      ]
+    }
+  ],
+  "partnerships": [
+    {
+      "name": "교육청",
+      "type": "정부기관",
+      "collaborationType": "교육 프로그램 지원",
+      "startDate": "2024-03-01",
+      "status": "active"
+    },
+    {
+      "name": "IT기업 A",
+      "type": "민간기업",
+      "collaborationType": "기술 지원 및 멘토링",
+      "startDate": "2024-03-01",
+      "status": "active"
+    },
+    {
+      "name": "지역상공회의소",
+      "type": "상공단체",
+      "collaborationType": "네트워킹 및 사업 지원",
+      "startDate": "2024-06-01",
+      "status": "active"
+    }
+  ],
+  "timeline": [
+    {
+      "date": "2024-01-15",
+      "event": "소브 팀 결성",
+      "type": "milestone",
+      "description": "소셜임팩트 체인저스 6기 선발"
+    },
+    {
+      "date": "2024-03-01",
+      "event": "첫 번째 프로젝트 시작",
+      "type": "project",
+      "description": "디지털 교육 격차 해소 프로젝트 착수"
+    },
+    {
+      "date": "2024-06-01",
+      "event": "두 번째 프로젝트 시작",
+      "type": "project",
+      "description": "지역상권 활성화 플랫폼 개발 시작"
+    },
+    {
+      "date": "2024-08-15",
+      "event": "중간 성과 발표",
+      "type": "milestone",
+      "description": "6개월 성과 보고 및 평가"
+    },
+    {
+      "date": "2024-11-30",
+      "event": "첫 번째 프로젝트 완료",
+      "type": "achievement",
+      "description": "디지털 교육 프로젝트 성공적 완료"
+    },
+    {
+      "date": "2024-12-31",
+      "event": "연간 임팩트 리포트 발간",
+      "type": "milestone",
+      "description": "2024년 활동 성과 정리 및 발표"
+    }
+  ],
+  "financials": {
+    "revenue": {
+      "grants": 30000000,
+      "donations": 15000000,
+      "partnerships": 5000000,
+      "total": 50000000
+    },
+    "expenses": {
+      "projectImplementation": 35000000,
+      "personnel": 10000000,
+      "operations": 3000000,
+      "marketing": 2000000,
+      "total": 50000000
+    },
+    "budgetAllocation": [
+      {
+        "category": "프로젝트 실행",
+        "amount": 35000000,
+        "percentage": 70
+      },
+      {
+        "category": "인건비",
+        "amount": 10000000,
+        "percentage": 20
+      },
+      {
+        "category": "운영비",
+        "amount": 3000000,
+        "percentage": 6
+      },
+      {
+        "category": "마케팅",
+        "amount": 2000000,
+        "percentage": 4
+      }
+    ]
+  },
+  "testimonials": [
+    {
+      "name": "김영희",
+      "role": "교육 참여자",
+      "project": "디지털 교육 격차 해소",
+      "quote": "이 프로그램 덕분에 새로운 기술을 배우고 취업할 수 있었습니다.",
+      "rating": 5
+    },
+    {
+      "name": "박상우",
+      "role": "지역 상인",
+      "project": "지역상권 활성화",
+      "quote": "온라인 플랫폼을 통해 매출이 30% 이상 증가했습니다.",
+      "rating": 5
+    },
+    {
+      "name": "이미래",
+      "role": "자원봉사자",
+      "project": "환경 보호 캠페인",
+      "quote": "환경 보호에 기여할 수 있어서 뜻깊었고, 많은 것을 배웠습니다.",
+      "rating": 4
+    }
+  ],
+  "team": [
+    {
+      "name": "김팀장",
+      "role": "팀 리더",
+      "bio": "사회적 기업 운영 경험 5년",
+      "expertise": ["프로젝트 관리", "사회혁신"],
+      "profileImage": "/images/team/leader.jpg"
+    },
+    {
+      "name": "이개발",
+      "role": "기술 책임자",
+      "bio": "풀스택 개발자, 시빅테크 전문",
+      "expertise": ["웹 개발", "데이터 분석"],
+      "profileImage": "/images/team/developer.jpg"
+    },
+    {
+      "name": "박기획",
+      "role": "기획자",
+      "bio": "사회적 임팩트 측정 및 평가 전문",
+      "expertise": ["임팩트 측정", "사업기획"],
+      "profileImage": "/images/team/planner.jpg"
+    }
+  ],
+  "media": {
+    "pressReleases": [
+      {
+        "title": "소브, 디지털 교육격차 해소로 주목받아",
+        "date": "2024-08-15",
+        "outlet": "사회혁신뉴스",
+        "url": "https://news.example.com/sobr-digital-education"
+      }
+    ],
+    "awards": [
+      {
+        "name": "사회혁신 우수상",
+        "organization": "한국사회적기업진흥원",
+        "date": "2024-11-01",
+        "category": "교육 부문"
+      }
+    ]
+  },
+  "futureGoals": {
+    "2025": [
+      "프로젝트 범위 확대: 3개 지역 추가",
+      "수혜자 2,000명 달성",
+      "자립 가능한 수익 모델 구축"
+    ],
+    "longTerm": [
+      "전국 단위 서비스 확장",
+      "해외 진출 검토",
+      "지속가능한 임팩트 생태계 구축"
+    ]
+  },
+  "chartData": {
+    "impactGrowth": {
+      "labels": ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"],
+      "datasets": [
+        {
+          "label": "수혜자 수",
+          "data": [0, 50, 150, 300, 450, 600, 800, 1000, 1200, 1350, 1450, 1500]
+        }
+      ]
+    },
+    "projectDistribution": {
+      "labels": ["디지털 교육", "지역상권 활성화", "환경 보호"],
+      "data": [400, 150, 950]
+    },
+    "budgetAllocation": {
+      "labels": ["프로젝트 실행", "인건비", "운영비", "마케팅"],
+      "data": [70, 20, 6, 4]
+    }
+  },
+  "webAppSettings": {
+    "theme": {
+      "primaryColor": "#2E8B57",
+      "secondaryColor": "#4169E1",
+      "backgroundColor": "#F8F9FA",
+      "textColor": "#333333"
+    },
+    "navigation": [
+      {"label": "홈", "path": "/", "icon": "home"},
+      {"label": "프로젝트", "path": "/projects", "icon": "folder"},
+      {"label": "임팩트", "path": "/impact", "icon": "trending-up"},
+      {"label": "팀", "path": "/team", "icon": "users"},
+      {"label": "파트너십", "path": "/partnerships", "icon": "handshake"},
+      {"label": "연락처", "path": "/contact", "icon": "mail"}
+    ],
+    "features": {
+      "enableCharts": true,
+      "enableTestimonials": true,
+      "enableGallery": true,
+      "enableDownloadReport": true,
+      "enableSocialSharing": true
+    }
+  }
+}
