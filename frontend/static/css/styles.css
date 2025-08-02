@@ -733,6 +733,340 @@ body {
     margin-right: auto;
 }
 
+/* Theory of Change Visualization Styles */
+.theory-visualization {
+    background: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid #e5e7eb;
+    overflow-x: auto;
+}
+
+.visualization-container {
+    position: relative;
+    width: 100%;
+    min-height: 1000px;
+}
+
+.theory-layer {
+    position: relative;
+    margin-bottom: 2rem;
+}
+
+.layer-header {
+    text-align: center;
+    margin-bottom: 1rem;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.layer-items {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.theory-item {
+    background: white;
+    border: 2px solid;
+    border-radius: 8px;
+    padding: 1rem;
+    min-width: 160px;
+    max-width: 200px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.theory-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.theory-item-icon {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+}
+
+.theory-item-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+    color: #1f2937;
+}
+
+.theory-item-value {
+    font-weight: 700;
+    font-size: 1rem;
+    margin-bottom: 4px;
+    color: #3b82f6;
+}
+
+.theory-item-description {
+    font-size: 0.75rem;
+    color: #6b7280;
+    line-height: 1.3;
+}
+
+/* Layer-specific styling */
+.inputs-layer .layer-header {
+    background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+}
+
+.inputs-layer .theory-item {
+    border-color: #2196F3;
+}
+
+.activities-layer .layer-header {
+    background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+}
+
+.activities-layer .theory-item {
+    border-color: #9C27B0;
+}
+
+.outputs-layer .layer-header {
+    background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+}
+
+.outputs-layer .theory-item {
+    border-color: #4CAF50;
+}
+
+.outcomes-layer .layer-header {
+    background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+}
+
+.outcomes-layer .theory-item {
+    border-color: #FF9800;
+}
+
+.impact-layer .layer-header {
+    background: linear-gradient(135deg, #F44336 0%, #D32F2F 100%);
+}
+
+.impact-layer .theory-item {
+    border-color: #F44336;
+}
+
+.connection-line {
+    position: absolute;
+    background: #cbd5e1;
+    z-index: 1;
+}
+
+.connection-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 8px solid #cbd5e1;
+    z-index: 2;
+}
+
+/* Theory Details */
+.theory-details {
+    margin-top: 2rem;
+}
+
+.theory-summary-card {
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border: 1px solid #0ea5e9;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.theory-summary-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #0369a1;
+    margin-bottom: 12px;
+}
+
+.theory-summary-content {
+    color: #1e293b;
+    line-height: 1.6;
+}
+
+.data-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.data-card {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.data-card-title {
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.data-card-value {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #3b82f6;
+    margin-bottom: 4px;
+}
+
+.data-card-description {
+    font-size: 0.85rem;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+.insight-item {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.insight-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.insight-content {
+    color: #6b7280;
+    line-height: 1.6;
+}
+
+.insight-priority {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    margin-left: auto;
+}
+
+.insight-priority.high {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.insight-priority.medium {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.insight-priority.low {
+    background: #d1fae5;
+    color: #059669;
+}
+
+/* Animation for visualization loading */
+.theory-item {
+    opacity: 0;
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.theory-item:nth-child(1) { animation-delay: 0.1s; }
+.theory-item:nth-child(2) { animation-delay: 0.2s; }
+.theory-item:nth-child(3) { animation-delay: 0.3s; }
+.theory-item:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* SVG Styling */
+.theory-svg-item {
+    transition: all 0.3s ease;
+}
+
+.theory-svg-item:hover {
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
+}
+
+.theory-svg-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.theory-svg-title {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.theory-svg-value {
+    font-weight: 700;
+    font-size: 14px;
+    fill: #3b82f6;
+}
+
+.theory-svg-connection {
+    stroke: #cbd5e1;
+    stroke-width: 2;
+    marker-end: url(#arrowhead);
+}
+
+/* Loading animation for theory generation */
+.theory-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    min-height: 300px;
+}
+
+.theory-loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid #e5e7eb;
+    border-top: 4px solid #3b82f6;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+.theory-loading-text {
+    color: #6b7280;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
     .app-container {
@@ -742,6 +1076,16 @@ body {
     
     .sidebar {
         position: static;
+    }
+    
+    .layer-items {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .theory-item {
+        max-width: 300px;
+        width: 100%;
     }
 }
 

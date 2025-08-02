@@ -34,6 +34,18 @@ app.add_middleware(
 # 정적 파일 마운트
 app.mount("/static", StaticFiles(directory=FRONTEND_DIR / "static"), name="static")
 
+# JSON 데이터 파일 서빙을 위한 루트 정적 파일 마운트
+from fastapi.responses import FileResponse
+
+@app.get("/impact-report-data.json")
+async def get_impact_report_data():
+    """임팩트 리포트 데모 데이터 반환"""
+    json_path = BASE_DIR / "impact-report-data.json"
+    if json_path.exists():
+        return FileResponse(json_path, media_type="application/json")
+    else:
+        raise HTTPException(status_code=404, detail="Demo data not found")
+
 
 # Gemini API 설정
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))

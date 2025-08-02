@@ -345,21 +345,164 @@
             <!-- Impact Assessment Section -->
             <div class="section-content" id="impact-section">
                 <div class="page-header">
-                    <h1 class="page-title">임팩트 진단</h1>
-                    <p class="page-subtitle">사회적 임팩트를 측정하고 개선 방안을 제시합니다</p>
+                    <h1 class="page-title">변화이론 생성기</h1>
+                    <p class="page-subtitle">IR 자료나 소개자료를 업로드하여 자동으로 변화이론(Theory of Change) 다이어그램을 생성하고 다운로드하세요</p>
                 </div>
 
                 <div class="analysis-card">
-                    <div class="coming-soon">
-                        <div class="coming-soon-icon">
-                            <i data-lucide="heart" style="width: 32px; height: 32px;"></i>
+                    <form id="impactForm" enctype="multipart/form-data">
+                        <!-- Upload Section -->
+                        <div class="upload-area" id="impactUploadArea">
+                            <div class="upload-content">
+                                <div class="upload-icon">
+                                    <i data-lucide="upload" style="width: 32px; height: 32px;"></i>
+                                </div>
+                                <div class="upload-text">IR 자료 또는 소개자료를 업로드하세요</div>
+                                <div class="upload-subtext">PowerPoint, PDF, Word 파일을 지원합니다</div>
+                                <div class="supported-formats">
+                                    <span class="format-badge">PPTX</span>
+                                    <span class="format-badge">PDF</span>
+                                    <span class="format-badge">DOCX</span>
+                                </div>
+                            </div>
+                            <input type="file" id="impactFileInput" accept=".pdf,.pptx,.ppt,.docx,.doc" style="display: none;">
                         </div>
-                        <h3 class="coming-soon-title">임팩트 진단 도구 개발 중</h3>
-                        <p class="coming-soon-description">사회적 임팩트 측정 및 진단 도구를 개발하고 있습니다.</p>
-                        <button class="btn-primary" disabled>
-                            <i data-lucide="clock" style="width: 20px; height: 20px; margin-right: 8px;"></i>
-                            서비스 준비 중
+
+                        <!-- Progress Steps -->
+                        <div class="progress-container" id="impactProgressContainer">
+                            <div class="progress-steps">
+                                <div class="progress-step" id="impactStep1">
+                                    <div class="step-circle">
+                                        <i data-lucide="upload" style="width: 20px; height: 20px;"></i>
+                                    </div>
+                                    <div class="step-label">파일 업로드</div>
+                                </div>
+                                <div class="progress-step" id="impactStep2">
+                                    <div class="step-circle">
+                                        <i data-lucide="cpu" style="width: 20px; height: 20px;"></i>
+                                    </div>
+                                    <div class="step-label">데이터 추출</div>
+                                </div>
+                                <div class="progress-step" id="impactStep3">
+                                    <div class="step-circle">
+                                        <i data-lucide="brain" style="width: 20px; height: 20px;"></i>
+                                    </div>
+                                    <div class="step-label">변화이론 생성</div>
+                                </div>
+                                <div class="progress-step" id="impactStep4">
+                                    <div class="step-circle">
+                                        <i data-lucide="check" style="width: 20px; height: 20px;"></i>
+                                    </div>
+                                    <div class="step-label">다이어그램 완성</div>
+                                </div>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="impactProgressFill"></div>
+                            </div>
+                            <div class="progress-text" id="impactProgressText">변화이론 생성을 준비하고 있습니다...</div>
+                        </div>
+
+                        <!-- Form Fields -->
+                        <div class="form-section">
+                            <div class="form-group">
+                                <label for="organizationName" class="form-label required">
+                                    <i data-lucide="building" style="width: 16px; height: 16px;"></i>
+                                    조직/기업명
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="organizationName" 
+                                    class="form-input" 
+                                    placeholder="예: 소브 (SOBR)" 
+                                    required
+                                >
+                                <div class="form-help">변화이론을 생성할 조직의 정확한 명칭을 입력해주세요</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="impactFocus" class="form-label">
+                                    <i data-lucide="target" style="width: 16px; height: 16px;"></i>
+                                    주요 임팩트 영역 (선택사항)
+                                </label>
+                                <select id="impactFocus" class="form-input">
+                                    <option value="">전체 영역</option>
+                                    <option value="education">교육</option>
+                                    <option value="environment">환경</option>
+                                    <option value="healthcare">헬스케어</option>
+                                    <option value="poverty">빈곤 해결</option>
+                                    <option value="employment">고용 창출</option>
+                                    <option value="community">지역사회 발전</option>
+                                    <option value="technology">기술 혁신</option>
+                                    <option value="other">기타</option>
+                                </select>
+                                <div class="form-help">조직의 주요 임팩트 영역을 선택하면 더 정확한 변화이론을 생성할 수 있습니다</div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn-primary" id="generateTheoryBtn">
+                            <i data-lucide="sparkles" style="width: 20px; height: 20px; margin-right: 8px;"></i>
+                            변화이론 다이어그램 생성하기
                         </button>
+                    </form>
+
+                    <!-- Theory of Change Results -->
+                    <div class="results-container" id="theoryResultsContainer">
+                        <div class="results-header">
+                            <div class="results-title">
+                                <div class="results-icon">
+                                    <i data-lucide="network" style="width: 24px; height: 24px;"></i>
+                                </div>
+                                <div class="results-title-text" id="theoryResultsTitle">변화이론 다이어그램 완성</div>
+                            </div>
+                            <div class="results-actions">
+                                <button class="btn-secondary" id="downloadSvg">
+                                    <i data-lucide="download" style="width: 16px; height: 16px;"></i>
+                                    SVG 다운로드
+                                </button>
+                                <button class="btn-secondary" id="downloadPng">
+                                    <i data-lucide="image" style="width: 16px; height: 16px;"></i>
+                                    PNG 다운로드
+                                </button>
+                                <button class="btn-secondary" id="downloadJson">
+                                    <i data-lucide="file-json" style="width: 16px; height: 16px;"></i>
+                                    JSON 다운로드
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Theory Visualization -->
+                        <div class="theory-visualization" id="theoryVisualization">
+                            <div class="visualization-container">
+                                <svg id="theoryChart" width="100%" height="1000"></svg>
+                            </div>
+                        </div>
+
+                        <!-- Theory Details -->
+                        <div class="theory-details">
+                            <div class="results-tabs">
+                                <button class="tab-button active" data-tab="theory-overview">개요</button>
+                                <button class="tab-button" data-tab="theory-data">데이터</button>
+                                <button class="tab-button" data-tab="theory-insights">인사이트</button>
+                            </div>
+
+                            <div class="tab-content active" id="tab-theory-overview">
+                                <div class="report-content" id="theoryOverview">
+                                    변화이론 개요가 여기에 표시됩니다...
+                                </div>
+                            </div>
+
+                            <div class="tab-content" id="tab-theory-data">
+                                <div class="report-content" id="theoryData">
+                                    추출된 데이터가 여기에 표시됩니다...
+                                </div>
+                            </div>
+
+                            <div class="tab-content" id="tab-theory-insights">
+                                <div class="report-content" id="theoryInsights">
+                                    AI 분석 인사이트가 여기에 표시됩니다...
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
