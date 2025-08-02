@@ -32,9 +32,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const impactForm = document.getElementById('impactForm');
     const generateTheoryBtn = document.getElementById('generateTheoryBtn');
 
-    // Navigation
-    const navItems = document.querySelectorAll('.nav-item');
-    const sections = document.querySelectorAll('.section-content');
+    // Navigation - wait for DOM to be fully loaded
+    const navItems = document.querySelectorAll('.nav-item[data-section]');
+    const sections = document.querySelectorAll('.section-content[id$="-section"]');
 
     // Tab functionality
     const tabButtons = document.querySelectorAll('.tab-button');
@@ -52,22 +52,34 @@ document.addEventListener('DOMContentLoaded', function() {
     updateUsageStats();
 
     function initNavigation() {
+        console.log('Initializing navigation...', { navItems: navItems.length, sections: sections.length });
+        
         navItems.forEach(item => {
             item.addEventListener('click', function(e) {
                 e.preventDefault();
                 const sectionId = this.dataset.section;
+                console.log('Nav clicked:', sectionId);
                 
                 // Update active nav item
                 navItems.forEach(nav => nav.classList.remove('active'));
                 this.classList.add('active');
                 
                 // Show corresponding section
+                const targetSectionId = `${sectionId}-section`;
+                console.log('Looking for section:', targetSectionId);
+                
                 sections.forEach(section => {
                     section.classList.remove('active');
-                    if (section.id === `${sectionId}-section`) {
+                    if (section.id === targetSectionId) {
                         section.classList.add('active');
+                        console.log('Activated section:', section.id);
                     }
                 });
+                
+                // Re-initialize Lucide icons for newly visible content
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
             });
         });
     }
