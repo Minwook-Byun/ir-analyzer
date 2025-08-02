@@ -3,8 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IR 투자심사보고서 분석기</title>
+    <title>IR Pro - 전문 투자심사보고서 분석 플랫폼</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <style>
+        :root {
+            /* Professional Color System */
+            --bg-primary: #0a0b0f;
+            --bg-secondary: #151621;
+            --bg-tertiary: #1e1f2e;
+            --bg-elevated: #252641;
+            --bg-glass: rgba(37, 38, 65, 0.8);
+            --bg-overlay: rgba(10, 11, 15, 0.95);
+            
+            /* Text Colors */
+            --text-primary: #ffffff;
+            --text-secondary: #c9d1d9;
+            --text-tertiary: #8b949e;
+            --text-muted: #6e7681;
+            --text-accent: #58a6ff;
+            
+            /* Brand Colors */
+            --primary: #6f42c1;
+            --primary-light: #8957e5;
+            --primary-dark: #553c9a;
+            --secondary: #0969da;
+            --accent: #7c3aed;
+            
+            /* Status Colors */
+            --success: #238636;
+            --success-bg: rgba(35, 134, 54, 0.1);
+            --warning: #d1242f;
+            --warning-bg: rgba(209, 36, 47, 0.1);
+            --info: #0969da;
+            --info-bg: rgba(9, 105, 218, 0.1);
+            
+            /* Borders */
+            --border-primary: rgba(255, 255, 255, 0.1);
+            --border-secondary: rgba(255, 255, 255, 0.05);
+            --border-accent: rgba(111, 66, 193, 0.3);
+            --border-focus: rgba(88, 166, 255, 0.4);
+            
+            /* Shadows */
+            --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.05);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+            --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05);
+            --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1), 0 10px 10px rgba(0, 0, 0, 0.04);
+            --shadow-glass: 0 8px 32px rgba(111, 66, 193, 0.15);
+            --shadow-accent: 0 0 0 3px var(--border-focus);
+            
+            /* Spacing System (8px grid) */
+            --space-1: 0.25rem;  /* 4px */
+            --space-2: 0.5rem;   /* 8px */
+            --space-3: 0.75rem;  /* 12px */
+            --space-4: 1rem;     /* 16px */
+            --space-5: 1.25rem;  /* 20px */
+            --space-6: 1.5rem;   /* 24px */
+            --space-8: 2rem;     /* 32px */
+            --space-10: 2.5rem;  /* 40px */
+            --space-12: 3rem;    /* 48px */
+            --space-16: 4rem;    /* 64px */
+            --space-20: 5rem;    /* 80px */
+            
+            /* Border Radius */
+            --radius-xs: 0.125rem; /* 2px */
+            --radius-sm: 0.25rem;  /* 4px */
+            --radius-md: 0.5rem;   /* 8px */
+            --radius-lg: 0.75rem;  /* 12px */
+            --radius-xl: 1rem;     /* 16px */
+            --radius-2xl: 1.5rem;  /* 24px */
+            
+            /* Transitions */
+            --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-base: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+            --transition-slow: 350ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,467 +87,1552 @@
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-primary);
+            background-image: 
+                radial-gradient(circle at 25% 25%, rgba(111, 66, 193, 0.03) 0%, transparent 50%),
+                radial-gradient(circle at 75% 75%, rgba(124, 58, 237, 0.03) 0%, transparent 50%);
+            color: var(--text-primary);
+            line-height: 1.6;
+            font-feature-settings: 'cv11', 'ss01';
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
             min-height: 100vh;
-            color: #333;
         }
 
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
+        /* Header */
         .header {
-            text-align: center;
-            margin-bottom: 40px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background: var(--bg-overlay);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-primary);
+            padding: var(--space-4) 0;
+        }
+
+        .header-content {
+            max-width: 1440px;
+            margin: 0 auto;
+            padding: 0 var(--space-6);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: white;
-        }
-
-        .header h1 {
-            font-size: 3rem;
             font-weight: 700;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-size: 1.1rem;
         }
 
-        .header p {
-            font-size: 1.2rem;
-            opacity: 0.9;
+        .brand-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--text-primary), var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        .main-card {
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            padding: 40px;
-            margin-bottom: 30px;
+        .header-nav {
+            display: flex;
+            align-items: center;
+            gap: var(--space-6);
         }
 
-        .upload-section {
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--radius-md);
+            transition: var(--transition-fast);
+        }
+
+        .nav-item:hover {
+            color: var(--text-primary);
+            background: var(--bg-tertiary);
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            padding: var(--space-2) var(--space-3);
+            background: var(--success-bg);
+            border: 1px solid var(--success);
+            border-radius: var(--radius-lg);
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--success);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--success);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        /* Main Layout */
+        .app-container {
+            max-width: 1440px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            gap: var(--space-8);
+            padding: var(--space-8) var(--space-6);
+            min-height: calc(100vh - 80px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-6);
+        }
+
+        .sidebar-section {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-2xl);
+            padding: var(--space-6);
+            box-shadow: var(--shadow-glass);
+        }
+
+        .sidebar-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-4);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-3);
+            border-radius: var(--radius-lg);
+            transition: var(--transition-fast);
+            cursor: pointer;
+        }
+
+        .history-item:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .history-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .history-details {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .history-name {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-date {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .quick-action {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            padding: var(--space-4);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-xl);
+            text-decoration: none;
+            color: var(--text-secondary);
+            transition: var(--transition-fast);
+            font-weight: 500;
+        }
+
+        .quick-action:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--border-primary);
+            color: var(--text-primary);
+            transform: translateY(-1px);
+        }
+
+        /* Main Content */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-8);
+        }
+
+        .page-header {
             text-align: center;
-            margin-bottom: 30px;
+            padding: var(--space-12) 0;
+        }
+
+        .page-title {
+            font-size: clamp(2.5rem, 4vw, 3.5rem);
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: var(--space-4);
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        .page-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .analysis-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-2xl);
+            padding: var(--space-8);
+            box-shadow: var(--shadow-glass);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .analysis-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border-accent), transparent);
+        }
+
+        .form-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-8);
+            margin-bottom: var(--space-8);
         }
 
         .upload-area {
-            border: 3px dashed #667eea;
-            border-radius: 15px;
-            padding: 60px 20px;
-            background: linear-gradient(135deg, #f8f9ff 0%, #e8f2ff 100%);
-            transition: all 0.3s ease;
+            grid-column: 1 / -1;
+            border: 2px dashed var(--border-primary);
+            border-radius: var(--radius-xl);
+            padding: var(--space-12) var(--space-8);
+            text-align: center;
+            background: var(--bg-secondary);
+            transition: var(--transition-base);
             cursor: pointer;
             position: relative;
             overflow: hidden;
+        }
+
+        .upload-area::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(111, 66, 193, 0.1), transparent);
+            transition: left 0.6s ease;
         }
 
         .upload-area:hover {
-            border-color: #5a67d8;
-            background: linear-gradient(135deg, #e8f2ff 0%, #d6e9ff 100%);
+            border-color: var(--border-accent);
+            background: var(--bg-tertiary);
             transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .upload-area:hover::before {
+            left: 100%;
         }
 
         .upload-area.dragover {
-            border-color: #48bb78;
-            background: linear-gradient(135deg, #f0fff4 0%, #c6f6d5 100%);
+            border-color: var(--success);
+            background: var(--success-bg);
+            box-shadow: 0 0 0 2px var(--success);
+        }
+
+        .upload-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: var(--space-4);
         }
 
         .upload-icon {
-            font-size: 4rem;
-            color: #667eea;
-            margin-bottom: 20px;
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: var(--shadow-lg);
         }
 
         .upload-text {
-            font-size: 1.3rem;
+            font-size: 1.25rem;
             font-weight: 600;
-            color: #4a5568;
-            margin-bottom: 10px;
+            color: var(--text-primary);
+            margin-bottom: var(--space-2);
         }
 
         .upload-subtext {
-            color: #718096;
-            font-size: 1rem;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .supported-formats {
+            display: flex;
+            gap: var(--space-2);
+            margin-top: var(--space-4);
+        }
+
+        .format-badge {
+            padding: var(--space-1) var(--space-2);
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-tertiary);
+            text-transform: uppercase;
         }
 
         .form-group {
-            margin-bottom: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
         }
 
-        .form-group label {
-            display: block;
-            font-weight: 600;
-            color: #2d3748;
-            margin-bottom: 8px;
-            font-size: 1.1rem;
+        .form-label {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            font-weight: 500;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
         }
 
-        .form-control {
+        .form-label.required::after {
+            content: '*';
+            color: var(--warning);
+            margin-left: var(--space-1);
+        }
+
+        .form-input {
             width: 100%;
-            padding: 15px 20px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
+            padding: var(--space-4) var(--space-4);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-lg);
+            color: var(--text-primary);
             font-size: 1rem;
-            transition: all 0.3s ease;
-            background: #f8f9fa;
+            font-family: inherit;
+            transition: var(--transition-fast);
         }
 
-        .form-control:focus {
+        .form-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .form-input:focus {
             outline: none;
-            border-color: #667eea;
-            background: white;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            border-color: var(--primary);
+            background: var(--bg-tertiary);
+            box-shadow: var(--shadow-accent);
         }
 
-        .analyze-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .form-help {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: var(--space-1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), var(--accent));
             color: white;
             border: none;
-            padding: 18px 40px;
-            font-size: 1.1rem;
+            padding: var(--space-4) var(--space-8);
+            font-size: 1rem;
             font-weight: 600;
-            border-radius: 12px;
+            font-family: inherit;
+            border-radius: var(--radius-lg);
             cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
+            transition: var(--transition-base);
             position: relative;
             overflow: hidden;
+            text-transform: none;
+            letter-spacing: -0.01em;
+            box-shadow: var(--shadow-md);
         }
 
-        .analyze-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
         }
 
-        .analyze-btn:disabled {
-            opacity: 0.7;
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
             cursor: not-allowed;
             transform: none;
         }
 
-        .loading {
+        /* Progress Steps */
+        .progress-container {
             display: none;
-            text-align: center;
-            padding: 40px;
+            grid-column: 1 / -1;
+            padding: var(--space-8);
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-primary);
+            border-radius: var(--radius-xl);
+            margin-bottom: var(--space-8);
         }
 
-        .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid #e2e8f0;
-            border-top: 4px solid #667eea;
+        .progress-steps {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: var(--space-6);
+        }
+
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            position: relative;
+        }
+
+        .progress-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            top: 20px;
+            right: -50%;
+            width: 100%;
+            height: 2px;
+            background: var(--border-secondary);
+            z-index: -1;
+        }
+
+        .progress-step.active:not(:last-child)::after {
+            background: var(--primary);
+        }
+
+        .step-circle {
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
-            animation: spin 1s linear infinite;
-            margin: 0 auto 20px;
+            background: var(--bg-elevated);
+            border: 2px solid var(--border-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--space-2);
+            transition: var(--transition-fast);
+            color: var(--text-muted);
         }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+        .progress-step.active .step-circle {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
         }
 
-        .loading-text {
-            font-size: 1.2rem;
-            color: #4a5568;
+        .progress-step.completed .step-circle {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+
+        .step-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .progress-step.active .step-label {
+            color: var(--text-primary);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: var(--bg-elevated);
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            margin-bottom: var(--space-4);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: var(--radius-sm);
+        }
+
+        .progress-text {
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
             font-weight: 500;
         }
 
-        .result-section {
+        /* File Upload States */
+        .file-validation {
             display: none;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            padding: 40px;
-            margin-top: 30px;
+            grid-column: 1 / -1;
+            background: var(--info-bg);
+            border: 1px solid var(--info);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            margin-bottom: var(--space-6);
         }
 
-        .result-header {
+        .validation-items {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+        }
+
+        .validation-item {
             display: flex;
             align-items: center;
-            margin-bottom: 30px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #e2e8f0;
+            gap: var(--space-3);
+            font-size: 0.875rem;
         }
 
-        .result-icon {
-            font-size: 2.5rem;
-            color: #48bb78;
-            margin-right: 15px;
+        .validation-icon {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-elevated);
+            color: var(--text-muted);
+            flex-shrink: 0;
         }
 
-        .result-title {
-            font-size: 1.8rem;
+        .validation-item.success .validation-icon {
+            background: var(--success);
+            color: white;
+        }
+
+        .validation-item.error .validation-icon {
+            background: var(--warning);
+            color: white;
+        }
+
+        /* Results Section */
+        .results-container {
+            display: none;
+            grid-column: 1 / -1;
+        }
+
+        .results-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--space-8);
+            padding-bottom: var(--space-6);
+            border-bottom: 1px solid var(--border-secondary);
+        }
+
+        .results-title {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .results-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--success), #10b981);
+            border-radius: var(--radius-xl);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: var(--shadow-md);
+        }
+
+        .results-title-text {
+            font-size: 1.75rem;
             font-weight: 700;
-            color: #2d3748;
+            color: var(--text-primary);
         }
 
-        .result-content {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 30px;
-            line-height: 1.8;
-            font-size: 1rem;
-            color: #4a5568;
-            white-space: pre-wrap;
+        .results-actions {
+            display: flex;
+            gap: var(--space-3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-secondary);
+            color: var(--text-secondary);
+            border: 1px solid var(--border-primary);
+            padding: var(--space-3) var(--space-4);
+            font-size: 0.875rem;
+            font-weight: 500;
+            font-family: inherit;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border-color: var(--border-accent);
+        }
+
+        .executive-summary {
+            background: var(--success-bg);
+            border: 1px solid var(--success);
+            border-radius: var(--radius-xl);
+            padding: var(--space-6);
+            margin-bottom: var(--space-8);
+        }
+
+        .summary-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--success);
+            margin-bottom: var(--space-4);
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+        }
+
+        .summary-content {
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .results-tabs {
+            display: flex;
+            background: var(--bg-secondary);
+            border-radius: var(--radius-xl);
+            padding: var(--space-1);
+            margin-bottom: var(--space-8);
+            overflow-x: auto;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: var(--space-3) var(--space-4);
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+            font-weight: 500;
+            font-family: inherit;
+            border-radius: var(--radius-lg);
+            cursor: pointer;
+            transition: var(--transition-fast);
+            white-space: nowrap;
+        }
+
+        .tab-button.active {
+            background: var(--primary);
+            color: white;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tab-content {
+            display: none;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-secondary);
+            border-radius: var(--radius-xl);
+            padding: var(--space-8);
             max-height: 600px;
             overflow-y: auto;
         }
 
-        .result-content::-webkit-scrollbar {
-            width: 8px;
+        .tab-content.active {
+            display: block;
         }
 
-        .result-content::-webkit-scrollbar-track {
-            background: #e2e8f0;
-            border-radius: 4px;
+        .report-content {
+            color: var(--text-secondary);
+            line-height: 1.8;
+            font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
         }
 
-        .result-content::-webkit-scrollbar-thumb {
-            background: #cbd5e0;
-            border-radius: 4px;
+        /* Custom Scrollbar */
+        .tab-content::-webkit-scrollbar {
+            width: 6px;
         }
 
-        .result-content::-webkit-scrollbar-thumb:hover {
-            background: #a0aec0;
+        .tab-content::-webkit-scrollbar-track {
+            background: var(--bg-elevated);
+            border-radius: 3px;
         }
 
-        .error {
-            background: #fed7d7;
-            color: #c53030;
-            padding: 20px;
-            border-radius: 12px;
-            margin-top: 20px;
-            border-left: 4px solid #e53e3e;
+        .tab-content::-webkit-scrollbar-thumb {
+            background: var(--border-primary);
+            border-radius: 3px;
         }
 
-        .file-info {
-            display: none;
-            background: #e6fffa;
-            border: 1px solid #81e6d9;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 15px;
-            color: #234e52;
+        .tab-content::-webkit-scrollbar-thumb:hover {
+            background: var(--border-accent);
         }
 
-        .file-info-title {
-            font-weight: 600;
-            margin-bottom: 5px;
+        /* Error Handling */
+        .error-message {
+            background: var(--warning-bg);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+            border-radius: var(--radius-lg);
+            padding: var(--space-4);
+            margin-top: var(--space-4);
+            display: flex;
+            align-items: start;
+            gap: var(--space-3);
+        }
+
+        .error-icon {
+            flex-shrink: 0;
+            margin-top: var(--space-1);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .app-container {
+                grid-template-columns: 280px 1fr;
+                gap: var(--space-6);
+                padding: var(--space-6) var(--space-4);
+            }
         }
 
         @media (max-width: 768px) {
-            .container {
-                padding: 15px;
+            .header-content {
+                padding: 0 var(--space-4);
             }
 
-            .header h1 {
-                font-size: 2.2rem;
+            .header-nav {
+                gap: var(--space-4);
             }
 
-            .main-card {
-                padding: 25px;
+            .nav-item span {
+                display: none;
+            }
+
+            .app-container {
+                grid-template-columns: 1fr;
+                gap: var(--space-6);
+                padding: var(--space-4);
+            }
+
+            .sidebar {
+                order: 2;
+            }
+
+            .main-content {
+                order: 1;
+            }
+
+            .form-section {
+                grid-template-columns: 1fr;
+                gap: var(--space-6);
+            }
+
+            .results-header {
+                flex-direction: column;
+                gap: var(--space-4);
+                align-items: flex-start;
+            }
+
+            .results-actions {
+                width: 100%;
+                justify-content: flex-start;
+            }
+
+            .results-tabs {
+                overflow-x: scroll;
+                scrollbar-width: none;
+                -ms-overflow-style: none;
+            }
+
+            .results-tabs::-webkit-scrollbar {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-title {
+                font-size: 2rem;
+            }
+
+            .analysis-card {
+                padding: var(--space-6);
             }
 
             .upload-area {
-                padding: 40px 15px;
+                padding: var(--space-8) var(--space-4);
             }
 
-            .upload-icon {
-                font-size: 3rem;
+            .sidebar-section {
+                padding: var(--space-4);
             }
+
+            .supported-formats {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        .slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        /* Accessibility */
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* Focus states for accessibility */
+        .upload-area:focus-within,
+        .form-input:focus,
+        .btn-primary:focus,
+        .btn-secondary:focus,
+        .tab-button:focus {
+            outline: 2px solid var(--primary);
+            outline-offset: 2px;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📊 IR 투자심사보고서 분석기</h1>
-            <p>AI 기반 투자심사보고서 자동 생성 시스템</p>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="brand">
+                <div class="brand-logo">IR</div>
+                <div class="brand-text">IR Pro</div>
+            </div>
+            <nav class="header-nav">
+                <a href="#" class="nav-item">
+                    <i data-lucide="home" style="width: 16px; height: 16px;"></i>
+                    <span>대시보드</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i data-lucide="file-text" style="width: 16px; height: 16px;"></i>
+                    <span>보고서</span>
+                </a>
+                <a href="#" class="nav-item">
+                    <i data-lucide="settings" style="width: 16px; height: 16px;"></i>
+                    <span>설정</span>
+                </a>
+                <div class="status-indicator">
+                    <div class="status-dot"></div>
+                    <span>서비스 정상</span>
+                </div>
+            </nav>
         </div>
+    </header>
 
-        <div class="main-card">
-            <form id="analysisForm" enctype="multipart/form-data">
-                <div class="upload-section">
+    <!-- Main App Container -->
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">
+                    <i data-lucide="clock" style="width: 16px; height: 16px;"></i>
+                    최근 분석
+                </h3>
+                <div class="history-item">
+                    <div class="history-icon">
+                        <i data-lucide="file-text" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+                    </div>
+                    <div class="history-details">
+                        <div class="history-name">삼성전자 IR 분석</div>
+                        <div class="history-date">2시간 전</div>
+                    </div>
+                </div>
+                <div class="history-item">
+                    <div class="history-icon">
+                        <i data-lucide="file-text" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+                    </div>
+                    <div class="history-details">
+                        <div class="history-name">카카오 투자보고서</div>
+                        <div class="history-date">1일 전</div>
+                    </div>
+                </div>
+                <div class="history-item">
+                    <div class="history-icon">
+                        <i data-lucide="file-text" style="width: 16px; height: 16px; color: var(--text-muted);"></i>
+                    </div>
+                    <div class="history-details">
+                        <div class="history-name">네이버 분석 리포트</div>
+                        <div class="history-date">3일 전</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">
+                    <i data-lucide="zap" style="width: 16px; height: 16px;"></i>
+                    빠른 작업
+                </h3>
+                <a href="#" class="quick-action">
+                    <i data-lucide="template" style="width: 20px; height: 20px;"></i>
+                    <span>템플릿 사용</span>
+                </a>
+                <a href="#" class="quick-action">
+                    <i data-lucide="upload" style="width: 20px; height: 20px;"></i>
+                    <span>일괄 업로드</span>
+                </a>
+                <a href="#" class="quick-action">
+                    <i data-lucide="download" style="width: 20px; height: 20px;"></i>
+                    <span>보고서 내보내기</span>
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="page-header">
+                <h1 class="page-title">전문 투자심사보고서 분석</h1>
+                <p class="page-subtitle">AI 기반 투자심사보고서 자동 생성으로 더 빠르고 정확한 투자 의사결정을 지원합니다</p>
+            </div>
+
+            <div class="analysis-card">
+                <form id="analysisForm" enctype="multipart/form-data">
+                    <!-- Upload Section -->
                     <div class="upload-area" id="uploadArea">
-                        <div class="upload-icon">📁</div>
-                        <div class="upload-text">IR 자료를 드래그하여 업로드하세요</div>
-                        <div class="upload-subtext">또는 클릭하여 파일을 선택하세요 (PDF, Excel, Word)</div>
+                        <div class="upload-content">
+                            <div class="upload-icon">
+                                <i data-lucide="upload" style="width: 32px; height: 32px;"></i>
+                            </div>
+                            <div class="upload-text">IR 자료를 드래그하여 업로드하세요</div>
+                            <div class="upload-subtext">또는 클릭하여 파일을 선택하세요</div>
+                            <div class="supported-formats">
+                                <span class="format-badge">PDF</span>
+                                <span class="format-badge">Excel</span>
+                                <span class="format-badge">Word</span>
+                            </div>
+                        </div>
                         <input type="file" id="fileInput" accept=".pdf,.xlsx,.xls,.docx,.doc" style="display: none;">
                     </div>
-                    <div class="file-info" id="fileInfo">
-                        <div class="file-info-title">선택된 파일:</div>
-                        <div id="fileName"></div>
+
+                    <!-- File Validation -->
+                    <div class="file-validation" id="fileValidation">
+                        <div class="validation-items">
+                            <div class="validation-item" id="formatValidation">
+                                <div class="validation-icon">
+                                    <i data-lucide="file-check" style="width: 12px; height: 12px;"></i>
+                                </div>
+                                <span>파일 형식 검증</span>
+                            </div>
+                            <div class="validation-item" id="sizeValidation">
+                                <div class="validation-icon">
+                                    <i data-lucide="hard-drive" style="width: 12px; height: 12px;"></i>
+                                </div>
+                                <span>파일 크기 확인 (최대 50MB)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress Steps -->
+                    <div class="progress-container" id="progressContainer">
+                        <div class="progress-steps">
+                            <div class="progress-step" id="step1">
+                                <div class="step-circle">
+                                    <i data-lucide="upload" style="width: 20px; height: 20px;"></i>
+                                </div>
+                                <div class="step-label">업로드</div>
+                            </div>
+                            <div class="progress-step" id="step2">
+                                <div class="step-circle">
+                                    <i data-lucide="cpu" style="width: 20px; height: 20px;"></i>
+                                </div>
+                                <div class="step-label">처리</div>
+                            </div>
+                            <div class="progress-step" id="step3">
+                                <div class="step-circle">
+                                    <i data-lucide="brain" style="width: 20px; height: 20px;"></i>
+                                </div>
+                                <div class="step-label">분석</div>
+                            </div>
+                            <div class="progress-step" id="step4">
+                                <div class="step-circle">
+                                    <i data-lucide="check" style="width: 20px; height: 20px;"></i>
+                                </div>
+                                <div class="step-label">완료</div>
+                            </div>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
+                        <div class="progress-text" id="progressText">분석을 준비하고 있습니다...</div>
+                    </div>
+
+                    <!-- Form Fields -->
+                    <div class="form-section">
+                        <div class="form-group">
+                            <label for="companyName" class="form-label required">
+                                <i data-lucide="building" style="width: 16px; height: 16px;"></i>
+                                회사명
+                            </label>
+                            <input 
+                                type="text" 
+                                id="companyName" 
+                                class="form-input" 
+                                placeholder="예: 삼성전자" 
+                                required
+                            >
+                            <div class="form-help">분석할 기업의 정확한 명칭을 입력해주세요</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="irUrl" class="form-label">
+                                <i data-lucide="link" style="width: 16px; height: 16px;"></i>
+                                IR 자료 URL (선택사항)
+                            </label>
+                            <input 
+                                type="url" 
+                                id="irUrl" 
+                                class="form-input" 
+                                placeholder="https://example.com/ir-report.pdf"
+                            >
+                            <div class="form-help">온라인 IR 자료 링크가 있는 경우 입력해주세요</div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="analyzeBtn">
+                        <i data-lucide="sparkles" style="width: 20px; height: 20px; margin-right: 8px;"></i>
+                        투자심사보고서 생성하기
+                    </button>
+                </form>
+
+                <!-- Results Section -->
+                <div class="results-container" id="resultsContainer">
+                    <div class="results-header">
+                        <div class="results-title">
+                            <div class="results-icon">
+                                <i data-lucide="check-circle" style="width: 24px; height: 24px;"></i>
+                            </div>
+                            <div class="results-title-text" id="resultsTitle">투자심사보고서 완성</div>
+                        </div>
+                        <div class="results-actions">
+                            <button class="btn-secondary" id="exportPdf">
+                                <i data-lucide="file-text" style="width: 16px; height: 16px;"></i>
+                                PDF 내보내기
+                            </button>
+                            <button class="btn-secondary" id="exportWord">
+                                <i data-lucide="file-type" style="width: 16px; height: 16px;"></i>
+                                Word 내보내기
+                            </button>
+                            <button class="btn-secondary" id="shareReport">
+                                <i data-lucide="share" style="width: 16px; height: 16px;"></i>
+                                공유하기
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Executive Summary -->
+                    <div class="executive-summary">
+                        <div class="summary-title">
+                            <i data-lucide="lightbulb" style="width: 20px; height: 20px;"></i>
+                            핵심 요약
+                        </div>
+                        <div class="summary-content" id="executiveSummary">
+                            분석이 완료되면 여기에 핵심 요약이 표시됩니다.
+                        </div>
+                    </div>
+
+                    <!-- Results Tabs -->
+                    <div class="results-tabs">
+                        <button class="tab-button active" data-tab="investment">투자 보고서</button>
+                        <button class="tab-button" data-tab="financial">재무 분석</button>
+                        <button class="tab-button" data-tab="risk">리스크 평가</button>
+                        <button class="tab-button" data-tab="recommendations">권고사항</button>
+                    </div>
+
+                    <div class="tab-content active" id="tab-investment">
+                        <div class="report-content" id="investmentReport">
+                            투자 보고서 내용이 여기에 표시됩니다...
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="tab-financial">
+                        <div class="report-content" id="financialReport">
+                            재무 분석 내용이 여기에 표시됩니다...
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="tab-risk">
+                        <div class="report-content" id="riskReport">
+                            리스크 평가 내용이 여기에 표시됩니다...
+                        </div>
+                    </div>
+
+                    <div class="tab-content" id="tab-recommendations">
+                        <div class="report-content" id="recommendationsReport">
+                            권고사항이 여기에 표시됩니다...
+                        </div>
                     </div>
                 </div>
-
-                <div class="form-group">
-                    <label for="companyName">회사명</label>
-                    <input type="text" id="companyName" class="form-control" placeholder="분석할 회사명을 입력하세요" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="irUrl">IR 자료 URL (선택사항)</label>
-                    <input type="url" id="irUrl" class="form-control" placeholder="https://example.com/ir-report.pdf">
-                </div>
-
-                <button type="submit" class="analyze-btn" id="analyzeBtn">
-                    🚀 투자심사보고서 생성하기
-                </button>
-            </form>
-
-            <div class="loading" id="loadingSection">
-                <div class="loading-spinner"></div>
-                <div class="loading-text">AI가 투자심사보고서를 생성하고 있습니다...</div>
             </div>
-        </div>
-
-        <div class="result-section" id="resultSection">
-            <div class="result-header">
-                <div class="result-icon">✅</div>
-                <div class="result-title" id="resultTitle">투자심사보고서 생성 완료</div>
-            </div>
-            <div class="result-content" id="resultContent"></div>
-        </div>
+        </main>
     </div>
 
     <script>
-        const uploadArea = document.getElementById('uploadArea');
-        const fileInput = document.getElementById('fileInput');
-        const fileInfo = document.getElementById('fileInfo');
-        const fileName = document.getElementById('fileName');
-        const analysisForm = document.getElementById('analysisForm');
-        const loadingSection = document.getElementById('loadingSection');
-        const resultSection = document.getElementById('resultSection');
-        const resultTitle = document.getElementById('resultTitle');
-        const resultContent = document.getElementById('resultContent');
-        const analyzeBtn = document.getElementById('analyzeBtn');
+        // Initialize Lucide icons
+        lucide.createIcons();
 
-        // 드래그 앤 드롭 이벤트
-        uploadArea.addEventListener('click', () => fileInput.click());
-
-        uploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-
-        uploadArea.addEventListener('dragleave', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-        });
-
-        uploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            uploadArea.classList.remove('dragover');
-            const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                fileInput.files = files;
-                showFileInfo(files[0]);
-            }
-        });
-
-        fileInput.addEventListener('change', (e) => {
-            if (e.target.files.length > 0) {
-                showFileInfo(e.target.files[0]);
-            }
-        });
-
-        function showFileInfo(file) {
-            fileName.textContent = `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)`;
-            fileInfo.style.display = 'block';
-        }
-
-        // 폼 제출 처리
-        analysisForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const companyName = document.getElementById('companyName').value;
-            const irUrl = document.getElementById('irUrl').value;
-            const file = fileInput.files[0];
-
-            if (!companyName) {
-                alert('회사명을 입력해주세요.');
-                return;
+        class InvestmentAnalysisApp {
+            constructor() {
+                this.initializeElements();
+                this.bindEvents();
+                this.currentStep = 0;
+                this.isAnalyzing = false;
             }
 
-            if (!file && !irUrl) {
-                alert('IR 자료 파일을 업로드하거나 URL을 입력해주세요.');
-                return;
+            initializeElements() {
+                // Form elements
+                this.uploadArea = document.getElementById('uploadArea');
+                this.fileInput = document.getElementById('fileInput');
+                this.analysisForm = document.getElementById('analysisForm');
+                this.analyzeBtn = document.getElementById('analyzeBtn');
+                
+                // Progress elements
+                this.progressContainer = document.getElementById('progressContainer');
+                this.progressFill = document.getElementById('progressFill');
+                this.progressText = document.getElementById('progressText');
+                
+                // Validation elements
+                this.fileValidation = document.getElementById('fileValidation');
+                this.formatValidation = document.getElementById('formatValidation');
+                this.sizeValidation = document.getElementById('sizeValidation');
+                
+                // Results elements
+                this.resultsContainer = document.getElementById('resultsContainer');
+                this.resultsTitle = document.getElementById('resultsTitle');
+                this.executiveSummary = document.getElementById('executiveSummary');
+                
+                // Tab elements
+                this.tabButtons = document.querySelectorAll('.tab-button');
+                this.tabContents = document.querySelectorAll('.tab-content');
             }
 
-            // UI 상태 변경
-            analysisForm.style.display = 'none';
-            loadingSection.style.display = 'block';
-            resultSection.style.display = 'none';
+            bindEvents() {
+                // File upload events
+                this.uploadArea.addEventListener('click', () => this.fileInput.click());
+                this.uploadArea.addEventListener('dragover', this.handleDragOver.bind(this));
+                this.uploadArea.addEventListener('dragleave', this.handleDragLeave.bind(this));
+                this.uploadArea.addEventListener('drop', this.handleDrop.bind(this));
+                this.fileInput.addEventListener('change', this.handleFileSelect.bind(this));
+                
+                // Form submission
+                this.analysisForm.addEventListener('submit', this.handleFormSubmit.bind(this));
+                
+                // Tab switching
+                this.tabButtons.forEach(button => {
+                    button.addEventListener('click', this.handleTabSwitch.bind(this));
+                });
+                
+                // Export buttons
+                document.getElementById('exportPdf')?.addEventListener('click', () => this.handleExport('pdf'));
+                document.getElementById('exportWord')?.addEventListener('click', () => this.handleExport('word'));
+                document.getElementById('shareReport')?.addEventListener('click', this.handleShare.bind(this));
+            }
 
-            try {
-                let response;
+            handleDragOver(e) {
+                e.preventDefault();
+                this.uploadArea.classList.add('dragover');
+            }
 
-                if (file) {
-                    // 파일 업로드 방식
-                    const formData = new FormData();
-                    formData.append('file', file);
-                    formData.append('company_name', companyName);
+            handleDragLeave(e) {
+                e.preventDefault();
+                this.uploadArea.classList.remove('dragover');
+            }
 
-                    response = await fetch('/api/analyze-ir-file', {
-                        method: 'POST',
-                        body: formData
-                    });
-                } else {
-                    // URL 방식
-                    response = await fetch('/api/analyze-ir', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            company_name: companyName,
-                            ir_url: irUrl,
-                            analysis_type: 'investment_report'
-                        })
-                    });
+            handleDrop(e) {
+                e.preventDefault();
+                this.uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    this.fileInput.files = files;
+                    this.validateFile(files[0]);
                 }
+            }
 
-                const result = await response.json();
-
-                if (result.success) {
-                    showResult(result);
-                } else {
-                    showError(result.detail || '분석 중 오류가 발생했습니다.');
+            handleFileSelect(e) {
+                if (e.target.files.length > 0) {
+                    this.validateFile(e.target.files[0]);
                 }
-
-            } catch (error) {
-                console.error('Error:', error);
-                showError('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
             }
+
+            validateFile(file) {
+                this.fileValidation.style.display = 'block';
+                
+                // Validate format
+                const allowedTypes = ['.pdf', '.xlsx', '.xls', '.docx', '.doc'];
+                const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+                const isValidFormat = allowedTypes.includes(fileExtension);
+                
+                this.updateValidationItem(this.formatValidation, isValidFormat, 
+                    isValidFormat ? '파일 형식이 유효합니다' : '지원되지 않는 파일 형식입니다');
+                
+                // Validate size (50MB limit)
+                const maxSize = 50 * 1024 * 1024; // 50MB
+                const isValidSize = file.size <= maxSize;
+                const sizeText = isValidSize ? 
+                    `파일 크기: ${(file.size / 1024 / 1024).toFixed(2)}MB` : 
+                    '파일이 너무 큽니다 (최대 50MB)';
+                
+                this.updateValidationItem(this.sizeValidation, isValidSize, sizeText);
+                
+                // Update upload area text
+                if (isValidFormat && isValidSize) {
+                    this.uploadArea.querySelector('.upload-text').textContent = file.name;
+                    this.uploadArea.querySelector('.upload-subtext').textContent = 
+                        `${(file.size / 1024 / 1024).toFixed(2)}MB - 분석 준비 완료`;
+                }
+            }
+
+            updateValidationItem(element, isValid, text) {
+                element.classList.toggle('success', isValid);
+                element.classList.toggle('error', !isValid);
+                element.querySelector('span:last-child').textContent = text;
+                
+                const icon = element.querySelector('.validation-icon i');
+                icon.setAttribute('data-lucide', isValid ? 'check' : 'x');
+                lucide.createIcons();
+            }
+
+            async handleFormSubmit(e) {
+                e.preventDefault();
+                
+                if (this.isAnalyzing) return;
+                
+                const companyName = document.getElementById('companyName').value;
+                const irUrl = document.getElementById('irUrl').value;
+                const file = this.fileInput.files[0];
+                
+                if (!companyName) {
+                    this.showError('회사명을 입력해주세요.');
+                    return;
+                }
+                
+                if (!file && !irUrl) {
+                    this.showError('IR 자료 파일을 업로드하거나 URL을 입력해주세요.');
+                    return;
+                }
+                
+                await this.startAnalysis(companyName, file, irUrl);
+            }
+
+            async startAnalysis(companyName, file, irUrl) {
+                this.isAnalyzing = true;
+                this.showProgress();
+                
+                try {
+                    let response;
+                    
+                    if (file) {
+                        response = await this.uploadAndAnalyze(file, companyName);
+                    } else {
+                        response = await this.analyzeFromUrl(companyName, irUrl);
+                    }
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        this.showResults(result);
+                    } else {
+                        this.showError(result.detail || '분석 중 오류가 발생했습니다.');
+                    }
+                } catch (error) {
+                    console.error('Analysis error:', error);
+                    this.showError('서버 연결에 실패했습니다. 잠시 후 다시 시도해주세요.');
+                } finally {
+                    this.isAnalyzing = false;
+                }
+            }
+
+            async uploadAndAnalyze(file, companyName) {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('company_name', companyName);
+                
+                return fetch('/api/analyze-ir-file', {
+                    method: 'POST',
+                    body: formData
+                });
+            }
+
+            async analyzeFromUrl(companyName, irUrl) {
+                return fetch('/api/analyze-ir', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        company_name: companyName,
+                        ir_url: irUrl,
+                        analysis_type: 'investment_report'
+                    })
+                });
+            }
+
+            showProgress() {
+                this.analysisForm.style.display = 'none';
+                this.progressContainer.style.display = 'block';
+                this.resultsContainer.style.display = 'none';
+                
+                this.simulateProgress();
+            }
+
+            simulateProgress() {
+                const steps = [
+                    { id: 'step1', text: '파일을 업로드하고 있습니다...', progress: 25 },
+                    { id: 'step2', text: '문서를 처리하고 있습니다...', progress: 50 },
+                    { id: 'step3', text: 'AI가 내용을 분석하고 있습니다...', progress: 75 },
+                    { id: 'step4', text: '보고서를 생성하고 있습니다...', progress: 100 }
+                ];
+                
+                let currentStepIndex = 0;
+                
+                const updateStep = () => {
+                    if (currentStepIndex < steps.length) {
+                        const step = steps[currentStepIndex];
+                        
+                        // Update progress bar
+                        this.progressFill.style.width = step.progress + '%';
+                        this.progressText.textContent = step.text;
+                        
+                        // Update step indicators
+                        const stepElement = document.getElementById(step.id);
+                        stepElement.classList.add('active');
+                        
+                        if (currentStepIndex > 0) {
+                            const prevStep = document.getElementById(steps[currentStepIndex - 1].id);
+                            prevStep.classList.remove('active');
+                            prevStep.classList.add('completed');
+                        }
+                        
+                        currentStepIndex++;
+                        
+                        if (currentStepIndex < steps.length) {
+                            setTimeout(updateStep, 2000 + Math.random() * 3000);
+                        }
+                    }
+                };
+                
+                setTimeout(updateStep, 500);
+            }
+
+            showResults(result) {
+                this.progressContainer.style.display = 'none';
+                this.resultsContainer.style.display = 'block';
+                this.resultsContainer.classList.add('fade-in');
+                
+                this.resultsTitle.textContent = `${result.company_name} 투자심사보고서`;
+                
+                // Parse and display results
+                const reportSections = this.parseReportSections(result.investment_report);
+                
+                this.executiveSummary.textContent = reportSections.summary || 
+                    '이 보고서는 ' + result.company_name + '에 대한 종합적인 투자 분석을 제공합니다.';
+                
+                document.getElementById('investmentReport').textContent = reportSections.investment || result.investment_report;
+                document.getElementById('financialReport').textContent = reportSections.financial || '재무 분석 데이터를 처리 중입니다...';
+                document.getElementById('riskReport').textContent = reportSections.risk || '리스크 평가를 진행 중입니다...';
+                document.getElementById('recommendationsReport').textContent = reportSections.recommendations || '권고사항을 작성 중입니다...';
+                
+                // Scroll to results
+                this.resultsContainer.scrollIntoView({ behavior: 'smooth' });
+            }
+
+            parseReportSections(report) {
+                // Simple parsing logic - in a real app, this would be more sophisticated
+                const sections = {
+                    summary: '',
+                    investment: report,
+                    financial: '',
+                    risk: '',
+                    recommendations: ''
+                };
+                
+                // Try to extract sections based on common patterns
+                const lines = report.split('\n');
+                let currentSection = 'investment';
+                
+                lines.forEach(line => {
+                    const lowerLine = line.toLowerCase();
+                    if (lowerLine.includes('요약') || lowerLine.includes('summary')) {
+                        currentSection = 'summary';
+                    } else if (lowerLine.includes('재무') || lowerLine.includes('financial')) {
+                        currentSection = 'financial';
+                    } else if (lowerLine.includes('리스크') || lowerLine.includes('risk')) {
+                        currentSection = 'risk';
+                    } else if (lowerLine.includes('권고') || lowerLine.includes('recommendation')) {
+                        currentSection = 'recommendations';
+                    } else if (line.trim()) {
+                        sections[currentSection] += line + '\n';
+                    }
+                });
+                
+                return sections;
+            }
+
+            handleTabSwitch(e) {
+                const tabId = e.target.dataset.tab;
+                
+                // Update tab buttons
+                this.tabButtons.forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                // Update tab contents
+                this.tabContents.forEach(content => content.classList.remove('active'));
+                document.getElementById(`tab-${tabId}`).classList.add('active');
+            }
+
+            handleExport(format) {
+                // In a real app, this would trigger actual export functionality
+                console.log(`Exporting as ${format}`);
+                this.showMessage(`${format.toUpperCase()} 내보내기 기능은 개발 중입니다.`, 'info');
+            }
+
+            handleShare() {
+                // In a real app, this would open share dialog
+                console.log('Sharing report');
+                this.showMessage('공유 기능은 개발 중입니다.', 'info');
+            }
+
+            showError(message) {
+                this.progressContainer.style.display = 'none';
+                this.analysisForm.style.display = 'block';
+                
+                const existingError = document.querySelector('.error-message');
+                if (existingError) {
+                    existingError.remove();
+                }
+                
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message';
+                errorDiv.innerHTML = `
+                    <i data-lucide="alert-circle" class="error-icon" style="width: 20px; height: 20px;"></i>
+                    <div>${message}</div>
+                `;
+                
+                this.analysisForm.appendChild(errorDiv);
+                lucide.createIcons();
+                
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 8000);
+            }
+
+            showMessage(message, type = 'info') {
+                // Simple message display - in a real app, this would be a proper toast system
+                console.log(`${type.toUpperCase()}: ${message}`);
+            }
+        }
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', () => {
+            new InvestmentAnalysisApp();
         });
-
-        function showResult(result) {
-            loadingSection.style.display = 'none';
-            resultSection.style.display = 'block';
-            
-            resultTitle.textContent = `${result.company_name} 투자심사보고서`;
-            resultContent.textContent = result.investment_report;
-
-            // 결과 섹션으로 스크롤
-            resultSection.scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function showError(message) {
-            loadingSection.style.display = 'none';
-            analysisForm.style.display = 'block';
-            
-            const errorDiv = document.createElement('div');
-            errorDiv.className = 'error';
-            errorDiv.textContent = message;
-            
-            // 기존 에러 메시지 제거
-            const existingError = document.querySelector('.error');
-            if (existingError) {
-                existingError.remove();
-            }
-            
-            analysisForm.appendChild(errorDiv);
-        }
     </script>
 </body>
 </html>
