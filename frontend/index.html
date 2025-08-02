@@ -6,13 +6,12 @@
     <title>MYSC AI Agent - 임팩트 투자 분석 플랫폼</title>
     <!-- Cache bust: force redeploy -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body>
     <!-- Theme Toggle Button -->
     <button id="themeToggle" class="theme-toggle" title="Toggle dark mode">
-        <i data-lucide="moon" style="width: 20px; height: 20px;"></i>
+        🌙
     </button>
 
     <!-- Header -->
@@ -24,19 +23,19 @@
             </div>
             <nav class="header-nav">
                 <a href="#" class="nav-item active" data-section="investment">
-                    <i data-lucide="trending-up" style="width: 16px; height: 16px;"></i>
+                    
                     <span>투자</span>
                 </a>
                 <a href="#" class="nav-item" data-section="consulting">
-                    <i data-lucide="users" style="width: 16px; height: 16px;"></i>
+                    
                     <span>컨설팅</span>
                 </a>
                 <a href="#" class="nav-item" data-section="impact">
-                    <i data-lucide="heart" style="width: 16px; height: 16px;"></i>
+                    
                     <span>임팩트 진단</span>
                 </a>
                 <a href="#" class="nav-item" data-section="settings">
-                    <i data-lucide="settings" style="width: 16px; height: 16px;"></i>
+                    
                     <span>설정</span>
                 </a>
                 <div class="status-indicator">
@@ -53,7 +52,7 @@
         <aside class="sidebar">
             <div class="sidebar-section">
                 <h3 class="sidebar-title">
-                    <i data-lucide="activity" style="width: 16px; height: 16px;"></i>
+                    
                     API 사용량
                 </h3>
                 
@@ -71,7 +70,7 @@
                     <!-- 오늘 사용량 -->
                     <div class="usage-item">
                         <div class="usage-icon today-usage">
-                            <i data-lucide="zap" style="width: 16px; height: 16px;"></i>
+                            
                         </div>
                         <div class="usage-details">
                             <div class="usage-label">오늘 사용량</div>
@@ -82,7 +81,7 @@
                     <!-- 이번 달 사용량 -->
                     <div class="usage-item">
                         <div class="usage-icon monthly-usage">
-                            <i data-lucide="calendar" style="width: 16px; height: 16px;"></i>
+                            
                         </div>
                         <div class="usage-details">
                             <div class="usage-label">이번 달</div>
@@ -93,7 +92,7 @@
                     <!-- 총 분석 횟수 -->
                     <div class="usage-item">
                         <div class="usage-icon total-analyses">
-                            <i data-lucide="file-check" style="width: 16px; height: 16px;"></i>
+                            
                         </div>
                         <div class="usage-details">
                             <div class="usage-label">총 분석</div>
@@ -119,19 +118,19 @@
 
             <div class="sidebar-section">
                 <h3 class="sidebar-title">
-                    <i data-lucide="zap" style="width: 16px; height: 16px;"></i>
+                    
                     빠른 작업
                 </h3>
                 <a href="#" class="quick-action">
-                    <i data-lucide="template" style="width: 20px; height: 20px;"></i>
+                    
                     <span>템플릿 사용</span>
                 </a>
                 <a href="#" class="quick-action">
-                    <i data-lucide="upload" style="width: 20px; height: 20px;"></i>
+                    
                     <span>일괄 업로드</span>
                 </a>
                 <a href="#" class="quick-action">
-                    <i data-lucide="download" style="width: 20px; height: 20px;"></i>
+                    
                     <span>보고서 내보내기</span>
                 </a>
             </div>
@@ -152,7 +151,7 @@
                         <div class="upload-area" id="uploadArea">
                             <div class="upload-content">
                                 <div class="upload-icon">
-                                    <i data-lucide="upload" style="width: 32px; height: 32px;"></i>
+                                    
                                 </div>
                                 <div class="upload-text">IR 자료를 드래그하여 업로드하세요</div>
                                 <div class="upload-subtext">또는 클릭하여 파일을 선택하세요</div>
@@ -170,13 +169,13 @@
                             <div class="validation-items">
                                 <div class="validation-item" id="formatValidation">
                                     <div class="validation-icon">
-                                        <i data-lucide="file-check" style="width: 12px; height: 12px;"></i>
+                                        
                                     </div>
                                     <span>파일 형식 검증</span>
                                 </div>
                                 <div class="validation-item" id="sizeValidation">
                                     <div class="validation-icon">
-                                        <i data-lucide="hard-drive" style="width: 12px; height: 12px;"></i>
+                                        
                                     </div>
                                     <span>파일 크기 확인 (최대 50MB)</span>
                                 </div>
@@ -188,25 +187,25 @@
                             <div class="progress-steps">
                                 <div class="progress-step" id="step1">
                                     <div class="step-circle">
-                                        <i data-lucide="upload" style="width: 20px; height: 20px;"></i>
+                                        
                                     </div>
                                     <div class="step-label">업로드</div>
                                 </div>
                                 <div class="progress-step" id="step2">
                                     <div class="step-circle">
-                                        <i data-lucide="cpu" style="width: 20px; height: 20px;"></i>
+                                        
                                     </div>
                                     <div class="step-label">처리</div>
                                 </div>
                                 <div class="progress-step" id="step3">
                                     <div class="step-circle">
-                                        <i data-lucide="brain" style="width: 20px; height: 20px;"></i>
+                                        
                                     </div>
                                     <div class="step-label">분석</div>
                                 </div>
                                 <div class="progress-step" id="step4">
                                     <div class="step-circle">
-                                        <i data-lucide="check" style="width: 20px; height: 20px;"></i>
+                                        
                                     </div>
                                     <div class="step-label">완료</div>
                                 </div>
@@ -221,7 +220,7 @@
                         <div class="form-section">
                             <div class="form-group">
                                 <label for="companyName" class="form-label required">
-                                    <i data-lucide="building" style="width: 16px; height: 16px;"></i>
+                                    
                                     회사명
                                 </label>
                                 <input 
@@ -236,7 +235,7 @@
 
                             <div class="form-group">
                                 <label for="irUrl" class="form-label">
-                                    <i data-lucide="link" style="width: 16px; height: 16px;"></i>
+                                    
                                     IR 자료 URL (선택사항)
                                 </label>
                                 <input 
@@ -250,7 +249,7 @@
                         </div>
 
                         <button type="submit" class="btn-primary" id="analyzeBtn">
-                            <i data-lucide="sparkles" style="width: 20px; height: 20px; margin-right: 8px;"></i>
+                            
                             투자심사보고서 생성하기
                         </button>
                     </form>
@@ -260,21 +259,21 @@
                         <div class="results-header">
                             <div class="results-title">
                                 <div class="results-icon">
-                                    <i data-lucide="check-circle" style="width: 24px; height: 24px;"></i>
+                                    
                                 </div>
                                 <div class="results-title-text" id="resultsTitle">투자심사보고서 완성</div>
                             </div>
                             <div class="results-actions">
                                 <button class="btn-secondary" id="exportPdf">
-                                    <i data-lucide="file-text" style="width: 16px; height: 16px;"></i>
+                                    
                                     PDF 내보내기
                                 </button>
                                 <button class="btn-secondary" id="exportWord">
-                                    <i data-lucide="file-type" style="width: 16px; height: 16px;"></i>
+                                    
                                     Word 내보내기
                                 </button>
                                 <button class="btn-secondary" id="shareReport">
-                                    <i data-lucide="share" style="width: 16px; height: 16px;"></i>
+                                    
                                     공유하기
                                 </button>
                             </div>
@@ -283,7 +282,7 @@
                         <!-- Executive Summary -->
                         <div class="executive-summary">
                             <div class="summary-title">
-                                <i data-lucide="lightbulb" style="width: 20px; height: 20px;"></i>
+                                
                                 핵심 요약
                             </div>
                             <div class="summary-content" id="executiveSummary">
@@ -336,12 +335,12 @@
                 <div class="analysis-card">
                     <div class="coming-soon">
                         <div class="coming-soon-icon">
-                            <i data-lucide="users" style="width: 32px; height: 32px;"></i>
+                            
                         </div>
                         <h3 class="coming-soon-title">컨설팅 서비스 준비 중</h3>
                         <p class="coming-soon-description">전문가와의 1:1 컨설팅 서비스를 준비하고 있습니다.</p>
                         <button class="btn-primary" disabled>
-                            <i data-lucide="clock" style="width: 20px; height: 20px; margin-right: 8px;"></i>
+                            
                             서비스 준비 중
                         </button>
                     </div>
@@ -361,7 +360,7 @@
                         <div class="upload-area" id="impactUploadArea">
                             <div class="upload-content">
                                 <div class="upload-icon">
-                                    <i data-lucide="upload" style="width: 32px; height: 32px;"></i>
+                                    
                                 </div>
                                 <div class="upload-text">IR 자료 또는 소개자료를 업로드하세요</div>
                                 <div class="upload-subtext">PowerPoint, PDF, Word 파일을 지원합니다</div>
@@ -379,25 +378,25 @@
                             <div class="progress-steps">
                                 <div class="progress-step" id="impactStep1">
                                     <div class="step-circle">
-                                        <i data-lucide="upload" style="width: 20px; height: 20px;"></i>
+                                        
                                     </div>
                                     <div class="step-label">파일 업로드</div>
                                 </div>
                                 <div class="progress-step" id="impactStep2">
                                     <div class="step-circle">
-                                        <i data-lucide="cpu" style="width: 20px; height: 20px;"></i>
+                                        
                                     </div>
                                     <div class="step-label">데이터 추출</div>
                                 </div>
                                 <div class="progress-step" id="impactStep3">
                                     <div class="step-circle">
-                                        <i data-lucide="brain" style="width: 20px; height: 20px;"></i>
+                                        
                                     </div>
                                     <div class="step-label">변화이론 생성</div>
                                 </div>
                                 <div class="progress-step" id="impactStep4">
                                     <div class="step-circle">
-                                        <i data-lucide="check" style="width: 20px; height: 20px;"></i>
+                                        
                                     </div>
                                     <div class="step-label">다이어그램 완성</div>
                                 </div>
@@ -412,7 +411,7 @@
                         <div class="form-section">
                             <div class="form-group">
                                 <label for="organizationName" class="form-label required">
-                                    <i data-lucide="building" style="width: 16px; height: 16px;"></i>
+                                    
                                     조직/기업명
                                 </label>
                                 <input 
@@ -427,7 +426,7 @@
 
                             <div class="form-group">
                                 <label for="impactFocus" class="form-label">
-                                    <i data-lucide="target" style="width: 16px; height: 16px;"></i>
+                                    
                                     주요 임팩트 영역 (선택사항)
                                 </label>
                                 <select id="impactFocus" class="form-input">
@@ -446,7 +445,7 @@
                         </div>
 
                         <button type="submit" class="btn-primary" id="generateTheoryBtn">
-                            <i data-lucide="sparkles" style="width: 20px; height: 20px; margin-right: 8px;"></i>
+                            
                             변화이론 다이어그램 생성하기
                         </button>
                     </form>
@@ -456,21 +455,21 @@
                         <div class="results-header">
                             <div class="results-title">
                                 <div class="results-icon">
-                                    <i data-lucide="network" style="width: 24px; height: 24px;"></i>
+                                    
                                 </div>
                                 <div class="results-title-text" id="theoryResultsTitle">변화이론 다이어그램 완성</div>
                             </div>
                             <div class="results-actions">
                                 <button class="btn-secondary" id="downloadSvg">
-                                    <i data-lucide="download" style="width: 16px; height: 16px;"></i>
+                                    
                                     SVG 다운로드
                                 </button>
                                 <button class="btn-secondary" id="downloadPng">
-                                    <i data-lucide="image" style="width: 16px; height: 16px;"></i>
+                                    
                                     PNG 다운로드
                                 </button>
                                 <button class="btn-secondary" id="downloadJson">
-                                    <i data-lucide="file-json" style="width: 16px; height: 16px;"></i>
+                                    
                                     JSON 다운로드
                                 </button>
                             </div>
@@ -523,12 +522,12 @@
                 <div class="analysis-card">
                     <div class="coming-soon">
                         <div class="coming-soon-icon">
-                            <i data-lucide="settings" style="width: 32px; height: 32px;"></i>
+                            
                         </div>
                         <h3 class="coming-soon-title">설정 페이지 준비 중</h3>
                         <p class="coming-soon-description">사용자 설정 및 환경 설정 기능을 준비하고 있습니다.</p>
                         <button class="btn-primary" disabled>
-                            <i data-lucide="clock" style="width: 20px; height: 20px; margin-right: 8px;"></i>
+                            
                             서비스 준비 중
                         </button>
                     </div>

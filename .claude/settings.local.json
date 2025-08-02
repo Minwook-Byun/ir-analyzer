@@ -17,7 +17,8 @@
       "Bash(copy:*)",
       "Bash(cp:*)",
       "Bash(cp:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(sed:*)"
     ],
     "deny": []
   }

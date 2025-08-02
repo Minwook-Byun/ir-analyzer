@@ -1231,8 +1231,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-});
-
 // CSS for loading animation
 const style = document.createElement('style');
 style.textContent = `
