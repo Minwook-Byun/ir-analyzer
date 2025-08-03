@@ -23,8 +23,7 @@
                 <div class="brand-logo">
                     <div class="logo-icon">AI</div>
                     <div class="brand-text">
-                        <div class="brand-name">MYSC AI Agent</div>
-                        <div class="brand-tagline">M</div>
+                        <div class="brand-name">M</div>
                     </div>
                 </div>
             </div>
@@ -264,6 +263,10 @@
                             <i data-lucide="trending-up" style="width: 20px; height: 20px;"></i>
                             투자분석
                         </button>
+                        <button class="tab-button" data-tab="market">
+                            <i data-lucide="search" style="width: 20px; height: 20px;"></i>
+                            시장분석
+                        </button>
                         <button class="tab-button" data-tab="financial">
                             <i data-lucide="dollar-sign" style="width: 20px; height: 20px;"></i>
                             재무분석
@@ -282,6 +285,23 @@
                         <div id="investment" class="tab-content active">
                             <div class="report-content" id="investmentReport">
                                 투자분석 내용이 여기에 표시됩니다.
+                            </div>
+                        </div>
+                        <div id="market" class="tab-content">
+                            <div class="report-content" id="marketReport">
+                                <div class="market-analysis-placeholder">
+                                    <div class="placeholder-icon">
+                                        <i data-lucide="search" style="width: 32px; height: 32px;"></i>
+                                    </div>
+                                    <div class="placeholder-title">시장분석 시작</div>
+                                    <div class="placeholder-description">
+                                        딥리서치를 통한 상세한 시장분석을 진행하려면 아래 버튼을 클릭하세요.
+                                    </div>
+                                    <button class="btn btn-primary" id="startMarketAnalysis">
+                                        <i data-lucide="search" style="width: 16px; height: 16px; margin-right: 8px;"></i>
+                                        딥리서치 시장분석 시작
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div id="financial" class="tab-content">
