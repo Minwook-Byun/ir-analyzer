@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MYSC AI Agent - Investment Report Analysis Platform</title>
+    <meta name="description" content="AI-powered investment report analysis with secure authentication">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0iIzFFQkNDNSIvPgo8cGF0aCBkPSJNOC41IDEySDIzLjVWMjBIOC41VjEyWiIgZmlsbD0id2hpdGUiLz4KPC9zdmc+Cg==">
+    
+    <!-- CSS -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <div class="header-brand">
+                <div class="brand-logo">
+                    <div class="logo-icon">AI</div>
+                    <div class="brand-text">
+                        <div class="brand-name">MYSC AI Agent</div>
+                        <div class="brand-tagline">Investment Report Analysis</div>
+                    </div>
+                </div>
+            </div>
+            
+            <nav class="header-nav">
+                <div class="nav-item active" data-section="analysis">
+                    <i data-lucide="chart-line" style="width: 20px; height: 20px;"></i>
+                    투자심사보고서
+                </div>
+                <div class="nav-item" data-section="impact">
+                    <i data-lucide="target" style="width: 20px; height: 20px;"></i>
+                    변화이론 다이어그램
+                </div>
+                <div class="nav-item" data-section="usage">
+                    <i data-lucide="activity" style="width: 20px; height: 20px;"></i>
+                    사용량 현황
+                </div>
+                
+                <button class="theme-toggle" id="themeToggle" title="다크모드 전환">
+                    <i data-lucide="moon" style="width: 20px; height: 20px;"></i>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Analysis Section -->
+        <section id="analysis-section" class="section-content active">
+            <div class="section-header">
+                <div class="section-title">
+                    <i data-lucide="chart-line" style="width: 28px; height: 28px;"></i>
+                    투자심사보고서 생성
+                </div>
+                <div class="section-subtitle">
+                    IR 자료를 업로드하거나 URL을 제공하여 AI 기반 투자심사보고서를 생성하세요
+                </div>
+            </div>
+
+            <!-- Analysis Form -->
+            <div class="form-container">
+                <form id="analysisForm" class="analysis-form">
+                    <!-- Tab Navigation -->
+                    <div class="tab-navigation">
+                        <button type="button" class="tab-button active" data-tab="file">
+                            <i data-lucide="upload" style="width: 20px; height: 20px;"></i>
+                            파일 업로드
+                        </button>
+                        <button type="button" class="tab-button" data-tab="url">
+                            <i data-lucide="link" style="width: 20px; height: 20px;"></i>
+                            URL 입력
+                        </button>
+                    </div>
+
+                    <!-- Tab Contents -->
+                    <div class="tab-contents">
+                        <!-- File Upload Tab -->
+                        <div id="file-tab" class="tab-content active">
+                            <div class="form-group">
+                                <label for="companyName" class="form-label">
+                                    <i data-lucide="building" style="width: 16px; height: 16px;"></i>
+                                    회사명
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="companyName" 
+                                    name="companyName" 
+                                    class="form-input" 
+                                    placeholder="분석할 회사명을 입력하세요"
+                                    required
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label">
+                                    <i data-lucide="file-text" style="width: 16px; height: 16px;"></i>
+                                    IR 자료 파일
+                                </label>
+                                <div class="upload-area" id="uploadArea">
+                                    <input type="file" id="fileInput" name="file" accept=".pdf,.xlsx,.xls,.docx,.doc" hidden>
+                                    <div class="upload-content">
+                                        <div class="upload-icon">
+                                            <i data-lucide="upload-cloud" style="width: 48px; height: 48px;"></i>
+                                        </div>
+                                        <div class="upload-text">파일을 드래그하거나 클릭하여 업로드</div>
+                                        <div class="upload-subtext">PDF, Excel, Word 파일 지원 (최대 10MB)</div>
+                                    </div>
+                                </div>
+                                <div id="fileValidation" class="file-validation"></div>
+                            </div>
+                        </div>
+
+                        <!-- URL Input Tab -->
+                        <div id="url-tab" class="tab-content">
+                            <div class="form-group">
+                                <label for="companyNameUrl" class="form-label">
+                                    <i data-lucide="building" style="width: 16px; height: 16px;"></i>
+                                    회사명
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="companyNameUrl" 
+                                    name="companyNameUrl" 
+                                    class="form-input" 
+                                    placeholder="분석할 회사명을 입력하세요"
+                                >
+                            </div>
+
+                            <div class="form-group">
+                                <label for="irUrl" class="form-label">
+                                    <i data-lucide="link" style="width: 16px; height: 16px;"></i>
+                                    IR 자료 URL
+                                </label>
+                                <input 
+                                    type="url" 
+                                    id="irUrl" 
+                                    name="irUrl" 
+                                    class="form-input" 
+                                    placeholder="https://example.com/ir-report.pdf"
+                                >
+                                <div class="form-helper">공개된 IR 자료의 직접 링크를 입력하세요</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary" id="analyzeBtn">
+                        <i data-lucide="sparkles" style="width: 20px; height: 20px; margin-right: 8px;"></i>
+                        투자심사보고서 생성하기
+                    </button>
+                </form>
+            </div>
+
+            <!-- Progress Container -->
+            <div id="progressContainer" class="progress-container">
+                <div class="progress-header">
+                    <div class="progress-title">
+                        <i data-lucide="zap" style="width: 24px; height: 24px;"></i>
+                        AI가 투자심사보고서를 생성하고 있습니다
+                    </div>
+                    <div class="progress-subtitle">평균 30-60초 소요됩니다</div>
+                </div>
+
+                <div class="progress-steps">
+                    <div class="progress-step" id="step1">
+                        <div class="step-circle">
+                            <i data-lucide="upload" style="width: 16px; height: 16px;"></i>
+                        </div>
+                        <div class="step-text">파일 업로드</div>
+                    </div>
+                    <div class="progress-step" id="step2">
+                        <div class="step-circle">
+                            <i data-lucide="search" style="width: 16px; height: 16px;"></i>
+                        </div>
+                        <div class="step-text">데이터 추출</div>
+                    </div>
+                    <div class="progress-step" id="step3">
+                        <div class="step-circle">
+                            <i data-lucide="brain" style="width: 16px; height: 16px;"></i>
+                        </div>
+                        <div class="step-text">AI 분석</div>
+                    </div>
+                    <div class="progress-step" id="step4">
+                        <div class="step-circle">
+                            <i data-lucide="file-text" style="width: 16px; height: 16px;"></i>
+                        </div>
+                        <div class="step-text">보고서 생성</div>
+                    </div>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                
+                <div class="progress-text" id="progressText">
+                    파일을 업로드하고 있습니다...
+                </div>
+            </div>
+
+            <!-- Results Container -->
+            <div id="resultsContainer" class="results-container">
+                <div class="results-header">
+                    <div class="results-title" id="resultsTitle">
+                        투자심사보고서 완성
+                    </div>
+                    <div class="results-actions">
+                        <button class="btn btn-secondary" id="exportPdf">
+                            <i data-lucide="download" style="width: 16px; height: 16px;"></i>
+                            PDF 다운로드
+                        </button>
+                        <button class="btn btn-secondary" id="exportWord">
+                            <i data-lucide="file-text" style="width: 16px; height: 16px;"></i>
+                            Word 다운로드
+                        </button>
+                        <button class="btn btn-primary" id="shareReport">
+                            <i data-lucide="share-2" style="width: 16px; height: 16px;"></i>
+                            공유하기
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Executive Summary -->
+                <div class="executive-summary">
+                    <div class="summary-title">
+                        <i data-lucide="eye" style="width: 20px; height: 20px;"></i>
+                        Executive Summary
+                    </div>
+                    <div class="summary-content" id="executiveSummary">
+                        AI 분석 결과가 여기에 표시됩니다.
+                    </div>
+                </div>
+
+                <!-- Report Tabs -->
+                <div class="report-tabs">
+                    <div class="tab-navigation">
+                        <button class="tab-button active" data-tab="investment">
+                            <i data-lucide="trending-up" style="width: 20px; height: 20px;"></i>
+                            투자분석
+                        </button>
+                        <button class="tab-button" data-tab="financial">
+                            <i data-lucide="dollar-sign" style="width: 20px; height: 20px;"></i>
+                            재무분석
+                        </button>
+                        <button class="tab-button" data-tab="risk">
+                            <i data-lucide="alert-triangle" style="width: 20px; height: 20px;"></i>
+                            리스크
+                        </button>
+                        <button class="tab-button" data-tab="recommendations">
+                            <i data-lucide="lightbulb" style="width: 20px; height: 20px;"></i>
+                            권고사항
+                        </button>
+                    </div>
+
+                    <div class="tab-contents">
+                        <div id="investment" class="tab-content active">
+                            <div class="report-content" id="investmentReport">
+                                투자분석 내용이 여기에 표시됩니다.
+                            </div>
+                        </div>
+                        <div id="financial" class="tab-content">
+                            <div class="report-content" id="financialReport">
+                                재무분석 내용이 여기에 표시됩니다.
+                            </div>
+                        </div>
+                        <div id="risk" class="tab-content">
+                            <div class="report-content" id="riskReport">
+                                리스크 분석 내용이 여기에 표시됩니다.
+                            </div>
+                        </div>
+                        <div id="recommendations" class="tab-content">
+                            <div class="report-content" id="recommendationsReport">
+                                권고사항이 여기에 표시됩니다.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Impact Analysis Section -->
+        <section id="impact-section" class="section-content">
+            <div class="section-header">
+                <div class="section-title">
+                    <i data-lucide="target" style="width: 28px; height: 28px;"></i>
+                    변화이론 다이어그램 생성
+                </div>
+                <div class="section-subtitle">
+                    임팩트 리포트를 분석하여 변화이론(Theory of Change) 다이어그램을 자동 생성합니다
+                </div>
+            </div>
+
+            <!-- Impact Form -->
+            <div class="form-container">
+                <form id="impactForm" class="analysis-form">
+                    <div class="form-group">
+                        <label for="organizationName" class="form-label">
+                            <i data-lucide="users" style="width: 16px; height: 16px;"></i>
+                            조직/기업명
+                        </label>
+                        <input 
+                            type="text" 
+                            id="organizationName" 
+                            name="organizationName" 
+                            class="form-input" 
+                            placeholder="분석할 조직 또는 기업명을 입력하세요"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="impactFocus" class="form-label">
+                            <i data-lucide="target" style="width: 16px; height: 16px;"></i>
+                            임팩트 영역
+                        </label>
+                        <select id="impactFocus" name="impactFocus" class="form-select">
+                            <option value="">전체 영역</option>
+                            <option value="education">교육</option>
+                            <option value="healthcare">헬스케어</option>
+                            <option value="environment">환경</option>
+                            <option value="economic">경제발전</option>
+                            <option value="social">사회복지</option>
+                            <option value="technology">기술혁신</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i data-lucide="file-bar-chart" style="width: 16px; height: 16px;"></i>
+                            임팩트 리포트 파일 (선택사항)
+                        </label>
+                        <div class="upload-area" id="impactUploadArea">
+                            <input type="file" id="impactFileInput" name="impactFile" accept=".pdf,.xlsx,.xls,.docx,.doc" hidden>
+                            <div class="upload-content">
+                                <div class="upload-icon">
+                                    <i data-lucide="upload-cloud" style="width: 48px; height: 48px;"></i>
+                                </div>
+                                <div class="upload-text">임팩트 리포트 파일을 업로드하세요</div>
+                                <div class="upload-subtext">PDF, Excel, Word 파일 지원 (최대 10MB)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" id="generateTheoryBtn">
+                        <i data-lucide="sparkles" style="width: 20px; height: 20px; margin-right: 8px;"></i>
+                        변화이론 다이어그램 생성하기
+                    </button>
+                </form>
+            </div>
+
+            <!-- Impact Progress Container -->
+            <div id="impactProgressContainer" class="progress-container">
+                <div class="progress-header">
+                    <div class="progress-title">
+                        <i data-lucide="target" style="width: 24px; height: 24px;"></i>
+                        변화이론 다이어그램을 생성하고 있습니다
+                    </div>
+                    <div class="progress-subtitle">평균 20-40초 소요됩니다</div>
+                </div>
+
+                <div class="progress-steps">
+                    <div class="progress-step" id="impactStep1">
+                        <div class="step-circle">
+                            <i data-lucide="upload" style="width: 16px; height: 16px;"></i>
+                        </div>
+                        <div class="step-text">파일 업로드</div>
+                    </div>
+                    <div class="progress-step" id="impactStep2">
+                        <div class="step-circle">
+                            <i data-lucide="search" style="width: 16px; height: 16px;"></i>
+                        </div>
+                        <div class="step-text">데이터 추출</div>
+                    </div>
+                    <div class="progress-step" id="impactStep3">
+                        <div class="step-circle">
+                            <i data-lucide="brain" style="width: 16px; height: 16px;"></i>
+                        </div>
+                        <div class="step-text">AI 분석</div>
+                    </div>
+                    <div class="progress-step" id="impactStep4">
+                        <div class="step-circle">
+                            <i data-lucide="target" style="width: 16px; height: 16px;"></i>
+                        </div>
+                        <div class="step-text">다이어그램 생성</div>
+                    </div>
+                </div>
+
+                <div class="progress-bar">
+                    <div class="progress-fill" id="impactProgressFill"></div>
+                </div>
+                
+                <div class="progress-text" id="impactProgressText">
+                    파일을 업로드하고 있습니다...
+                </div>
+            </div>
+
+            <!-- Theory Results Container -->
+            <div id="theoryResultsContainer" class="results-container">
+                <div class="results-header">
+                    <div class="results-title" id="theoryResultsTitle">
+                        변화이론 다이어그램 완성
+                    </div>
+                    <div class="results-actions">
+                        <button class="btn btn-secondary" id="downloadSvg">
+                            <i data-lucide="download" style="width: 16px; height: 16px;"></i>
+                            SVG 다운로드
+                        </button>
+                        <button class="btn btn-secondary" id="downloadPng">
+                            <i data-lucide="image" style="width: 16px; height: 16px;"></i>
+                            PNG 다운로드
+                        </button>
+                        <button class="btn btn-primary" id="downloadJson">
+                            <i data-lucide="database" style="width: 16px; height: 16px;"></i>
+                            데이터 다운로드
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Theory Visualization -->
+                <div class="theory-visualization">
+                    <svg id="theoryChart" class="theory-chart"></svg>
+                </div>
+
+                <!-- Theory Tabs -->
+                <div class="report-tabs">
+                    <div class="tab-navigation">
+                        <button class="tab-button active" data-tab="theoryOverview">
+                            <i data-lucide="eye" style="width: 20px; height: 20px;"></i>
+                            개요
+                        </button>
+                        <button class="tab-button" data-tab="theoryData">
+                            <i data-lucide="database" style="width: 20px; height: 20px;"></i>
+                            데이터
+                        </button>
+                        <button class="tab-button" data-tab="theoryInsights">
+                            <i data-lucide="lightbulb" style="width: 20px; height: 20px;"></i>
+                            인사이트
+                        </button>
+                    </div>
+
+                    <div class="tab-contents">
+                        <div id="theoryOverview" class="tab-content active">
+                            변화이론 개요가 여기에 표시됩니다.
+                        </div>
+                        <div id="theoryData" class="tab-content">
+                            추출된 데이터가 여기에 표시됩니다.
+                        </div>
+                        <div id="theoryInsights" class="tab-content">
+                            AI 인사이트가 여기에 표시됩니다.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Usage Section -->
+        <section id="usage-section" class="section-content">
+            <div class="section-header">
+                <div class="section-title">
+                    <i data-lucide="activity" style="width: 28px; height: 28px;"></i>
+                    사용량 현황
+                </div>
+                <div class="section-subtitle">
+                    API 사용량과 생성된 보고서 현황을 확인하세요
+                </div>
+            </div>
+
+            <div class="usage-grid">
+                <div class="usage-card">
+                    <div class="usage-card-header">
+                        <div class="usage-card-title">
+                            <i data-lucide="calendar" style="width: 20px; height: 20px;"></i>
+                            오늘 사용량
+                        </div>
+                        <div class="usage-card-value" id="todayUsage">1,250 토큰</div>
+                    </div>
+                    <div class="usage-card-description">
+                        일일 제한: 10,000 토큰
+                    </div>
+                </div>
+
+                <div class="usage-card">
+                    <div class="usage-card-header">
+                        <div class="usage-card-title">
+                            <i data-lucide="calendar-days" style="width: 20px; height: 20px;"></i>
+                            이번 달 사용량
+                        </div>
+                        <div class="usage-card-value" id="monthlyUsage">15,430 토큰</div>
+                    </div>
+                    <div class="usage-card-description">
+                        월간 제한: 100,000 토큰
+                    </div>
+                    <div class="usage-progress">
+                        <div class="usage-progress-bar">
+                            <div class="usage-progress-fill" id="usageProgress"></div>
+                        </div>
+                        <div class="usage-progress-text">
+                            <span id="usagePercent">15%</span> 사용
+                        </div>
+                    </div>
+                </div>
+
+                <div class="usage-card">
+                    <div class="usage-card-header">
+                        <div class="usage-card-title">
+                            <i data-lucide="file-text" style="width: 20px; height: 20px;"></i>
+                            생성된 보고서
+                        </div>
+                        <div class="usage-card-value" id="totalAnalyses">23회</div>
+                    </div>
+                    <div class="usage-card-description">
+                        이번 달 총 분석 횟수
+                    </div>
+                </div>
+
+                <div class="usage-card">
+                    <div class="usage-card-header">
+                        <div class="usage-card-title">
+                            <i data-lucide="clock" style="width: 20px; height: 20px;"></i>
+                            평균 처리 시간
+                        </div>
+                        <div class="usage-card-value">45초</div>
+                    </div>
+                    <div class="usage-card-description">
+                        파일 업로드부터 보고서 완성까지
+                    </div>
+                </div>
+            </div>
+
+            <!-- API Key Info -->
+            <div class="api-info-card">
+                <div class="api-info-header">
+                    <div class="api-info-title">
+                        <i data-lucide="key" style="width: 20px; height: 20px;"></i>
+                        API 키 정보
+                    </div>
+                </div>
+                <div class="api-info-content">
+                    <div class="api-info-item">
+                        <div class="api-info-label">상태</div>
+                        <div class="api-info-value">
+                            <span class="status-badge active">활성</span>
+                        </div>
+                    </div>
+                    <div class="api-info-item">
+                        <div class="api-info-label">마지막 사용</div>
+                        <div class="api-info-value">방금 전</div>
+                    </div>
+                    <div class="api-info-item">
+                        <div class="api-info-label">보안</div>
+                        <div class="api-info-value">세션 종료 시 자동 삭제</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- JavaScript -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
