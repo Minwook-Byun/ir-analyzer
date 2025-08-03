@@ -202,6 +202,26 @@
                 <div class="progress-text" id="progressText">
                     파일을 업로드하고 있습니다...
                 </div>
+
+                <!-- Debug Log Container -->
+                <div id="debugLogContainer" class="debug-log-container" style="display: none;">
+                    <div class="debug-log-header">
+                        <div class="debug-log-title">
+                            <i data-lucide="terminal" style="width: 16px; height: 16px;"></i>
+                            실시간 처리 로그
+                            <span class="status-indicator processing" id="logStatus">
+                                <span class="spinner"></span>
+                                처리 중
+                            </span>
+                        </div>
+                        <button class="debug-log-toggle" id="debugLogToggle" title="로그 접기/펼치기">
+                            <i data-lucide="chevron-up" style="width: 16px; height: 16px;"></i>
+                        </button>
+                    </div>
+                    <div class="debug-log-content" id="debugLogContent">
+                        <!-- 로그 엔트리들이 여기에 동적으로 추가됩니다 -->
+                    </div>
+                </div>
             </div>
 
             <!-- Results Container -->

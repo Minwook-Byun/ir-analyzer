@@ -249,10 +249,15 @@ document.addEventListener('DOMContentLoaded', function() {
     function startAnalysis(companyName, irUrl) {
         analysisInProgress = true;
         
-        // Show progress
+        // Show progress and debug log
         if (progressContainer) {
             progressContainer.classList.add('show');
         }
+        
+        // Show debug log
+        showDebugLog();
+        updateLogStatus('processing', '분석 시작');
+        addDebugLogEntry('info', '분석 요청 시작', `회사명: ${companyName}${irUrl ? `\nIR URL: ${irUrl}` : '\n파일 업로드 모드'}`);
 
         // Hide validation
         if (fileValidation) {
@@ -349,17 +354,35 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
+        addDebugLogEntry('info', 'API 요청 전송', `엔드포인트: ${endpoint}\n인증: Bearer 토큰 사용`);
+        
         fetch(endpoint, options)
-        .then(response => response.json())
+        .then(response => {
+            addDebugLogEntry('info', `서버 응답 수신`, `상태 코드: ${response.status}\n응답 타입: ${response.headers.get('content-type')}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
+            return response.json();
+        })
         .then(data => {
+            addDebugLogEntry('success', 'API 응답 파싱 완료', `응답 데이터 크기: ${JSON.stringify(data).length} 바이트`);
+            
             if (data.success) {
+                updateLogStatus('success', '분석 완료');
+                addDebugLogEntry('success', '분석 성공적으로 완료', '결과 데이터를 화면에 표시합니다.');
                 showResults(data);
             } else {
-                showError(data.error || '분석 중 오류가 발생했습니다.');
+                updateLogStatus('error', '분석 실패');
+                addDebugLogEntry('error', '분석 실패', data.error || data.detail || '알 수 없는 오류가 발생했습니다.');
+                showError(data.error || data.detail || '분석 중 오류가 발생했습니다.');
             }
         })
         .catch(error => {
             console.error('Analysis error:', error);
+            updateLogStatus('error', '요청 실패');
+            addDebugLogEntry('error', '네트워크/서버 오류', error.toString());
             showError('서버 연결 오류가 발생했습니다.');
         })
         .finally(() => {
@@ -1262,6 +1285,9 @@ document.head.appendChild(style);
     // Initialize theme on page load
     initTheme();
     initThemeToggle();
+    
+    // Initialize debug log
+    initDebugLog();
 
     // 로그인 상태 확인 함수
     function checkAuthStatus() {
@@ -1349,5 +1375,121 @@ document.head.appendChild(style);
         }
         
         return response.json();
+    }
+
+    // Debug Log System
+    function initDebugLog() {
+        const debugLogToggle = document.getElementById('debugLogToggle');
+        const debugLogContent = document.getElementById('debugLogContent');
+        
+        if (debugLogToggle && debugLogContent) {
+            debugLogToggle.addEventListener('click', function() {
+                const isCollapsed = debugLogContent.classList.contains('collapsed');
+                debugLogContent.classList.toggle('collapsed');
+                
+                const icon = debugLogToggle.querySelector('i');
+                if (isCollapsed) {
+                    icon.setAttribute('data-lucide', 'chevron-up');
+                } else {
+                    icon.setAttribute('data-lucide', 'chevron-down');
+                }
+                
+                // Re-initialize icons
+                if (typeof lucide !== 'undefined') {
+                    lucide.createIcons();
+                }
+            });
+        }
+    }
+
+    function showDebugLog() {
+        const debugLogContainer = document.getElementById('debugLogContainer');
+        if (debugLogContainer) {
+            debugLogContainer.style.display = 'block';
+            clearDebugLog();
+            addDebugLogEntry('info', '디버그 로그 시작', '분석 과정의 모든 단계를 실시간으로 추적합니다.');
+        }
+    }
+
+    function hideDebugLog() {
+        const debugLogContainer = document.getElementById('debugLogContainer');
+        if (debugLogContainer) {
+            debugLogContainer.style.display = 'none';
+        }
+    }
+
+    function clearDebugLog() {
+        const debugLogContent = document.getElementById('debugLogContent');
+        if (debugLogContent) {
+            debugLogContent.innerHTML = '';
+        }
+    }
+
+    function addDebugLogEntry(type, message, details = null) {
+        const debugLogContent = document.getElementById('debugLogContent');
+        if (!debugLogContent) return;
+
+        const timestamp = new Date().toLocaleTimeString('ko-KR', {
+            hour12: false,
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+        });
+
+        const iconMap = {
+            'info': 'info',
+            'success': 'check-circle',
+            'warning': 'alert-triangle',
+            'error': 'x-circle'
+        };
+
+        const entry = document.createElement('div');
+        entry.className = `debug-log-entry ${type}`;
+        
+        entry.innerHTML = `
+            <div class="debug-log-timestamp">${timestamp}</div>
+            <div class="debug-log-icon ${type}">
+                <i data-lucide="${iconMap[type]}" style="width: 16px; height: 16px;"></i>
+            </div>
+            <div class="debug-log-message">
+                ${message}
+                ${details ? `<div class="debug-log-details">${details}</div>` : ''}
+            </div>
+        `;
+
+        debugLogContent.appendChild(entry);
+        
+        // Auto-scroll to bottom
+        debugLogContent.scrollTop = debugLogContent.scrollHeight;
+        debugLogContent.classList.add('auto-scrolling');
+        
+        setTimeout(() => {
+            debugLogContent.classList.remove('auto-scrolling');
+        }, 1000);
+
+        // Re-initialize icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+
+    function updateLogStatus(status, message) {
+        const logStatus = document.getElementById('logStatus');
+        if (!logStatus) return;
+
+        logStatus.className = `status-indicator ${status}`;
+        
+        if (status === 'processing') {
+            logStatus.innerHTML = `<span class="spinner"></span>${message}`;
+        } else if (status === 'success') {
+            logStatus.innerHTML = `<i data-lucide="check" style="width: 12px; height: 12px;"></i>${message}`;
+        } else if (status === 'error') {
+            logStatus.innerHTML = `<i data-lucide="x" style="width: 12px; height: 12px;"></i>${message}`;
+        }
+
+        // Re-initialize icons
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
     }
 });
