@@ -1266,8 +1266,10 @@ document.head.appendChild(style);
     // 로그인 상태 확인 함수
     function checkAuthStatus() {
         const token = sessionStorage.getItem('auth_token');
+        console.log('Checking auth status, token:', token); // 디버깅용
         
         if (!token) {
+            console.log('No token found, redirecting to login'); // 디버깅용
             // 로그인되지 않았다면 로그인 페이지로 리다이렉트
             window.location.href = '/login';
             return;
