@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>로그인 - MYSC AI Agent</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--color-background) 0%, var(--color-surface-secondary) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 400px;
+            padding: 2rem;
+            background: var(--color-surface-elevated);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-xl);
+            border: 1px solid var(--color-border);
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .logo {
+            width: 48px;
+            height: 48px;
+            background: var(--color-primary);
+            border-radius: var(--radius-md);
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.25rem;
+        }
+
+        .login-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .login-subtitle {
+            color: var(--color-text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--color-text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            background: var(--color-surface);
+            color: var(--color-text-primary);
+            transition: all 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--color-border-focus);
+            box-shadow: 0 0 0 3px var(--color-primary-100);
+        }
+
+        .form-input::placeholder {
+            color: var(--color-text-tertiary);
+        }
+
+        .login-button {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-bottom: 1rem;
+        }
+
+        .login-button:hover {
+            background: var(--color-primary-dark);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        .login-button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-message {
+            background: var(--color-error-bg);
+            color: var(--color-error);
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--color-error);
+            display: none;
+        }
+
+        .success-message {
+            background: var(--color-success-bg);
+            color: var(--color-success);
+            padding: 0.75rem;
+            border-radius: var(--radius-md);
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+            border: 1px solid var(--color-success);
+            display: none;
+        }
+
+        .loading-spinner {
+            display: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid transparent;
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .security-note {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: var(--color-surface-secondary);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--color-border-secondary);
+        }
+
+        .security-note-title {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--color-text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .security-note-text {
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+            line-height: 1.4;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                margin: 1rem;
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <div class="logo">AI</div>
+            <h1 class="login-title">로그인</h1>
+            <p class="login-subtitle">MYSC AI Agent에 접속하세요</p>
+        </div>
+
+        <form id="loginForm">
+            <div class="error-message" id="errorMessage"></div>
+            <div class="success-message" id="successMessage"></div>
+
+            <div class="form-group">
+                <label for="apiKey" class="form-label">API 키</label>
+                <input 
+                    type="password" 
+                    id="apiKey" 
+                    name="apiKey" 
+                    class="form-input" 
+                    placeholder="Gemini API 키를 입력하세요"
+                    required
+                    autocomplete="current-password"
+                >
+            </div>
+
+            <button type="submit" class="login-button" id="loginButton">
+                <span class="loading-spinner" id="loadingSpinner"></span>
+                <span id="buttonText">로그인</span>
+            </button>
+        </form>
+
+        <div class="security-note">
+            <div class="security-note-title">🔒 보안 안내</div>
+            <div class="security-note-text">
+                API 키는 안전하게 암호화되어 저장되며, 세션 종료 시 자동으로 삭제됩니다.
+                개인 API 키를 안전하게 보호하세요.
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const apiKey = document.getElementById('apiKey').value.trim();
+            const loginButton = document.getElementById('loginButton');
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const buttonText = document.getElementById('buttonText');
+            const errorMessage = document.getElementById('errorMessage');
+            const successMessage = document.getElementById('successMessage');
+
+            // 입력 검증
+            if (!apiKey) {
+                showError('API 키를 입력해주세요.');
+                return;
+            }
+
+            // 로딩 상태
+            setLoading(true);
+            hideMessages();
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ api_key: apiKey })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // 로그인 성공
+                    showSuccess('로그인 성공! 메인 페이지로 이동합니다...');
+                    
+                    // 토큰을 세션 스토리지에 저장
+                    sessionStorage.setItem('auth_token', data.token);
+                    sessionStorage.setItem('api_key', apiKey);
+                    
+                    // 2초 후 메인 페이지로 이동
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 2000);
+                } else {
+                    showError(data.detail || '로그인에 실패했습니다.');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showError('네트워크 오류가 발생했습니다. 다시 시도해주세요.');
+            } finally {
+                setLoading(false);
+            }
+
+            function setLoading(isLoading) {
+                loginButton.disabled = isLoading;
+                loadingSpinner.style.display = isLoading ? 'inline-block' : 'none';
+                buttonText.textContent = isLoading ? '로그인 중...' : '로그인';
+            }
+
+            function showError(message) {
+                errorMessage.textContent = message;
+                errorMessage.style.display = 'block';
+                successMessage.style.display = 'none';
+            }
+
+            function showSuccess(message) {
+                successMessage.textContent = message;
+                successMessage.style.display = 'block';
+                errorMessage.style.display = 'none';
+            }
+
+            function hideMessages() {
+                errorMessage.style.display = 'none';
+                successMessage.style.display = 'none';
+            }
+        });
+
+        // 페이지 로드 시 이미 로그인된 상태인지 확인
+        window.addEventListener('load', function() {
+            const token = sessionStorage.getItem('auth_token');
+            if (token) {
+                // 이미 로그인된 상태라면 메인 페이지로 리다이렉트
+                window.location.href = '/';
+            }
+        });
+    </script>
+</body>
+</html>

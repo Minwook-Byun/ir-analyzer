@@ -1,6 +1,9 @@
 // MYSC AI Agent - Linear-Inspired Investment Report Analysis Platform JavaScript
 
 document.addEventListener('DOMContentLoaded', function() {
+    // 로그인 상태 확인
+    checkAuthStatus();
+    
     // Initialize theme
     initTheme();
     // Initialize Lucide icons
@@ -316,6 +319,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function performAnalysis(companyName, irUrl) {
+        const token = sessionStorage.getItem('auth_token');
         const formData = new FormData();
         formData.append('company_name', companyName);
         
@@ -327,10 +331,25 @@ document.addEventListener('DOMContentLoaded', function() {
             formData.append('ir_url', irUrl);
         }
 
-        fetch('/analyze', {
+        const endpoint = currentFile ? '/api/analyze-ir-file' : '/api/analyze-ir';
+        const options = {
             method: 'POST',
-            body: formData
-        })
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        };
+
+        if (currentFile) {
+            options.body = formData;
+        } else {
+            options.headers['Content-Type'] = 'application/json';
+            options.body = JSON.stringify({
+                company_name: companyName,
+                ir_url: irUrl
+            });
+        }
+
+        fetch(endpoint, options)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -1243,4 +1262,90 @@ document.head.appendChild(style);
     // Initialize theme on page load
     initTheme();
     initThemeToggle();
+
+    // 로그인 상태 확인 함수
+    function checkAuthStatus() {
+        const token = sessionStorage.getItem('auth_token');
+        
+        if (!token) {
+            // 로그인되지 않았다면 로그인 페이지로 리다이렉트
+            window.location.href = '/login';
+            return;
+        }
+
+        // 토큰이 유효한지 확인 (만료 시간 체크)
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const now = Math.floor(Date.now() / 1000);
+            
+            if (payload.exp < now) {
+                // 토큰이 만료되었다면 로그인 페이지로 리다이렉트
+                sessionStorage.removeItem('auth_token');
+                sessionStorage.removeItem('api_key');
+                window.location.href = '/login';
+                return;
+            }
+        } catch (error) {
+            // 토큰 파싱 실패 시 로그인 페이지로 리다이렉트
+            sessionStorage.removeItem('auth_token');
+            sessionStorage.removeItem('api_key');
+            window.location.href = '/login';
+            return;
+        }
+
+        // 로그아웃 버튼 추가
+        addLogoutButton();
+    }
+
+    // 로그아웃 버튼 추가 함수
+    function addLogoutButton() {
+        // 기존 로그아웃 버튼이 있다면 제거
+        const existingLogoutBtn = document.getElementById('logoutBtn');
+        if (existingLogoutBtn) {
+            existingLogoutBtn.remove();
+        }
+
+        // 네비게이션 바에 로그아웃 버튼 추가
+        const nav = document.querySelector('.header-nav');
+        if (nav) {
+            const logoutBtn = document.createElement('button');
+            logoutBtn.id = 'logoutBtn';
+            logoutBtn.className = 'btn btn-secondary';
+            logoutBtn.innerHTML = `
+                <i data-lucide="log-out" style="width: 16px; height: 16px; margin-right: 8px;"></i>
+                로그아웃
+            `;
+            logoutBtn.style.marginLeft = 'auto';
+            logoutBtn.addEventListener('click', logout);
+            nav.appendChild(logoutBtn);
+
+            // 아이콘 초기화
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+        }
+    }
+
+    // 로그아웃 함수
+    function logout() {
+        // 세션 스토리지 클리어
+        sessionStorage.removeItem('auth_token');
+        sessionStorage.removeItem('api_key');
+        
+        // 로그인 페이지로 리다이렉트
+        window.location.href = '/login';
+    }
+
+    // API 요청 시 에러 처리 개선
+    function handleApiError(response) {
+        if (response.status === 401) {
+            // 인증 오류 시 로그인 페이지로 리다이렉트
+            sessionStorage.removeItem('auth_token');
+            sessionStorage.removeItem('api_key');
+            window.location.href = '/login';
+            return;
+        }
+        
+        return response.json();
+    }
 });

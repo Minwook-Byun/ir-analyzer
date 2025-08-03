@@ -1,8 +1,9 @@
 # Force redeployment by adding a comment
-from fastapi import FastAPI, HTTPException, UploadFile, File, Form
+from fastapi import FastAPI, HTTPException, UploadFile, File, Form, Depends, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 import requests
 import google.generativeai as genai
@@ -10,8 +11,10 @@ import os
 from dotenv import load_dotenv
 import re
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 import pathlib
+import jwt
+import secrets
 
 # 현재 파일의 경로를 기준으로 frontend 폴더 경로 설정
 BASE_DIR = pathlib.Path(__file__).resolve().parent
@@ -21,6 +24,14 @@ FRONTEND_DIR = BASE_DIR / "frontend"
 load_dotenv()
 
 app = FastAPI(title="IR Analyzer", version="1.0.0")
+
+# JWT 설정
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", secrets.token_urlsafe(32))
+JWT_ALGORITHM = "HS256"
+JWT_ACCESS_TOKEN_EXPIRE_HOURS = 24
+
+# Security scheme
+security = HTTPBearer(auto_error=False)
 
 # CORS 설정
 app.add_middleware(
@@ -61,18 +72,110 @@ class JandiWebhookRequest(BaseModel):
     text: str
     writer_name: Optional[str] = "Unknown"
 
+class LoginRequest(BaseModel):
+    api_key: str
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str
+    expires_in: int
+
+# JWT 토큰 생성 함수
+def create_access_token(data: dict):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(hours=JWT_ACCESS_TOKEN_EXPIRE_HOURS)
+    to_encode.update({"exp": expire})
+    encoded_jwt = jwt.encode(to_encode, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
+    return encoded_jwt
+
+# JWT 토큰 검증 함수
+def verify_token(credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)):
+    if not credentials:
+        raise HTTPException(
+            status_code=401,
+            detail="인증이 필요합니다. 로그인해주세요.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    try:
+        payload = jwt.decode(credentials.credentials, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
+        api_key: str = payload.get("api_key")
+        if api_key is None:
+            raise HTTPException(status_code=401, detail="유효하지 않은 토큰입니다.")
+        return api_key
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="토큰이 만료되었습니다. 다시 로그인해주세요.")
+    except jwt.JWTError:
+        raise HTTPException(status_code=401, detail="유효하지 않은 토큰입니다.")
+
+# Gemini API 키 검증 함수
+def verify_gemini_api_key(api_key: str) -> bool:
+    try:
+        # 임시로 Gemini API 설정하여 유효성 검증
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        # 간단한 테스트 요청
+        response = model.generate_content("Hello")
+        return True
+    except Exception as e:
+        print(f"API 키 검증 실패: {str(e)}")
+        return False
+
 @app.get("/", response_class=HTMLResponse)
 async def get_homepage():
     """메인 홈페이지 반환"""
-    index_path = FRONTEND_DIR / "index.html"
+    index_path = PUBLIC_DIR / "index.html"
     if not index_path.is_file():
         return HTMLResponse(content="<h1>Frontend file not found</h1>", status_code=404)
     return HTMLResponse(content=index_path.read_text(encoding="utf-8"))
 
+@app.get("/login", response_class=HTMLResponse)
+async def get_login_page():
+    """로그인 페이지 반환"""
+    html_path = PUBLIC_DIR / "login.html"
+    if html_path.exists():
+        return FileResponse(html_path, media_type="text/html")
+    else:
+        return HTMLResponse("<h1>Login</h1><p>Login page not found</p>")
+
+@app.post("/api/login", response_model=TokenResponse)
+async def login(request: LoginRequest):
+    """API 키로 로그인하여 JWT 토큰 발급"""
+    try:
+        # Gemini API 키 유효성 검증
+        if not verify_gemini_api_key(request.api_key):
+            raise HTTPException(
+                status_code=401, 
+                detail="유효하지 않은 Gemini API 키입니다. API 키를 확인해주세요."
+            )
+        
+        # JWT 토큰 생성
+        access_token = create_access_token(
+            data={"api_key": request.api_key, "sub": "user"}
+        )
+        
+        return TokenResponse(
+            access_token=access_token,
+            token_type="bearer",
+            expires_in=JWT_ACCESS_TOKEN_EXPIRE_HOURS * 3600  # 초 단위
+        )
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"로그인 중 오류: {str(e)}")
+        raise HTTPException(status_code=500, detail="로그인 처리 중 오류가 발생했습니다.")
+
+@app.post("/api/logout")
+async def logout():
+    """로그아웃 (클라이언트에서 토큰 삭제)"""
+    return {"message": "로그아웃되었습니다. 토큰을 삭제해주세요."}
+
 @app.post("/api/analyze-ir-file")
 async def analyze_ir_file(
     file: UploadFile = File(...),
-    company_name: str = Form(...)
+    company_name: str = Form(...),
+    api_key: str = Depends(verify_token)
 ):
     """파일 업로드를 통한 IR 자료 분석"""
     try:
@@ -94,7 +197,8 @@ async def analyze_ir_file(
         # 투자심사보고서 생성
         investment_report = await generate_investment_report(
             ir_summary=ir_summary,
-            company_name=company_name
+            company_name=company_name,
+            api_key=api_key
         )
         print(f"📋 투자심사보고서 생성 완료")
         
@@ -184,7 +288,7 @@ Word 파일이 업로드되었습니다.
 
 
 @app.post("/api/analyze-ir")
-async def analyze_ir(request: IRAnalysisRequest):
+async def analyze_ir(request: IRAnalysisRequest, api_key: str = Depends(verify_token)):
     """IR 자료 분석 메인 엔드포인트"""
     try:
         print(f"📊 IR 분석 시작: {request.company_name}")
@@ -196,7 +300,8 @@ async def analyze_ir(request: IRAnalysisRequest):
         # 2. JSONL 학습 데이터와 함께 Gemini API로 투자심사보고서 생성
         investment_report = await generate_investment_report(
             ir_summary=ir_summary,
-            company_name=request.company_name
+            company_name=request.company_name,
+            api_key=api_key
         )
         print(f"📋 투자심사보고서 생성 완료")
         
@@ -274,7 +379,7 @@ async def download_and_extract_ir(url: str) -> str:
     except Exception as e:
         raise Exception(f"파일 다운로드 실패: {str(e)}")
 
-async def generate_investment_report(ir_summary: str, company_name: str) -> str:
+async def generate_investment_report(ir_summary: str, company_name: str, api_key: str) -> str:
     """JSONL 학습 데이터를 바탕으로 투자심사보고서 생성"""
     try:
         from jsonl_processor import JSONLProcessor
@@ -346,6 +451,9 @@ async def generate_investment_report(ir_summary: str, company_name: str) -> str:
 """
         
         print(f"🤖 Gemini API 호출 중...")
+        
+        # 사용자의 API 키로 Gemini API 설정
+        genai.configure(api_key=api_key)
         
         # Gemini API 호출
         model = genai.GenerativeModel('gemini-2.0-flash-exp')
