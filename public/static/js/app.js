@@ -439,9 +439,75 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function formatReportContent(content) {
         if (typeof content === 'string') {
-            return content.replace(/\n/g, '<br>');
+            // 마크다운을 HTML로 변환
+            return convertMarkdownToHtml(content);
         }
         return JSON.stringify(content, null, 2);
+    }
+
+    function convertMarkdownToHtml(markdown) {
+        let html = markdown;
+        
+        // 제목 변환 (### -> h3, ## -> h2, # -> h1)
+        html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+        html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+        html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+        
+        // 볼드 텍스트 (**텍스트** or __텍스트__)
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        html = html.replace(/__(.*?)__/g, '<strong>$1</strong>');
+        
+        // 이탤릭 텍스트 (*텍스트* or _텍스트_)
+        html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        html = html.replace(/_(.*?)_/g, '<em>$1</em>');
+        
+        // 링크 [텍스트](URL)
+        html = html.replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+        
+        // 인라인 코드 `코드`
+        html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+        
+        // 리스트 아이템 (- 또는 *)
+        html = html.replace(/^[\-\*] (.+)$/gm, '<li>$1</li>');
+        
+        // 연속된 li를 ul로 감싸기
+        html = html.replace(/(<li>.*<\/li>)/gs, function(match) {
+            if (match.includes('</li><li>')) {
+                return '<ul>' + match + '</ul>';
+            }
+            return '<ul>' + match + '</ul>';
+        });
+        
+        // 숫자 리스트 (1. 2. 등)
+        html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+        
+        // 연속된 숫자 li를 ol로 감싸기 (간단한 버전)
+        html = html.replace(/(<li>.*?<\/li>)(?=\s*\d+\.)/gs, function(match) {
+            return '<ol>' + match + '</ol>';
+        });
+        
+        // 구분선 (---)
+        html = html.replace(/^---$/gm, '<hr>');
+        
+        // 블록 인용 (> 텍스트)
+        html = html.replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+        
+        // 줄바꿈을 <br>로 변환 (단, HTML 태그 안에서는 제외)
+        html = html.replace(/\n(?![<\/])/g, '<br>');
+        
+        // 연속된 <br> 제거
+        html = html.replace(/(<br>\s*){3,}/g, '<br><br>');
+        
+        // 표 변환 (간단한 버전)
+        html = html.replace(/\|(.+)\|/g, function(match, content) {
+            const cells = content.split('|').map(cell => cell.trim());
+            return '<tr>' + cells.map(cell => `<td>${cell}</td>`).join('') + '</tr>';
+        });
+        
+        // 표를 table 태그로 감싸기
+        html = html.replace(/(<tr>.*?<\/tr>)/gs, '<table class="markdown-table">$1</table>');
+        
+        return html;
     }
 
     function showError(message) {
