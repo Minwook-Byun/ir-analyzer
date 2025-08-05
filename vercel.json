@@ -4,7 +4,10 @@
     {
       "src": "main.py",
       "use": "@vercel/python",
-      "config": { "pythonVersion": "3.9" }
+      "config": { 
+        "pythonVersion": "3.9",
+        "maxLambdaSize": "50mb"
+      }
     }
   ],
   "routes": [
@@ -12,5 +15,10 @@
       "src": "/(.*)",
       "dest": "main.py"
     }
-  ]
+  ],
+  "functions": {
+    "main.py": {
+      "maxDuration": 30
+    }
+  }
 }

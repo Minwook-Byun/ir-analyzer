@@ -171,6 +171,63 @@ async def logout():
     """로그아웃 (클라이언트에서 토큰 삭제)"""
     return {"message": "로그아웃되었습니다. 토큰을 삭제해주세요."}
 
+@app.post("/api/analyze-ir-files")
+async def analyze_ir_files(
+    files: list[UploadFile] = File(...),
+    company_name: str = Form(...),
+    api_key: str = Depends(verify_token)
+):
+    """다중 파일 업로드를 통한 IR 자료 분석"""
+    try:
+        print(f"📎 다중 파일 업로드 분석 시작: {company_name} - {len(files)}개 파일")
+        
+        combined_content = []
+        total_size = 0
+        
+        for file in files:
+            # 파일 검증
+            if not file.filename.lower().endswith(('.pdf', '.xlsx', '.xls', '.docx', '.doc')):
+                raise HTTPException(status_code=400, detail=f"지원하지 않는 파일 형식입니다: {file.filename}")
+            
+            # 개별 파일 크기 확인
+            file_content = await file.read()
+            total_size += len(file_content)
+            
+            # 파일 처리
+            ir_summary = await process_uploaded_file(file_content, file.filename)
+            combined_content.append(f"=== {file.filename} ===\n{ir_summary}\n")
+            print(f"📄 파일 처리 완료: {file.filename}")
+        
+        # 전체 파일 크기 검증 (4MB 제한 - Vercel 서버리스 함수 제한)
+        if total_size > 4 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="전체 파일 크기는 4MB를 초과할 수 없습니다. Vercel 서버리스 함수 제한사항입니다.")
+        
+        # 모든 파일 내용을 결합
+        combined_ir_summary = "\n".join(combined_content)
+        
+        # 투자심사보고서 생성
+        investment_report = await generate_investment_report(
+            ir_summary=combined_ir_summary,
+            company_name=company_name,
+            api_key=api_key
+        )
+        print(f"📋 투자심사보고서 생성 완료")
+        
+        return {
+            "success": True,
+            "company_name": company_name,
+            "investment_report": investment_report,
+            "source_files": [file.filename for file in files],
+            "file_count": len(files),
+            "report_type": "투자심사보고서 초안 (다중 파일)"
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"❌ 다중 파일 분석 중 오류: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"다중 파일 분석 중 오류 발생: {str(e)}")
+
 @app.post("/api/analyze-ir-file")
 async def analyze_ir_file(
     file: UploadFile = File(...),
@@ -185,10 +242,10 @@ async def analyze_ir_file(
         if not file.filename.lower().endswith(('.pdf', '.xlsx', '.xls', '.docx', '.doc')):
             raise HTTPException(status_code=400, detail="지원하지 않는 파일 형식입니다.")
         
-        # 파일 크기 검증 (16MB 제한)
+        # 파일 크기 검증 (4MB 제한 - Vercel 서버리스 함수 제한)
         file_content = await file.read()
-        if len(file_content) > 16 * 1024 * 1024:
-            raise HTTPException(status_code=400, detail="파일 크기는 16MB를 초과할 수 없습니다.")
+        if len(file_content) > 4 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="파일 크기는 4MB를 초과할 수 없습니다. Vercel 서버리스 함수 제한사항입니다.")
         
         # 파일 처리
         ir_summary = await process_uploaded_file(file_content, file.filename)

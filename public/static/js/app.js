@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Global state
-    let currentFile = null;
+    let currentFiles = [];
     let currentImpactFile = null;
     let analysisInProgress = false;
     let theoryGenerationInProgress = false;
@@ -112,59 +112,71 @@ document.addEventListener('DOMContentLoaded', function() {
             
             const files = e.dataTransfer.files;
             if (files.length > 0) {
-                handleFileSelect(files[0]);
+                handleMultipleFiles(files);
             }
         });
 
         // File input change
         fileInput.addEventListener('change', function(e) {
             if (e.target.files.length > 0) {
-                handleFileSelect(e.target.files[0]);
+                handleMultipleFiles(e.target.files);
             }
         });
     }
 
-    function handleFileSelect(file) {
-        currentFile = file;
+    function handleMultipleFiles(files) {
+        currentFiles = Array.from(files);
         
         // Show validation
         if (fileValidation) {
             fileValidation.classList.add('show');
-            validateFile(file);
+            validateMultipleFiles(currentFiles);
         }
 
         // Update upload area
-        updateUploadArea(file);
+        updateUploadAreaMultiple(currentFiles);
     }
 
-    function validateFile(file) {
+    function handleFileSelect(file) {
+        handleMultipleFiles([file]);
+    }
+
+    function validateMultipleFiles(files) {
         const formatValidation = document.getElementById('formatValidation');
         const sizeValidation = document.getElementById('sizeValidation');
         
-        // Check format
+        let allValidFormats = true;
+        let totalSize = 0;
         const validFormats = ['.pdf', '.xlsx', '.xls', '.docx', '.doc'];
-        const fileExt = '.' + file.name.split('.').pop().toLowerCase();
-        const isValidFormat = validFormats.includes(fileExt);
+        
+        // Check each file
+        files.forEach(file => {
+            const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+            if (!validFormats.includes(fileExt)) {
+                allValidFormats = false;
+            }
+            totalSize += file.size;
+        });
         
         if (formatValidation) {
-            formatValidation.classList.toggle('success', isValidFormat);
-            formatValidation.classList.toggle('error', !isValidFormat);
+            formatValidation.classList.toggle('success', allValidFormats);
+            formatValidation.classList.toggle('error', !allValidFormats);
         }
 
-        // Check size (50MB limit)
-        const maxSize = 50 * 1024 * 1024; // 50MB in bytes
-        const isValidSize = file.size <= maxSize;
+        // Check total size (4MB limit per Vercel)
+        const maxSize = 4 * 1024 * 1024; // 4MB in bytes
+        const isValidSize = totalSize <= maxSize;
         
         if (sizeValidation) {
             sizeValidation.classList.toggle('success', isValidSize);
             sizeValidation.classList.toggle('error', !isValidSize);
             
-            const sizeText = formatFileSize(file.size);
-            sizeValidation.querySelector('span').textContent = `파일 크기: ${sizeText} (최대 50MB)`;
+            const sizeText = formatFileSize(totalSize);
+            sizeValidation.querySelector('span').textContent = `총 파일 크기: ${sizeText} (최대 4MB)`;
         }
 
         // Enable/disable analyze button
-        const canAnalyze = isValidFormat && isValidSize;
+        const canAnalyze = allValidFormats && isValidSize;
         if (analyzeBtn) {
             analyzeBtn.disabled = !canAnalyze;
         }
@@ -172,25 +184,36 @@ document.addEventListener('DOMContentLoaded', function() {
         return canAnalyze;
     }
 
-    function updateUploadArea(file) {
+    function validateFile(file) {
+        return validateMultipleFiles([file]);
+    }
+
+    function updateUploadAreaMultiple(files) {
         if (!uploadArea) return;
 
         const uploadContent = uploadArea.querySelector('.upload-content');
         if (!uploadContent) return;
 
+        const totalSize = files.reduce((sum, file) => sum + file.size, 0);
+        const fileList = files.map(file => `${file.name} (${formatFileSize(file.size)})`).join('<br>');
+
         uploadContent.innerHTML = `
             <div class="upload-icon">
-                <i data-lucide="file-check" style="width: 32px; height: 32px;"></i>
+                <i data-lucide="files" style="width: 32px; height: 32px;"></i>
             </div>
-            <div class="upload-text">파일이 선택되었습니다</div>
-            <div class="upload-subtext">${file.name}</div>
-            <div class="upload-subtext">${formatFileSize(file.size)}</div>
+            <div class="upload-text">${files.length}개 파일이 선택되었습니다</div>
+            <div class="upload-subtext" style="line-height: 1.4;">${fileList}</div>
+            <div class="upload-subtext">총 크기: ${formatFileSize(totalSize)}</div>
         `;
 
         // Re-initialize icons
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
+    }
+
+    function updateUploadArea(file) {
+        updateUploadAreaMultiple([file]);
     }
 
     function formatFileSize(bytes) {
@@ -237,7 +260,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
 
-            if (!currentFile && !irUrl) {
+            if (currentFiles.length === 0 && !irUrl) {
                 alert('IR 자료 파일을 업로드하거나 URL을 입력해주세요.');
                 return;
             }
@@ -328,15 +351,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const formData = new FormData();
         formData.append('company_name', companyName);
         
-        if (currentFile) {
-            formData.append('file', currentFile);
+        if (currentFiles.length > 0) {
+            currentFiles.forEach((file, index) => {
+                formData.append('files', file);
+            });
         }
         
         if (irUrl) {
             formData.append('ir_url', irUrl);
         }
 
-        const endpoint = currentFile ? '/api/analyze-ir-file' : '/api/analyze-ir';
+        const endpoint = currentFiles.length > 0 ? '/api/analyze-ir-files' : '/api/analyze-ir';
         const options = {
             method: 'POST',
             headers: {
@@ -344,7 +369,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         };
 
-        if (currentFile) {
+        if (currentFiles.length > 0) {
             options.body = formData;
         } else {
             options.headers['Content-Type'] = 'application/json';
