@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "public": true,
   "functions": {
     "api/index.py": {
       "maxDuration": 30,
@@ -10,6 +11,17 @@
     {
       "src": "/(.*)",
       "dest": "/api/index.py"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        }
+      ]
     }
   ]
 }
