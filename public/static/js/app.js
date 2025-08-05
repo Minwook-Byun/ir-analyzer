@@ -11,12 +11,13 @@ document.addEventListener('DOMContentLoaded', function() {
         lucide.createIcons();
     }
 
-    // Global state
+    // Global state (Vercel Blob 확장)
     let currentFiles = [];
     let currentImpactFile = null;
     let analysisInProgress = false;
     let theoryGenerationInProgress = false;
     let theoryData = null;
+    let currentJobId = null; // Blob 작업 추적용
 
     // DOM elements
     const uploadArea = document.getElementById('uploadArea');
@@ -353,74 +354,221 @@ document.addEventListener('DOMContentLoaded', function() {
         updateStep();
     }
 
-    function performAnalysis(companyName, irUrl) {
+    // 🚀 새로운 Vercel Blob 기반 분석 함수
+    async function performAnalysis(companyName, irUrl) {
         const token = sessionStorage.getItem('auth_token');
+        
+        try {
+            let jobId;
+            
+            if (currentFiles.length > 0) {
+                // Vercel Blob 기반 파일 업로드 분석
+                jobId = await startBlobAnalysis(companyName, currentFiles, token);
+            } else {
+                // 기존 URL 기반 분석 (유지)
+                await performLegacyAnalysis(companyName, irUrl, token);
+                return;
+            }
+            
+            // 실시간 진행률 추적 시작
+            await trackAnalysisProgress(jobId, token);
+            
+        } catch (error) {
+            console.error('Analysis error:', error);
+            updateLogStatus('error', '분석 실패');
+            addDebugLogEntry('error', '분석 오류', error.toString());
+            showError('분석 중 오류가 발생했습니다: ' + error.message);
+            
+            analysisInProgress = false;
+            setFormDisabled(false);
+        }
+    }
+    
+    // 🎯 Vercel Blob 기반 분석 시작
+    async function startBlobAnalysis(companyName, files, token) {
+        addDebugLogEntry('info', '🚀 Blob 분석 시작', `회사명: ${companyName}\n파일 수: ${files.length}개`);
+        
         const formData = new FormData();
         formData.append('company_name', companyName);
         
-        if (currentFiles.length > 0) {
-            currentFiles.forEach((file, index) => {
-                formData.append('files', file);
-            });
-        }
+        files.forEach((file) => {
+            formData.append('files', file);
+        });
         
-        if (irUrl) {
-            formData.append('ir_url', irUrl);
-        }
-
-        const endpoint = currentFiles.length > 0 ? '/api/analyze-ir-files' : '/api/analyze-ir';
-        const options = {
+        const response = await fetch('/api/blob/upload', {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`
+            },
+            body: formData
+        });
+        
+        if (!response.ok) {
+            throw new Error(`업로드 실패: ${response.status} ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.success) {
+            throw new Error(data.message || '업로드 처리 실패');
+        }
+        
+        addDebugLogEntry('success', '✅ 업로드 시작됨', `작업 ID: ${data.job_id}`);
+        
+        return data.job_id;
+    }
+    
+    // 📊 실시간 진행률 추적
+    async function trackAnalysisProgress(jobId, token) {
+        const maxAttempts = 300; // 5분 최대 대기 (1초마다 체크)
+        let attempts = 0;
+        
+        const checkProgress = async () => {
+            try {
+                const response = await fetch(`/api/blob/status/${jobId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`상태 조회 실패: ${response.status}`);
+                }
+                
+                const status = await response.json();
+                
+                // 진행률 업데이트
+                updateBlobProgress(status);
+                
+                if (status.status === 'completed') {
+                    // 완료!
+                    addDebugLogEntry('success', '🎉 분석 완료!', '결과를 표시합니다.');
+                    showResults(status.result);
+                    
+                    analysisInProgress = false;
+                    setFormDisabled(false);
+                    return;
+                    
+                } else if (status.status === 'failed') {
+                    // 실패
+                    throw new Error(status.error || '분석 중 오류가 발생했습니다.');
+                    
+                } else if (attempts >= maxAttempts) {
+                    // 타임아웃
+                    throw new Error('분석 시간이 초과되었습니다. 다시 시도해주세요.');
+                }
+                
+                // 1초 후 다시 체크
+                attempts++;
+                setTimeout(checkProgress, 1000);
+                
+            } catch (error) {
+                addDebugLogEntry('error', '❌ 상태 확인 오류', error.toString());
+                showError('진행률 확인 중 오류: ' + error.message);
+                
+                analysisInProgress = false;
+                setFormDisabled(false);
             }
         };
-
-        if (currentFiles.length > 0) {
-            options.body = formData;
-        } else {
-            options.headers['Content-Type'] = 'application/json';
-            options.body = JSON.stringify({
+        
+        // 첫 번째 체크 시작
+        setTimeout(checkProgress, 1000);
+    }
+    
+    // 📈 Blob 진행률 업데이트 (사용자 친화적)
+    function updateBlobProgress(status) {
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        
+        if (progressFill) {
+            progressFill.style.width = `${status.progress}%`;
+        }
+        
+        if (progressText) {
+            // 단계별 이모지와 메시지 추가
+            const stageEmojis = {
+                'validation': '🔍',
+                'blob-upload': '☁️',
+                'file-processing': '📄',
+                'ai-analysis': '🤖',
+                'completed': '🎉'
+            };
+            
+            const emoji = stageEmojis[status.stage] || '⚡';
+            progressText.textContent = `${emoji} ${status.message}`;
+        }
+        
+        // 단계별 업데이트
+        updateBlobSteps(status);
+        
+        // 디버그 로그
+        addDebugLogEntry('info', `📊 진행률 ${status.progress}%`, status.message);
+    }
+    
+    // 🎯 단계별 프로그레스 업데이트
+    function updateBlobSteps(status) {
+        const steps = ['step1', 'step2', 'step3', 'step4'];
+        const stageMapping = {
+            'validation': 0,
+            'blob-upload': 0,
+            'file-processing': 1,
+            'ai-analysis': 2,
+            'completed': 3
+        };
+        
+        const currentStepIndex = stageMapping[status.stage] || 0;
+        const progress = status.progress;
+        
+        steps.forEach((stepId, index) => {
+            const stepElement = document.getElementById(stepId);
+            if (!stepElement) return;
+            
+            if (index < currentStepIndex) {
+                // 완료된 단계
+                stepElement.classList.add('completed');
+                stepElement.classList.remove('active');
+            } else if (index === currentStepIndex) {
+                // 현재 진행 중인 단계
+                stepElement.classList.add('active');
+                stepElement.classList.remove('completed');
+            } else {
+                // 대기 중인 단계
+                stepElement.classList.remove('active', 'completed');
+            }
+        });
+    }
+    
+    // 📝 기존 URL 기반 분석 (하위 호환성)
+    async function performLegacyAnalysis(companyName, irUrl, token) {
+        addDebugLogEntry('info', '📎 URL 기반 분석', `회사명: ${companyName}\nURL: ${irUrl}`);
+        
+        const response = await fetch('/api/analyze-ir', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
                 company_name: companyName,
                 ir_url: irUrl
-            });
-        }
-
-        addDebugLogEntry('info', 'API 요청 전송', `엔드포인트: ${endpoint}\n인증: Bearer 토큰 사용`);
-        
-        fetch(endpoint, options)
-        .then(response => {
-            addDebugLogEntry('info', `서버 응답 수신`, `상태 코드: ${response.status}\n응답 타입: ${response.headers.get('content-type')}`);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            
-            return response.json();
-        })
-        .then(data => {
-            addDebugLogEntry('success', 'API 응답 파싱 완료', `응답 데이터 크기: ${JSON.stringify(data).length} 바이트`);
-            
-            if (data.success) {
-                updateLogStatus('success', '분석 완료');
-                addDebugLogEntry('success', '분석 성공적으로 완료', '결과 데이터를 화면에 표시합니다.');
-                showResults(data);
-            } else {
-                updateLogStatus('error', '분석 실패');
-                addDebugLogEntry('error', '분석 실패', data.error || data.detail || '알 수 없는 오류가 발생했습니다.');
-                showError(data.error || data.detail || '분석 중 오류가 발생했습니다.');
-            }
-        })
-        .catch(error => {
-            console.error('Analysis error:', error);
-            updateLogStatus('error', '요청 실패');
-            addDebugLogEntry('error', '네트워크/서버 오류', error.toString());
-            showError('서버 연결 오류가 발생했습니다.');
-        })
-        .finally(() => {
-            analysisInProgress = false;
-            setFormDisabled(false);
+            })
         });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            addDebugLogEntry('success', '✅ URL 분석 완료', '결과를 표시합니다.');
+            showResults(data);
+        } else {
+            throw new Error(data.error || data.detail || '분석 실패');
+        }
+        
+        analysisInProgress = false;
+        setFormDisabled(false);
     }
 
     function showResults(data) {

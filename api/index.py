@@ -10,11 +10,13 @@ import google.generativeai as genai
 import os
 from dotenv import load_dotenv
 import re
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime, timedelta
 import pathlib
 import jwt
 import secrets
+import asyncio
+from fastapi import BackgroundTasks
 
 # 현재 파일의 경로를 기준으로 프로젝트 루트 경로 설정
 BASE_DIR = pathlib.Path(__file__).resolve().parent.parent  # api 폴더의 상위 폴더
@@ -85,6 +87,25 @@ class TokenResponse(BaseModel):
     token_type: str
     expires_in: int
 
+# Vercel Blob 관련 모델들
+class BlobUploadRequest(BaseModel):
+    company_name: str
+    analysis_type: Optional[str] = "investment_report"
+
+class BlobUploadResponse(BaseModel):
+    success: bool
+    job_id: str
+    message: str
+    upload_url: Optional[str] = None
+    
+class BlobAnalysisStatus(BaseModel):
+    job_id: str
+    status: str  # 'pending', 'processing', 'completed', 'failed'
+    progress: int
+    message: str
+    result: Optional[dict] = None
+    error: Optional[str] = None
+
 # JWT 토큰 생성 함수
 def create_access_token(data: dict):
     to_encode = data.copy()
@@ -115,6 +136,11 @@ def verify_token(credentials: Optional[HTTPAuthorizationCredentials] = Depends(s
 
 # Gemini API 키 검증 함수
 def verify_gemini_api_key(api_key: str) -> bool:
+    # 개발 모드에서는 테스트 키 허용
+    if os.getenv("ENVIRONMENT") == "development" and api_key == "test_gemini_api_key_for_development":
+        print("[DEV MODE] Using test API key")
+        return True
+    
     try:
         # 임시로 Gemini API 설정하여 유효성 검증
         genai.configure(api_key=api_key)
@@ -220,9 +246,292 @@ async def generate_theory_of_change(
         print(f"❌ 변화이론 생성 중 오류: {str(e)}")
         raise HTTPException(status_code=500, detail=f"변화이론 생성 중 오류 발생: {str(e)}")
 
+# ===== VERCEL BLOB 통합 API 엔드포인트들 =====
+
+# 글로벌 작업 상태 저장소 (실제 프로덕션에서는 Redis 등 사용)
+job_storage = {}
+
+
+# === TEST ENDPOINT FOR DEBUGGING ===
+@app.post("/api/test/upload")
+async def test_upload_endpoint(
+    files: List[UploadFile] = File(...),
+    company_name: str = Form(...),
+    api_key: str = Depends(verify_token)
+):
+    """Simple test endpoint to isolate 500 error"""
+    try:
+        print(f"[TEST] Received {len(files)} files for {company_name}")
+        
+        file_info = []
+        for file in files:
+            file_info.append({
+                "filename": file.filename,
+                "content_type": file.content_type,
+                "size": len(await file.read()) if hasattr(file, 'read') else 0
+            })
+            # Reset file pointer if we read it
+            if hasattr(file, 'seek'):
+                await file.seek(0)
+        
+        return {
+            "success": True,
+            "message": f"Test successful - received {len(files)} files",
+            "files": file_info,
+            "company_name": company_name
+        }
+        
+    except Exception as e:
+        print(f"[ERROR] Test endpoint failed: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Test endpoint error: {str(e)}")
+
+@app.post("/api/debug/upload")
+async def debug_upload_endpoint(
+    files: List[UploadFile] = File(...),
+    company_name: str = Form(...)
+):
+    """
+    BRAND NEW ENDPOINT FOR DEBUGGING
+    """
+    print(f"[DEBUG] New debug endpoint called")
+    print(f"[DEBUG] Company: {company_name}")
+    print(f"[DEBUG] Files: {len(files)}")
+    
+    return {
+        "success": True,
+        "message": "New debug endpoint works!"
+    }
+
+@app.post("/api/blob/upload")
+async def blob_upload_endpoint(
+    files: List[UploadFile] = File(...),
+    company_name: str = Form(...)
+):
+    """
+    ULTRA SIMPLIFIED FOR DEBUGGING - No dependencies, no response model
+    """
+    try:
+        print(f"[DEBUG] Ultra simplified endpoint called")
+        print(f"[DEBUG] Company: {company_name}")
+        print(f"[DEBUG] Files: {len(files)}")
+        
+        return {
+            "success": True,
+            "job_id": "test-job-id", 
+            "message": "Ultra simplified test successful"
+        }
+        
+    except Exception as e:
+        print(f"[ERROR] Ultra simplified endpoint failed: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        return {"error": str(e)}
+
+@app.get("/api/blob/status/{job_id}", response_model=BlobAnalysisStatus)
+async def get_blob_job_status(job_id: str):
+    """
+    작업 상태 조회 엔드포인트
+    
+    실시간 진행률과 상태를 제공합니다.
+    """
+    if job_id not in job_storage:
+        raise HTTPException(status_code=404, detail="작업을 찾을 수 없습니다.")
+    
+    job_data = job_storage[job_id]
+    
+    return BlobAnalysisStatus(
+        job_id=job_id,
+        status=job_data["status"],
+        progress=job_data["progress"],
+        message=job_data["message"],
+        result=job_data.get("result"),
+        error=job_data.get("error")
+    )
+
+async def process_blob_files_background(
+    job_id: str, 
+    files: List[UploadFile], 
+    company_name: str, 
+    api_key: str
+):
+    """
+    백그라운드에서 Blob 파일 처리
+    
+    진행률을 실시간으로 업데이트하며 사용자 친화적인 피드백 제공
+    """
+    try:
+        import sys
+        sys.path.append(str(BASE_DIR))
+        from blob_processor import blob_processor
+        
+        def update_progress(stage: str, progress: int, message: str):
+            """진행률 업데이트 콜백"""
+            job_storage[job_id].update({
+                "status": "processing",
+                "progress": progress,
+                "message": message,
+                "stage": stage
+            })
+            print(f"[PROGRESS] [{job_id}] {stage}: {progress}% - {message}")
+        
+        # 1단계: 파일 검증 및 Blob 업로드
+        update_progress("validation", 5, "파일 검증 중...")
+        
+        blob_urls = []
+        total_files = len(files)
+        
+        for i, file in enumerate(files):
+            file_progress_base = (i / total_files) * 40  # 업로드는 전체의 40%
+            
+            # 파일 데이터 읽기
+            file_content = await file.read()
+            
+            update_progress(
+                "blob-upload", 
+                int(file_progress_base + 5), 
+                f"파일 업로드 중... ({i+1}/{total_files}) {file.filename}"
+            )
+            
+            # Vercel Blob에 업로드
+            upload_result = await blob_processor.upload_to_blob(
+                file_content, 
+                file.filename,
+                lambda stage, prog, msg: update_progress(
+                    stage, 
+                    int(file_progress_base + (prog * 0.35)), 
+                    f"{msg} ({i+1}/{total_files})"
+                )
+            )
+            
+            if upload_result["success"]:
+                blob_urls.append({
+                    "blob_url": upload_result["blob_url"],
+                    "filename": file.filename,
+                    "metadata": upload_result["metadata"]
+                })
+                print(f"[SUCCESS] [{job_id}] Blob 업로드 성공: {file.filename}")
+            else:
+                raise Exception(f"파일 업로드 실패: {file.filename} - {upload_result['error']}")
+        
+        # 2단계: 파일 처리 및 텍스트 추출
+        update_progress("file-processing", 45, "파일 내용 분석 중...")
+        
+        combined_content = []
+        for i, blob_info in enumerate(blob_urls):
+            file_progress_base = 45 + (i / total_files) * 30  # 처리는 30%
+            
+            update_progress(
+                "file-processing",
+                int(file_progress_base),
+                f"파일 분석 중... ({i+1}/{total_files}) {blob_info['filename']}"
+            )
+            
+            # Blob에서 파일 처리
+            ir_summary = await blob_processor.process_blob_file(
+                blob_info["blob_url"],
+                blob_info["filename"],
+                lambda stage, prog, msg: update_progress(
+                    stage,
+                    int(file_progress_base + (prog * 0.3)),
+                    f"{msg} ({i+1}/{total_files})"
+                )
+            )
+            
+            combined_content.append(f"=== {blob_info['filename']} ===\n{ir_summary}\n")
+        
+        # 3단계: AI 분석 및 보고서 생성
+        update_progress("ai-analysis", 75, "AI가 투자심사보고서를 생성하고 있습니다...")
+        
+        combined_ir_summary = "\n".join(combined_content)
+        
+        # 투자심사보고서 생성 (기존 함수 재사용)
+        if os.getenv("ENVIRONMENT") == "development" and api_key == "test_gemini_api_key_for_development":
+            # 개발 모드에서는 Mock 투자심사보고서 생성
+            investment_report = f"""
+# Mock 투자심사보고서 - {company_name}
+
+## Executive Summary
+
+**투자 논지**: {company_name}는 혁신적인 기술과 강력한 시장 포지션을 통해 지속 가능한 성장을 실현할 것으로 예상됩니다.
+
+## 1. 투자 개요
+
+### 1.1. 기업 개요
+- **회사명**: {company_name}
+- **사업 분야**: Mock IR 분석 기반
+- **설립년도**: 2020년 (추정)
+
+### 1.2. 투자 조건
+- **투자 금액**: 10억원 (제안)
+- **지분율**: 15%
+- **투자 형태**: 시리즈 A
+
+### 1.3. 손익 추정 및 수익성
+- **예상 매출 (2025)**: 50억원
+- **예상 EBITDA**: 10억원
+- **IRR**: 25% (추정)
+
+## 2. 기업 현황
+
+Mock 데이터를 바탕으로 분석한 결과, 해당 기업은 안정적인 성장 궤도에 있습니다.
+
+## 7. 종합 결론
+
+**투자 권고**: 적극 검토 권장
+
+위와 같은 분석을 바탕으로, {company_name}에 대한 투자를 긍정적으로 검토할 것을 제안합니다.
+
+---
+*이 보고서는 개발 모드에서 생성된 Mock 데이터를 포함합니다.*
+"""
+        else:
+            investment_report = await generate_investment_report(
+                ir_summary=combined_ir_summary,
+                company_name=company_name,
+                api_key=api_key
+            )
+        
+        # 4단계: 완료
+        update_progress("completed", 100, "투자심사보고서 생성 완료! 🎉")
+        
+        # 최종 결과 저장
+        job_storage[job_id].update({
+            "status": "completed",
+            "progress": 100,
+            "message": "분석이 완료되었습니다!",
+            "result": {
+                "company_name": company_name,
+                "investment_report": investment_report,
+                "source_files": [blob_info["filename"] for blob_info in blob_urls],
+                "blob_info": blob_urls,
+                "file_count": len(files),
+                "report_type": "투자심사보고서 초안 (Vercel Blob)",
+                "completed_at": datetime.now().isoformat()
+            }
+        })
+        
+        print(f"🎉 [{job_id}] Blob 파일 처리 완전 완료!")
+        
+        # 선택사항: Blob 정리 (24시간 후 자동 삭제 등)
+        # 실제 프로덕션에서는 스케줄러 사용
+        
+    except Exception as e:
+        print(f"[ERROR] [{job_id}] Blob 백그라운드 처리 실패: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        
+        job_storage[job_id].update({
+            "status": "failed",
+            "progress": 0,
+            "message": f"처리 중 오류가 발생했습니다: {str(e)}",
+            "error": str(e)
+        })
+
 @app.post("/api/analyze-ir-files")
 async def analyze_ir_files(
-    files: list[UploadFile] = File(...),
+    files: List[UploadFile] = File(...),
     company_name: str = Form(...),
     api_key: str = Depends(verify_token)
 ):
@@ -253,7 +562,7 @@ async def analyze_ir_files(
             
             # 파일 형식 검증
             if not file.filename.lower().endswith(('.pdf', '.xlsx', '.xls', '.docx', '.doc')):
-                print(f"❌ 지원하지 않는 파일 형식: {file.filename}")
+                print(f"[ERROR] 지원하지 않는 파일 형식: {file.filename}")
                 raise HTTPException(status_code=400, detail=f"지원하지 않는 파일 형식입니다: {file.filename}. 지원 형식: PDF, Excel, Word")
             
             # 개별 파일 크기 확인
@@ -277,7 +586,7 @@ async def analyze_ir_files(
             print(f"📄 파일 처리 완료: {file.filename}")
         
         # 전체 파일 크기 검증 (4.5MB 제한 - Vercel 서버리스 함수 최적화)
-        print(f"📊 전체 파일 크기: {total_size:,} bytes ({total_size/1024/1024:.2f} MB)")
+        print(f"[INFO] 전체 파일 크기: {total_size:,} bytes ({total_size/1024/1024:.2f} MB)")
         if total_size > 4.5 * 1024 * 1024:
             raise HTTPException(status_code=400, detail=f"전체 파일 크기가 제한을 초과했습니다: {total_size:,} bytes. 최대 4.5MB까지 허용됩니다.")
         
@@ -302,10 +611,10 @@ async def analyze_ir_files(
         }
         
     except HTTPException as he:
-        print(f"❌ HTTP 검증 오류 (400): {he.detail}")
+        print(f"[ERROR] HTTP 검증 오류 (400): {he.detail}")
         raise
     except Exception as e:
-        print(f"❌ 다중 파일 분석 중 예상치 못한 오류: {str(e)}")
+        print(f"[ERROR] 다중 파일 분석 중 예상치 못한 오류: {str(e)}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"다중 파일 분석 중 오류 발생: {str(e)}")
