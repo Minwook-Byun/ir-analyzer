@@ -266,19 +266,19 @@ async def analyze_ir_files(
             if file_size == 0:
                 raise HTTPException(status_code=400, detail=f"빈 파일입니다: {file.filename}")
             
-            # 개별 파일 크기 제한 (500KB)
-            if file_size > 500 * 1024:
-                raise HTTPException(status_code=400, detail=f"파일 크기가 너무 큽니다: {file.filename} ({file_size:,} bytes). 최대 500KB까지 허용됩니다.")
+            # 개별 파일 크기 제한 (10MB)
+            if file_size > 10 * 1024 * 1024:
+                raise HTTPException(status_code=400, detail=f"파일 크기가 너무 큽니다: {file.filename} ({file_size:,} bytes). 최대 10MB까지 허용됩니다.")
             
             # 파일 처리
             ir_summary = await process_uploaded_file(file_content, file.filename)
             combined_content.append(f"=== {file.filename} ===\n{ir_summary}\n")
             print(f"📄 파일 처리 완료: {file.filename}")
         
-        # 전체 파일 크기 검증 (1MB 제한 - Vercel 서버리스 함수 최적화)
+        # 전체 파일 크기 검증 (50MB 제한 - Vercel 서버리스 함수 최적화)
         print(f"📊 전체 파일 크기: {total_size:,} bytes ({total_size/1024/1024:.2f} MB)")
-        if total_size > 1 * 1024 * 1024:
-            raise HTTPException(status_code=400, detail=f"전체 파일 크기가 제한을 초과했습니다: {total_size:,} bytes. 최대 1MB까지 허용됩니다.")
+        if total_size > 50 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail=f"전체 파일 크기가 제한을 초과했습니다: {total_size:,} bytes. 최대 50MB까지 허용됩니다.")
         
         # 모든 파일 내용을 결합
         combined_ir_summary = "\n".join(combined_content)
@@ -323,10 +323,10 @@ async def analyze_ir_file(
         if not file.filename.lower().endswith(('.pdf', '.xlsx', '.xls', '.docx', '.doc')):
             raise HTTPException(status_code=400, detail="지원하지 않는 파일 형식입니다.")
         
-        # 파일 크기 검증 (1MB 제한 - Vercel 서버리스 함수 최적화)
+        # 파일 크기 검증 (10MB 제한 - Vercel 서버리스 함수 최적화)
         file_content = await file.read()
-        if len(file_content) > 1 * 1024 * 1024:
-            raise HTTPException(status_code=400, detail="파일 크기는 1MB를 초과할 수 없습니다. 안정적인 처리를 위한 제한사항입니다.")
+        if len(file_content) > 10 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="파일 크기는 10MB를 초과할 수 없습니다. 안정적인 처리를 위한 제한사항입니다.")
         
         # 파일 처리
         ir_summary = await process_uploaded_file(file_content, file.filename)
