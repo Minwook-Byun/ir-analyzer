@@ -16,8 +16,8 @@ import pathlib
 import jwt
 import secrets
 
-# 현재 파일의 경로를 기준으로 frontend 폴더 경로 설정
-BASE_DIR = pathlib.Path(__file__).resolve().parent
+# 현재 파일의 경로를 기준으로 프로젝트 루트 경로 설정
+BASE_DIR = pathlib.Path(__file__).resolve().parent.parent  # api 폴더의 상위 폴더
 FRONTEND_DIR = BASE_DIR / "frontend"
 
 # 환경변수 로드
@@ -53,7 +53,6 @@ except Exception as e:
     print(f"⚠️ Failed to mount static files: {e}")
 
 # JSON 데이터 파일 서빙을 위한 루트 정적 파일 마운트
-from fastapi.responses import FileResponse
 
 @app.get("/impact-report-data.json")
 async def get_impact_report_data():
@@ -191,6 +190,8 @@ async def generate_theory_of_change(
         print(f"🎯 변화이론 생성 요청: {request.organization_name}")
         
         # theory_of_change 모듈 import
+        import sys
+        sys.path.append(str(BASE_DIR))  # 프로젝트 루트를 Python 경로에 추가
         from theory_of_change import TheoryOfChangeOrchestrator
         
         # 오케스트레이터 초기화 및 실행
@@ -357,6 +358,8 @@ async def analyze_ir_file(
 async def process_uploaded_file(file_content: bytes, filename: str) -> str:
     """업로드된 파일 처리"""
     try:
+        import sys
+        sys.path.append(str(BASE_DIR))  # 프로젝트 루트를 Python 경로에 추가
         from pdf_processor import PDFProcessor
         
         processor = PDFProcessor()
@@ -502,6 +505,8 @@ async def jandi_webhook(request: JandiWebhookRequest):
 async def download_and_extract_ir(url: str) -> str:
     """IR 파일 다운로드 및 텍스트 추출"""
     try:
+        import sys
+        sys.path.append(str(BASE_DIR))  # 프로젝트 루트를 Python 경로에 추가
         from pdf_processor import PDFProcessor
         
         print(f"📥 PDF 처리 시작: {url}")
@@ -520,6 +525,8 @@ async def download_and_extract_ir(url: str) -> str:
 async def generate_investment_report(ir_summary: str, company_name: str, api_key: str) -> str:
     """JSONL 학습 데이터를 바탕으로 투자심사보고서 생성"""
     try:
+        import sys
+        sys.path.append(str(BASE_DIR))  # 프로젝트 루트를 Python 경로에 추가
         from jsonl_processor import JSONLProcessor
         
         print(f"📚 JSONL 학습 데이터 로드 중...")
