@@ -18,7 +18,9 @@
       "Bash(cp:*)",
       "Bash(cp:*)",
       "Bash(rm:*)",
-      "Bash(sed:*)"
+      "Bash(sed:*)",
+      "Bash(vercel:*)",
+      "Bash(npm install:*)"
     ],
     "deny": []
   }
