@@ -443,7 +443,7 @@ async def generate_investment_report(ir_summary: str, company_name: str, api_key
         
         print(f"📚 JSONL 학습 데이터 로드 중...")
         
-        # JSONL 학습 데이터 로드 (절대 경로 지정)
+        # JSONL 학습 데이터 로드 (api 폴더 내 경로 지정)
         jsonl_path = BASE_DIR / "jsonl_data"
         processor = JSONLProcessor(str(jsonl_path))
         learning_context = processor.create_learning_context()
