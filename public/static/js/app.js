@@ -170,8 +170,8 @@ document.addEventListener('DOMContentLoaded', function() {
             formatValidation.classList.toggle('error', !allValidFormats);
         }
 
-        // Check total size (4MB limit per Vercel)
-        const maxSize = 4 * 1024 * 1024; // 4MB in bytes
+        // Check total size (4.5MB limit per Vercel)
+        const maxSize = 4.5 * 1024 * 1024; // 4.5MB in bytes
         const isValidSize = totalSize <= maxSize;
         
         if (sizeValidation) {
@@ -179,7 +179,7 @@ document.addEventListener('DOMContentLoaded', function() {
             sizeValidation.classList.toggle('error', !isValidSize);
             
             const sizeText = formatFileSize(totalSize);
-            sizeValidation.querySelector('span').textContent = `총 파일 크기: ${sizeText} (최대 4MB)`;
+            sizeValidation.querySelector('span').textContent = `총 파일 크기: ${sizeText} (최대 4.5MB)`;
         }
 
         // Enable/disable analyze button

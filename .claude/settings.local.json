@@ -20,7 +20,9 @@
       "Bash(rm:*)",
       "Bash(sed:*)",
       "Bash(vercel:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(ls:*)",
+      "Bash(git reset:*)"
     ],
     "deny": []
   }
