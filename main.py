@@ -185,10 +185,10 @@ async def analyze_ir_file(
         if not file.filename.lower().endswith(('.pdf', '.xlsx', '.xls', '.docx', '.doc')):
             raise HTTPException(status_code=400, detail="지원하지 않는 파일 형식입니다.")
         
-        # 파일 크기 검증 (100MB 제한)
+        # 파일 크기 검증 (16MB 제한)
         file_content = await file.read()
-        if len(file_content) > 100 * 1024 * 1024:
-            raise HTTPException(status_code=400, detail="파일 크기는 100MB를 초과할 수 없습니다.")
+        if len(file_content) > 16 * 1024 * 1024:
+            raise HTTPException(status_code=400, detail="파일 크기는 16MB를 초과할 수 없습니다.")
         
         # 파일 처리
         ir_summary = await process_uploaded_file(file_content, file.filename)
