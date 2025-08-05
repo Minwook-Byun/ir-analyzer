@@ -177,6 +177,48 @@ async def logout():
     """로그아웃 (클라이언트에서 토큰 삭제)"""
     return {"message": "로그아웃되었습니다. 토큰을 삭제해주세요."}
 
+class TheoryOfChangeRequest(BaseModel):
+    organization_name: str
+    impact_focus: Optional[str] = None
+
+@app.post("/api/generate-theory-of-change")
+async def generate_theory_of_change(
+    request: TheoryOfChangeRequest,
+    api_key: str = Depends(verify_token)
+):
+    """변화이론(Theory of Change) 동적 생성 API"""
+    try:
+        print(f"🎯 변화이론 생성 요청: {request.organization_name}")
+        
+        # theory_of_change 모듈 import
+        from theory_of_change import TheoryOfChangeOrchestrator
+        
+        # 오케스트레이터 초기화 및 실행
+        orchestrator = TheoryOfChangeOrchestrator(api_key)
+        theory_data = await orchestrator.generate_theory_of_change(
+            organization_name=request.organization_name,
+            impact_focus=request.impact_focus
+        )
+        
+        print(f"✅ 변화이론 생성 완료: {request.organization_name}")
+        
+        return {
+            "success": True,
+            "organization_name": request.organization_name,
+            "theory_data": theory_data,
+            "generated_by": "multi-agent-system",
+            "agents_used": [
+                "context-analyzer", "user-insight", "strategy-designer", 
+                "validator", "storyteller"
+            ],
+            "generated_at": datetime.now().isoformat(),
+            "message": "변화이론이 성공적으로 생성되었습니다."
+        }
+        
+    except Exception as e:
+        print(f"❌ 변화이론 생성 중 오류: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"변화이론 생성 중 오류 발생: {str(e)}")
+
 @app.post("/api/analyze-ir-files")
 async def analyze_ir_files(
     files: list[UploadFile] = File(...),
@@ -187,17 +229,46 @@ async def analyze_ir_files(
     try:
         print(f"📎 다중 파일 업로드 분석 시작: {company_name} - {len(files)}개 파일")
         
+        # 입력 데이터 검증 로깅
+        print(f"🔍 Request validation - Company: {company_name}, Files count: {len(files)}")
+        for i, file in enumerate(files):
+            print(f"  File {i+1}: {file.filename}, Content-Type: {file.content_type}")
+        
+        # 빈 파일 리스트 검증
+        if not files or len(files) == 0:
+            raise HTTPException(status_code=400, detail="업로드할 파일을 선택해주세요.")
+        
+        # company_name 검증
+        if not company_name or company_name.strip() == "":
+            raise HTTPException(status_code=400, detail="회사명을 입력해주세요.")
+        
         combined_content = []
         total_size = 0
         
         for file in files:
-            # 파일 검증
+            # 파일명 존재 검증
+            if not file.filename:
+                raise HTTPException(status_code=400, detail="파일명이 없는 파일이 있습니다.")
+            
+            # 파일 형식 검증
             if not file.filename.lower().endswith(('.pdf', '.xlsx', '.xls', '.docx', '.doc')):
-                raise HTTPException(status_code=400, detail=f"지원하지 않는 파일 형식입니다: {file.filename}")
+                print(f"❌ 지원하지 않는 파일 형식: {file.filename}")
+                raise HTTPException(status_code=400, detail=f"지원하지 않는 파일 형식입니다: {file.filename}. 지원 형식: PDF, Excel, Word")
             
             # 개별 파일 크기 확인
             file_content = await file.read()
-            total_size += len(file_content)
+            file_size = len(file_content)
+            total_size += file_size
+            
+            print(f"📄 파일 읽기 완료: {file.filename} ({file_size:,} bytes)")
+            
+            # 빈 파일 검증
+            if file_size == 0:
+                raise HTTPException(status_code=400, detail=f"빈 파일입니다: {file.filename}")
+            
+            # 개별 파일 크기 제한 (500KB)
+            if file_size > 500 * 1024:
+                raise HTTPException(status_code=400, detail=f"파일 크기가 너무 큽니다: {file.filename} ({file_size:,} bytes). 최대 500KB까지 허용됩니다.")
             
             # 파일 처리
             ir_summary = await process_uploaded_file(file_content, file.filename)
@@ -205,8 +276,9 @@ async def analyze_ir_files(
             print(f"📄 파일 처리 완료: {file.filename}")
         
         # 전체 파일 크기 검증 (1MB 제한 - Vercel 서버리스 함수 최적화)
+        print(f"📊 전체 파일 크기: {total_size:,} bytes ({total_size/1024/1024:.2f} MB)")
         if total_size > 1 * 1024 * 1024:
-            raise HTTPException(status_code=400, detail="전체 파일 크기는 1MB를 초과할 수 없습니다. 안정적인 처리를 위한 제한사항입니다.")
+            raise HTTPException(status_code=400, detail=f"전체 파일 크기가 제한을 초과했습니다: {total_size:,} bytes. 최대 1MB까지 허용됩니다.")
         
         # 모든 파일 내용을 결합
         combined_ir_summary = "\n".join(combined_content)
@@ -228,10 +300,13 @@ async def analyze_ir_files(
             "report_type": "투자심사보고서 초안 (다중 파일)"
         }
         
-    except HTTPException:
+    except HTTPException as he:
+        print(f"❌ HTTP 검증 오류 (400): {he.detail}")
         raise
     except Exception as e:
-        print(f"❌ 다중 파일 분석 중 오류: {str(e)}")
+        print(f"❌ 다중 파일 분석 중 예상치 못한 오류: {str(e)}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"다중 파일 분석 중 오류 발생: {str(e)}")
 
 @app.post("/api/analyze-ir-file")

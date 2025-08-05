@@ -48,6 +48,13 @@ document.addEventListener('DOMContentLoaded', function() {
     initFileUpload();
     initImpactFileUpload();
     initTabs();
+
+    // 인증 관련 함수들
+    function getToken() {
+        // 우선 localStorage에서 확인하고, 없으면 sessionStorage에서 확인
+        return localStorage.getItem('access_token') || sessionStorage.getItem('auth_token');
+    }
+
     initForm();
     initImpactForm();
     initTheoryDownloads();
@@ -772,27 +779,61 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function generateTheoryOfChange(organizationName, impactFocus) {
-        // Simulate API call with demo data
-        setTimeout(() => {
-            // Load demo data
-            loadDemoTheoryData(organizationName, impactFocus)
-                .then(data => {
-                    theoryData = data;
-                    showTheoryResults(data);
+        // 동적 API 호출로 변화이론 생성
+        generateDynamicTheoryOfChange(organizationName, impactFocus)
+            .then(data => {
+                theoryData = data;
+                showTheoryResults(data);
+            })
+            .catch(error => {
+                console.error('Theory generation error:', error);
+                showTheoryError('변화이론 생성 중 오류가 발생했습니다. 로그인 상태를 확인해주세요.');
+            })
+            .finally(() => {
+                theoryGenerationInProgress = false;
+                setImpactFormDisabled(false);
+            });
+    }
+
+    async function generateDynamicTheoryOfChange(organizationName, impactFocus) {
+        // 동적 변화이론 생성 API 호출
+        try {
+            const token = getToken();
+            if (!token) {
+                throw new Error('로그인이 필요합니다.');
+            }
+
+            const response = await fetch('/api/generate-theory-of-change', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    organization_name: organizationName,
+                    impact_focus: impactFocus
                 })
-                .catch(error => {
-                    console.error('Theory generation error:', error);
-                    showTheoryError('변화이론 생성 중 오류가 발생했습니다.');
-                })
-                .finally(() => {
-                    theoryGenerationInProgress = false;
-                    setImpactFormDisabled(false);
-                });
-        }, 6000);
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || '변화이론 생성에 실패했습니다.');
+            }
+
+            const result = await response.json();
+            console.log('Dynamic theory generation result:', result);
+            
+            return result.theory_data;
+            
+        } catch (error) {
+            console.error('Dynamic theory generation error:', error);
+            // 오류 시 fallback으로 기존 데모 데이터 사용
+            return await loadDemoTheoryData(organizationName, impactFocus);
+        }
     }
 
     async function loadDemoTheoryData(organizationName, impactFocus) {
-        // Load the JSON data we created
+        // Load the JSON data we created (fallback)
         try {
             const response = await fetch('/impact-report-data.json');
             const data = await response.json();
