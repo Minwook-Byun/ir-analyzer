@@ -1,6 +1,24 @@
 // MYSC AI Agent - Linear-Inspired Investment Report Analysis Platform JavaScript
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Reset function to ensure clean state
+    function resetAnalysisState() {
+        console.log('Resetting analysis state...');
+        analysisInProgress = false;
+        if (typeof setFormDisabled === 'function') {
+            setFormDisabled(false);
+        }
+        if (progressContainer) {
+            progressContainer.classList.remove('show');
+        }
+    }
+
+    // Add global error handler for unhandled errors
+    window.addEventListener('error', function(e) {
+        console.error('Global error caught:', e.error);
+        resetAnalysisState();
+    });
+
     // 로그인 상태 확인
     checkAuthStatus();
     
@@ -547,12 +565,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function setFormDisabled(disabled) {
+        console.log(`Setting form disabled: ${disabled}`);
         const inputs = analysisForm.querySelectorAll('input, button');
         inputs.forEach(input => {
             input.disabled = disabled;
         });
 
         if (analyzeBtn) {
+            analyzeBtn.disabled = disabled;
             if (disabled) {
                 analyzeBtn.innerHTML = `
                     <i data-lucide="loader" style="width: 20px; height: 20px; margin-right: 8px; animation: spin 1s linear infinite;"></i>
@@ -565,10 +585,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 `;
             }
             
+            console.log(`Analyze button disabled state: ${analyzeBtn.disabled}`);
+            
             // Re-initialize icons
             if (typeof lucide !== 'undefined') {
                 lucide.createIcons();
             }
+        } else {
+            console.warn('Analyze button not found!');
         }
     }
 
@@ -1786,4 +1810,11 @@ document.head.appendChild(style);
         *본 분석은 딥리서치를 통해 수집된 최신 데이터를 바탕으로 작성되었습니다.*
         `;
     }
+    
+    // Ensure clean state on page load - call at end of initialization
+    setTimeout(() => {
+        if (typeof resetAnalysisState === 'function') {
+            resetAnalysisState();
+        }
+    }, 100);
 });
