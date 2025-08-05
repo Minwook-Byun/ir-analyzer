@@ -56,6 +56,27 @@ except Exception as e:
 
 # JSON 데이터 파일 서빙을 위한 루트 정적 파일 마운트
 
+@app.get("/")
+async def get_homepage():
+    """메인 홈페이지 반환"""
+    try:
+        index_path = PUBLIC_DIR / "index.html"
+        if index_path.exists():
+            return FileResponse(index_path, media_type="text/html")
+        else:
+            return HTMLResponse(content="""
+            <html><head><title>IR Analyzer</title></head>
+            <body><h1>IR Analyzer</h1><p>Investment Report Analysis Platform</p></body>
+            </html>
+            """)
+    except Exception as e:
+        return HTMLResponse(content=f"<h1>Error loading homepage: {str(e)}</h1>", status_code=500)
+
+@app.get("/health")
+async def health_check():
+    """서버 상태 확인용 간단한 엔드포인트"""
+    return {"status": "healthy", "message": "IR Analyzer is running"}
+
 @app.get("/impact-report-data.json")
 async def get_impact_report_data():
     """임팩트 리포트 데모 데이터 반환"""
