@@ -397,14 +397,40 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
 
-        addDebugLogEntry('info', 'API 요청 전송', `엔드포인트: ${endpoint}\n인증: Bearer 토큰 사용`);
+        // Log request details
+        let requestInfo = `엔드포인트: ${endpoint}\n인증: Bearer 토큰 사용`;
+        if (currentFiles.length > 0) {
+            requestInfo += `\n파일 수: ${currentFiles.length}`;
+            requestInfo += `\n회사명: ${companyName}`;
+            for (let i = 0; i < currentFiles.length; i++) {
+                const file = currentFiles[i];
+                requestInfo += `\n파일 ${i+1}: ${file.name} (${(file.size/1024).toFixed(1)}KB)`;
+            }
+        } else {
+            requestInfo += `\n요청 타입: URL 분석`;
+            requestInfo += `\n회사명: ${companyName}`;
+            requestInfo += `\nIR URL: ${irUrl}`;
+        }
+        
+        addDebugLogEntry('info', 'API 요청 전송', requestInfo);
         
         fetch(endpoint, options)
         .then(response => {
             addDebugLogEntry('info', `서버 응답 수신`, `상태 코드: ${response.status}\n응답 타입: ${response.headers.get('content-type')}`);
             
             if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                // Try to get error details from response
+                return response.text().then(errorText => {
+                    let errorDetail = errorText;
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        errorDetail = errorJson.detail || errorJson.message || errorText;
+                    } catch (e) {
+                        // Keep original text if not JSON
+                    }
+                    addDebugLogEntry('error', `HTTP ${response.status} 에러`, errorDetail);
+                    throw new Error(`HTTP ${response.status}: ${errorDetail}`);
+                });
             }
             
             return response.json();
