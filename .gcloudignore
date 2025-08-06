@@ -1,0 +1,16 @@
+# Google Cloud Build ignore file
+.git
+.gitignore
+README.md
+*.md
+.claude/
+tests/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.DS_Store
