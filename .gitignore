@@ -87,3 +87,4 @@ tmp/
 *.docx
 *.pdf
 !requirements.txt
+.vercel
