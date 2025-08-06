@@ -41,7 +41,7 @@ async def analyze_with_gemini(api_key: str, company_name: str, file_info: dict):
     """Gemini AI를 사용한 실제 투자 분석"""
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        model = genai.GenerativeModel('gemini-2.5-pro')
         
         # 간소화된 투자 분석 프롬프트
         prompt = f"""{company_name} 투자분석 리포트를 한국어로 작성하세요.
@@ -162,7 +162,7 @@ async def perform_basic_analysis(api_key: str, company_name: str, file_info: dic
     """1단계: 기본 투자 분석 수행"""
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        model = genai.GenerativeModel('gemini-2.5-pro')
         
         # 매우 간단한 기본 분석 프롬프트
         prompt = f"{company_name} 투자 기본 분석: 점수, 추천, 핵심 포인트 1개씩"
@@ -195,7 +195,7 @@ async def perform_followup_analysis(api_key: str, company_name: str, question_ty
     """2단계: 후속 상세 분석 수행"""
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        model = genai.GenerativeModel('gemini-2.5-pro')
         
         # 질문 유형별 간단한 프롬프트
         prompts = {
