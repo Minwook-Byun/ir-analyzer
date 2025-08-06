@@ -43,23 +43,34 @@ async def analyze_with_gemini(api_key: str, company_name: str, file_info: dict):
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-pro')
         
+        # 간소화된 투자 분석 프롬프트 (긴 프롬프트는 413 오류 발생)
         prompt = f"""
-        당신은 전문 투자 분석가입니다. 다음 기업의 IR 정보를 분석해주세요.
+        **{company_name}** 투자 분석 리포트를 작성하세요.
 
-        기업명: {company_name}
-        업로드된 문서 수: {file_info.get('count', 0)}개
-        총 문서 크기: {file_info.get('size_mb', 0):.1f}MB
+        매니징 파트너로서 다음 구조로 한국어 투자심사보고서를 작성:
 
-        다음 JSON 형식으로 응답해주세요:
-        {{
-            "investment_score": 7.2,
-            "market_position": "#3",
-            "risk_level": "Medium",
-            "growth_trend": "Positive",
-            "key_strengths": ["강점1", "강점2", "강점3"],
-            "key_concerns": ["우려1", "우려2"],
-            "recommendation": "Buy"
-        }}
+        # Executive Summary
+        투자 논지: {company_name}는 [핵심 가치 제안]으로 시장을 선도할 것
+
+        ## 1. 투자 개요  
+        - 기업명: {company_name}
+        - 투자 점수: X.X/10
+        - 추천: Buy/Hold/Sell
+
+        ## 2. 시장 분석
+        - 시장 규모 및 성장률
+        - 경쟁 우위
+
+        ## 3. 리스크 및 기회
+        - 주요 강점 3가지
+        - 우려사항 2가지
+
+        ## 4. 투자 결론
+        - 최종 투자 추천 의견
+
+        업로드된 자료: {file_info.get('count', 0)}개 파일 ({file_info.get('size_mb', 0):.1f}MB)
+
+        전문적이고 확신에 찬 어조로 작성하세요.
         """
         
         response = model.generate_content(prompt)
@@ -369,10 +380,31 @@ async def handle_all_routes(request: Request, path: str = ""):
             company_name = form.get("company_name", "Unknown Company")
             files = form.getlist("files") if "files" in form else []
             
-            # 파일 정보
+            # 파일 정보 및 크기 제한 확인
+            total_size = 0
+            for file in files:
+                if hasattr(file, 'read'):
+                    content = await file.read()
+                    file_size = len(content)
+                    total_size += file_size
+                    
+                    # 개별 파일 크기 제한 (50MB)
+                    if file_size > 50 * 1024 * 1024:
+                        return JSONResponse({
+                            "success": False, 
+                            "error": f"파일 '{file.filename}'이 너무 큽니다 (최대 50MB)"
+                        }, status_code=413)
+            
+            # 전체 크기 제한 (100MB)  
+            if total_size > 100 * 1024 * 1024:
+                return JSONResponse({
+                    "success": False, 
+                    "error": "전체 파일 크기가 100MB를 초과합니다"
+                }, status_code=413)
+            
             file_info = {
                 "count": len(files),
-                "size_mb": sum(len(await f.read()) if hasattr(f, 'read') else 0 for f in files) / (1024*1024)
+                "size_mb": total_size / (1024*1024)
             }
             
             # Gemini AI 분석 실행
