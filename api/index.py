@@ -16,17 +16,54 @@ import google.generativeai as genai
 import asyncio
 from typing import Dict
 
-# 프로젝트 루트 경로 설정
-BASE_DIR = pathlib.Path(__file__).resolve().parent.parent
-PUBLIC_DIR = BASE_DIR / "public"
+# 프로젝트 루트 경로 설정 (Railway 환경 호환)
+try:
+    BASE_DIR = pathlib.Path(__file__).resolve().parent.parent
+    PUBLIC_DIR = BASE_DIR / "public"
+    
+    # Railway 환경에서 경로 검증
+    if not PUBLIC_DIR.exists():
+        # 현재 디렉토리에서 public 찾기
+        current_dir = pathlib.Path.cwd()
+        if (current_dir / "public").exists():
+            BASE_DIR = current_dir
+            PUBLIC_DIR = BASE_DIR / "public"
+        else:
+            # 기본 경로 생성
+            PUBLIC_DIR.mkdir(exist_ok=True)
+            
+except Exception as e:
+    # Railway 환경에서 경로 문제 시 기본값 설정
+    BASE_DIR = pathlib.Path.cwd()
+    PUBLIC_DIR = BASE_DIR / "public"
+    PUBLIC_DIR.mkdir(exist_ok=True)
 
 app = FastAPI(title="MYSC IR Platform", version="3.0.0")
 
 # JWT 및 암호화 설정
 JWT_SECRET = os.getenv("JWT_SECRET", "mysc-ir-platform-secret-2025")
-ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY", Fernet.generate_key())
-if isinstance(ENCRYPTION_KEY, str):
+
+# Railway 환경에서 안정적인 암호화 키 생성
+DEFAULT_KEY = "mysc-ir-platform-encryption-key-2025-stable"
+ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY")
+
+if not ENCRYPTION_KEY:
+    # 고정된 시드를 사용해 일관된 키 생성
+    from cryptography.hazmat.primitives import hashes
+    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+    import base64
+    
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=b'mysc-salt-2025',
+        iterations=100000,
+    )
+    key = base64.urlsafe_b64encode(kdf.derive(DEFAULT_KEY.encode()))
+    ENCRYPTION_KEY = key
+elif isinstance(ENCRYPTION_KEY, str):
     ENCRYPTION_KEY = ENCRYPTION_KEY.encode()
+
 cipher_suite = Fernet(ENCRYPTION_KEY)
 
 # Railway: 무제한 실행 시간, 영구 스토리지 사용 가능
@@ -629,9 +666,18 @@ async def handle_all_routes(request: Request, path: str = ""):
             else:
                 return FileResponse(file_path)
     
-    # API 엔드포인트들
-    if path == "health":
-        return {"status": "healthy", "platform": "MYSC IR Platform", "auth": "JWT + Gemini"}
+    # API 엔드포인트들 
+    if path == "health" or path == "":
+        return {
+            "status": "healthy", 
+            "platform": "MYSC IR Platform", 
+            "auth": "JWT + Gemini",
+            "version": "3.0.0",
+            "environment": ENVIRONMENT,
+            "port": PORT,
+            "base_dir": str(BASE_DIR),
+            "public_dir_exists": PUBLIC_DIR.exists()
+        }
     
     if path == "api/config":
         return {
