@@ -565,11 +565,11 @@ async def handle_all_routes(request: Request, path: str = ""):
                     file_size = len(content)
                     file_info["size_mb"] += file_size / (1024*1024)
                     
-                    # 파일 크기 제한
-                    if file_size > 50 * 1024 * 1024:
+                    # 파일 크기 제한 (10MB)
+                    if file_size > 10 * 1024 * 1024:
                         return JSONResponse({
                             "success": False, 
-                            "error": f"파일 '{file.filename}'이 너무 큽니다 (최대 50MB)"
+                            "error": f"파일 '{file.filename}'이 너무 큽니다 (최대 10MB)"
                         }, status_code=413)
                     
                     file_contents.append({
@@ -659,18 +659,18 @@ async def handle_all_routes(request: Request, path: str = ""):
                     file_size = len(content)
                     total_size += file_size
                     
-                    # 개별 파일 크기 제한 (50MB)
-                    if file_size > 50 * 1024 * 1024:
+                    # 개별 파일 크기 제한 (10MB)
+                    if file_size > 10 * 1024 * 1024:
                         return JSONResponse({
                             "success": False, 
-                            "error": f"파일 '{file.filename}'이 너무 큽니다 (최대 50MB)"
+                            "error": f"파일 '{file.filename}'이 너무 큽니다 (최대 10MB)"
                         }, status_code=413)
             
-            # 전체 크기 제한 (100MB)  
-            if total_size > 100 * 1024 * 1024:
+            # 전체 크기 제한 (20MB)  
+            if total_size > 20 * 1024 * 1024:
                 return JSONResponse({
                     "success": False, 
-                    "error": "전체 파일 크기가 100MB를 초과합니다"
+                    "error": "전체 파일 크기가 20MB를 초과합니다"
                 }, status_code=413)
             
             file_info = {

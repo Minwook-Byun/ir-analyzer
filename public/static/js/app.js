@@ -5,6 +5,8 @@ class MYSCPlatform {
         this.currentSection = 'analysis';
         this.selectedFiles = [];
         this.analysisInProgress = false;
+        this.currentConversationId = null;
+        this.currentCompanyName = null;
         
         this.init();
     }
@@ -437,6 +439,7 @@ class MYSCPlatform {
 
     // Initialize conversation
     initializeConversation(companyName) {
+        this.currentCompanyName = companyName;
         const messagesContainer = document.getElementById('conversationMessages');
         
         // Add welcome message
@@ -450,10 +453,8 @@ class MYSCPlatform {
         // Scroll to bottom
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
         
-        // Start basic analysis after short delay
-        setTimeout(() => {
-            this.performBasicAnalysis(companyName);
-        }, 2000);
+        // Start basic analysis immediately
+        this.performBasicAnalysis(companyName);
     }
     
     createMessage(type, content) {
@@ -522,6 +523,7 @@ class MYSCPlatform {
             }
             
             if (result.success) {
+                this.currentConversationId = result.conversation_id;
                 this.displayAnalysisResult(result);
             } else {
                 this.displayError(result.error);
@@ -592,9 +594,103 @@ class MYSCPlatform {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
     
-    handleFollowupQuestion(questionType) {
-        // Implementation for followup questions
-        console.log('Followup question:', questionType);
+    async handleFollowupQuestion(questionType) {
+        const messagesContainer = document.getElementById('conversationMessages');
+        
+        // Add user question message
+        const questionTexts = {
+            'financial': '재무 상세 분석을 요청합니다',
+            'market': '시장 경쟁 분석을 요청합니다', 
+            'risk': '리스크 심화 분석을 요청합니다',
+            'custom': '직접 질문하기'
+        };
+        
+        if (questionType !== 'custom') {
+            const userMessage = this.createMessage('user', questionTexts[questionType]);
+            messagesContainer.appendChild(userMessage);
+        }
+        
+        // Add typing indicator
+        const typingIndicator = this.createTypingIndicator();
+        messagesContainer.appendChild(typingIndicator);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+        try {
+            const token = localStorage.getItem('auth_token');
+            const response = await fetch('/api/conversation/followup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    conversation_id: this.currentConversationId,
+                    question_type: questionType,
+                    company_name: this.currentCompanyName
+                })
+            });
+            
+            const result = await response.json();
+            
+            // Remove typing indicator
+            const typingMessage = document.querySelector('.typing-message');
+            if (typingMessage) {
+                typingMessage.remove();
+            }
+            
+            if (result.success) {
+                this.displayFollowupResult(result);
+            } else {
+                this.displayError(result.error);
+            }
+            
+        } catch (error) {
+            console.error('Followup error:', error);
+            this.displayError('추가 분석 중 오류가 발생했습니다.');
+        }
+    }
+    
+    displayFollowupResult(result) {
+        const messagesContainer = document.getElementById('conversationMessages');
+        
+        const followupContent = `
+            <div class="analysis-card">
+                <div class="analysis-card-header">
+                    <i data-feather="info" class="analysis-card-icon"></i>
+                    <span class="analysis-card-title">${this.getFollowupTitle(result.question_type)}</span>
+                </div>
+                <div class="message-text">${result.analysis.analysis_text}</div>
+                ${result.analysis.metrics ? this.renderMetrics(result.analysis.metrics) : ''}
+            </div>
+        `;
+        
+        const resultMessage = this.createMessage('ai', followupContent);
+        messagesContainer.appendChild(resultMessage);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        feather.replace();
+    }
+    
+    getFollowupTitle(questionType) {
+        const titles = {
+            'financial': '재무 상세 분석 결과',
+            'market': '시장 경쟁 분석 결과', 
+            'risk': '리스크 심화 분석 결과',
+            'custom': '추가 분석 결과'
+        };
+        return titles[questionType] || '분석 결과';
+    }
+    
+    renderMetrics(metrics) {
+        return `
+            <div class="analysis-metrics">
+                ${Object.entries(metrics).map(([key, value]) => `
+                    <div class="metric-item">
+                        <div class="metric-value">${value}</div>
+                        <div class="metric-label">${key}</div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
     }
 
     // Logout functionality
