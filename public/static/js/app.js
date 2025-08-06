@@ -437,7 +437,7 @@ class MYSCPlatform {
         const logoutBtn = document.getElementById('logoutBtn');
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
-                if (confirm('Are you sure you want to logout?')) {
+                if (confirm('정말로 로그아웃 하시겠습니까?')) {
                     localStorage.removeItem('auth_token');
                     window.location.href = '/login';
                 }
