@@ -1,0 +1,408 @@
+/* MYSC AI Agent - Ultra-Sophisticated Design Tokens */
+/* Inspired by Linear's design excellence with our unique brand identity */
+
+:root {
+  /* Brand Foundation - Primary Palette */
+  --brand-primary-50: #f0fdf9;
+  --brand-primary-100: #ccfdf7;
+  --brand-primary-200: #99fbf0;
+  --brand-primary-300: #5eefe6;
+  --brand-primary-400: #2dd4cc;
+  --brand-primary-500: #1ebcc5;
+  --brand-primary-600: #0d9ba3;
+  --brand-primary-700: #107a82;
+  --brand-primary-800: #145963;
+  --brand-primary-900: #164a52;
+  --brand-primary-950: #042f32;
+
+  /* Neutral Palette - Ultra Refined */
+  --neutral-0: #ffffff;
+  --neutral-25: #fdfdfd;
+  --neutral-50: #fafafa;
+  --neutral-75: #f7f7f7;
+  --neutral-100: #f4f4f5;
+  --neutral-150: #ededf0;
+  --neutral-200: #e4e4e7;
+  --neutral-250: #d4d4d8;
+  --neutral-300: #a1a1aa;
+  --neutral-400: #71717a;
+  --neutral-500: #52525b;
+  --neutral-600: #3f3f46;
+  --neutral-700: #27272a;
+  --neutral-800: #18181b;
+  --neutral-900: #09090b;
+  --neutral-950: #000000;
+
+  /* Status Colors - Sophisticated */
+  --status-success-50: #f0fdf4;
+  --status-success-500: #22c55e;
+  --status-success-600: #16a34a;
+  
+  --status-warning-50: #fffbeb;
+  --status-warning-500: #f59e0b;
+  --status-warning-600: #d97706;
+  
+  --status-error-50: #fef2f2;
+  --status-error-500: #ef4444;
+  --status-error-600: #dc2626;
+  
+  --status-info-50: #eff6ff;
+  --status-info-500: #3b82f6;
+  --status-info-600: #2563eb;
+
+  /* Typography Scale - Perfect Proportions */
+  --text-xs: 12px;
+  --text-sm: 14px;
+  --text-base: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
+  --text-4xl: 36px;
+  --text-5xl: 48px;
+  --text-6xl: 60px;
+
+  /* Line Heights - Optimized for Readability */
+  --leading-none: 1;
+  --leading-tight: 1.25;
+  --leading-snug: 1.375;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose: 2;
+
+  /* Letter Spacing - Refined */
+  --tracking-tighter: -0.05em;
+  --tracking-tight: -0.025em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.025em;
+  --tracking-wider: 0.05em;
+
+  /* Font Weights - Complete Spectrum */
+  --font-thin: 100;
+  --font-extralight: 200;
+  --font-light: 300;
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
+  --font-extrabold: 800;
+  --font-black: 900;
+
+  /* Spacing Scale - Mathematical Precision */
+  --space-0: 0px;
+  --space-px: 1px;
+  --space-0-5: 2px;
+  --space-1: 4px;
+  --space-1-5: 6px;
+  --space-2: 8px;
+  --space-2-5: 10px;
+  --space-3: 12px;
+  --space-3-5: 14px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-9: 36px;
+  --space-10: 40px;
+  --space-11: 44px;
+  --space-12: 48px;
+  --space-14: 56px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+  --space-28: 112px;
+  --space-32: 128px;
+  --space-36: 144px;
+  --space-40: 160px;
+  --space-44: 176px;
+  --space-48: 192px;
+  --space-52: 208px;
+  --space-56: 224px;
+  --space-60: 240px;
+  --space-64: 256px;
+  --space-72: 288px;
+  --space-80: 320px;
+  --space-96: 384px;
+
+  /* Border Radius - Sophisticated Hierarchy */
+  --radius-none: 0px;
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-base: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-2xl: 20px;
+  --radius-3xl: 24px;
+  --radius-full: 9999px;
+
+  /* Shadow System - Depth & Elevation */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-base: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --shadow-2xl: 0 50px 100px -20px rgb(0 0 0 / 0.25);
+  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.05);
+
+  /* Animation Curves - Professional Motion */
+  --ease-linear: linear;
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-elastic: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  /* Transition Durations */
+  --duration-75: 75ms;
+  --duration-100: 100ms;
+  --duration-150: 150ms;
+  --duration-200: 200ms;
+  --duration-300: 300ms;
+  --duration-500: 500ms;
+  --duration-700: 700ms;
+  --duration-1000: 1000ms;
+
+  /* Z-Index Layers - Organized Stacking */
+  --z-0: 0;
+  --z-10: 10;      /* Dropdowns, popovers */
+  --z-20: 20;      /* Fixed elements */
+  --z-30: 30;      /* Sticky elements */
+  --z-40: 40;      /* Overlays */
+  --z-50: 50;      /* Modals, dialogs */
+  --z-60: 60;      /* Tooltips */
+  --z-70: 70;      /* Toast notifications */
+  --z-80: 80;      /* Loading screens */
+  --z-90: 90;      /* Dev tools */
+  --z-100: 100;    /* Critical alerts */
+
+  /* Gradient Foundations */
+  --gradient-brand: linear-gradient(135deg, var(--brand-primary-500) 0%, var(--brand-primary-600) 100%);
+  --gradient-brand-subtle: linear-gradient(135deg, var(--brand-primary-50) 0%, var(--brand-primary-100) 100%);
+  --gradient-success: linear-gradient(135deg, var(--status-success-500) 0%, var(--status-success-600) 100%);
+  --gradient-warning: linear-gradient(135deg, var(--status-warning-500) 0%, var(--status-warning-600) 100%);
+  --gradient-error: linear-gradient(135deg, var(--status-error-500) 0%, var(--status-error-600) 100%);
+  --gradient-neutral: linear-gradient(135deg, var(--neutral-100) 0%, var(--neutral-150) 100%);
+
+  /* Filter Effects */
+  --blur-xs: blur(4px);
+  --blur-sm: blur(8px);
+  --blur-base: blur(12px);
+  --blur-md: blur(16px);
+  --blur-lg: blur(24px);
+  --blur-xl: blur(40px);
+  --blur-2xl: blur(64px);
+  --blur-3xl: blur(128px);
+
+  /* Light Mode Semantic Tokens */
+  --color-background: var(--neutral-0);
+  --color-background-subtle: var(--neutral-25);
+  --color-background-muted: var(--neutral-50);
+  --color-surface: var(--neutral-0);
+  --color-surface-subtle: var(--neutral-25);
+  --color-surface-muted: var(--neutral-50);
+  --color-surface-elevated: var(--neutral-0);
+  --color-border: var(--neutral-200);
+  --color-border-subtle: var(--neutral-150);
+  --color-border-strong: var(--neutral-300);
+  --color-text: var(--neutral-900);
+  --color-text-subtle: var(--neutral-600);
+  --color-text-muted: var(--neutral-500);
+  --color-text-inverse: var(--neutral-0);
+  --color-accent: var(--brand-primary-500);
+  --color-accent-subtle: var(--brand-primary-100);
+  --color-accent-muted: var(--brand-primary-50);
+  --color-focus: var(--brand-primary-500);
+  --color-focus-subtle: var(--brand-primary-100);
+}
+
+/* Dark Mode Semantic Tokens */
+[data-theme="dark"] {
+  --color-background: var(--neutral-950);
+  --color-background-subtle: var(--neutral-900);
+  --color-background-muted: var(--neutral-800);
+  --color-surface: var(--neutral-900);
+  --color-surface-subtle: var(--neutral-800);
+  --color-surface-muted: var(--neutral-700);
+  --color-surface-elevated: var(--neutral-800);
+  --color-border: var(--neutral-700);
+  --color-border-subtle: var(--neutral-750);
+  --color-border-strong: var(--neutral-600);
+  --color-text: var(--neutral-50);
+  --color-text-subtle: var(--neutral-300);
+  --color-text-muted: var(--neutral-400);
+  --color-text-inverse: var(--neutral-900);
+  --color-accent: var(--brand-primary-400);
+  --color-accent-subtle: var(--brand-primary-900);
+  --color-accent-muted: var(--brand-primary-950);
+  --color-focus: var(--brand-primary-400);
+  --color-focus-subtle: var(--brand-primary-900);
+
+  /* Dark Mode Gradients */
+  --gradient-brand: linear-gradient(135deg, var(--brand-primary-400) 0%, var(--brand-primary-500) 100%);
+  --gradient-brand-subtle: linear-gradient(135deg, var(--brand-primary-950) 0%, var(--brand-primary-900) 100%);
+  --gradient-neutral: linear-gradient(135deg, var(--neutral-800) 0%, var(--neutral-700) 100%);
+  
+  /* Enhanced Shadow System for Dark Mode */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+  --shadow-base: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+  --shadow-xl: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+  --shadow-2xl: 0 50px 100px -20px rgb(0 0 0 / 0.5);
+}
+
+/* Typography Variants */
+.text-display-1 {
+  font-size: var(--text-6xl);
+  line-height: var(--leading-none);
+  font-weight: var(--font-extrabold);
+  letter-spacing: var(--tracking-tighter);
+}
+
+.text-display-2 {
+  font-size: var(--text-5xl);
+  line-height: var(--leading-none);
+  font-weight: var(--font-bold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.text-heading-1 {
+  font-size: var(--text-4xl);
+  line-height: var(--leading-tight);
+  font-weight: var(--font-bold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.text-heading-2 {
+  font-size: var(--text-3xl);
+  line-height: var(--leading-tight);
+  font-weight: var(--font-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.text-heading-3 {
+  font-size: var(--text-2xl);
+  line-height: var(--leading-snug);
+  font-weight: var(--font-semibold);
+}
+
+.text-heading-4 {
+  font-size: var(--text-xl);
+  line-height: var(--leading-snug);
+  font-weight: var(--font-medium);
+}
+
+.text-body-lg {
+  font-size: var(--text-lg);
+  line-height: var(--leading-relaxed);
+  font-weight: var(--font-normal);
+}
+
+.text-body {
+  font-size: var(--text-base);
+  line-height: var(--leading-relaxed);
+  font-weight: var(--font-normal);
+}
+
+.text-body-sm {
+  font-size: var(--text-sm);
+  line-height: var(--leading-normal);
+  font-weight: var(--font-normal);
+}
+
+.text-caption {
+  font-size: var(--text-xs);
+  line-height: var(--leading-normal);
+  font-weight: var(--font-medium);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+/* Status Styles */
+.status-success {
+  color: var(--status-success-600);
+  background-color: var(--status-success-50);
+}
+
+.status-warning {
+  color: var(--status-warning-600);
+  background-color: var(--status-warning-50);
+}
+
+.status-error {
+  color: var(--status-error-600);
+  background-color: var(--status-error-50);
+}
+
+.status-info {
+  color: var(--status-info-600);
+  background-color: var(--status-info-50);
+}
+
+/* Interactive States */
+.interactive-base {
+  transition: all var(--duration-150) var(--ease-out);
+}
+
+.interactive-base:hover {
+  transform: translateY(-1px);
+}
+
+.interactive-base:active {
+  transform: translateY(0);
+}
+
+.interactive-base:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Glass Morphism Effects */
+.glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: var(--blur-base);
+  -webkit-backdrop-filter: var(--blur-base);
+}
+
+[data-theme="dark"] .glass {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: var(--blur-md);
+  -webkit-backdrop-filter: var(--blur-md);
+}
+
+[data-theme="dark"] .glass-strong {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* Motion Preferences */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  :root {
+    --color-border: var(--neutral-400);
+    --color-border-strong: var(--neutral-600);
+  }
+  
+  [data-theme="dark"] {
+    --color-border: var(--neutral-500);
+    --color-border-strong: var(--neutral-300);
+  }
+}

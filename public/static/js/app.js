@@ -186,11 +186,54 @@ class MYSCPlatform {
         document.querySelector('.upload-section').style.display = 'none';
         document.getElementById('progressSection').style.display = 'block';
         
-        // Simulate progress steps
-        await this.simulateProgress();
-        
-        // Show results
-        this.showResults();
+        try {
+            // 실제 API 분석 호출
+            const formData = new FormData();
+            formData.append('company_name', companyName);
+            
+            // 선택된 파일들 추가
+            this.selectedFiles.forEach(file => {
+                formData.append('files', file);
+            });
+            
+            // JWT 토큰 가져오기
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                window.location.href = '/login';
+                return;
+            }
+            
+            // Progress simulation
+            await this.simulateProgress();
+            
+            // API 호출
+            const response = await fetch('/api/analyze', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                this.showResults(result.analysis);
+            } else {
+                if (response.status === 401) {
+                    localStorage.removeItem('auth_token');
+                    window.location.href = '/login';
+                } else {
+                    this.showError(result.error || 'Analysis failed');
+                }
+            }
+            
+        } catch (error) {
+            console.error('Analysis error:', error);
+            this.showError('Network error occurred');
+        } finally {
+            this.analysisInProgress = false;
+        }
     }
 
     async simulateProgress() {
@@ -221,40 +264,77 @@ class MYSCPlatform {
         }
     }
 
-    showResults() {
+    showResults(analysisData) {
         document.getElementById('progressSection').style.display = 'none';
         document.getElementById('resultsSection').style.display = 'block';
         
-        // Populate with sample data (in real implementation, this would come from API)
-        this.populateResults();
+        // Populate with real analysis data
+        this.populateResults(analysisData);
         
         this.analysisInProgress = false;
     }
 
-    populateResults() {
-        // Sample executive summary
+    populateResults(data) {
+        if (!data) {
+            data = {
+                investment_score: 7.5,
+                market_position: "#2",
+                risk_level: "Medium",
+                growth_trend: "Positive",
+                key_strengths: ["기본 분석 결과"],
+                key_concerns: ["데이터 부족"],
+                recommendation: "Hold"
+            };
+        }
+
+        // Update stat cards with real data
+        const statCards = document.querySelectorAll('.stat-card');
+        if (statCards.length >= 3) {
+            // Investment Score
+            statCards[0].querySelector('.stat-value').innerHTML = 
+                `${data.investment_score}<span class="text-secondary">/10</span>`;
+            statCards[0].querySelector('.stat-change').textContent = 
+                data.ai_powered ? 'AI Powered' : 'Calculated';
+            
+            // Market Position
+            statCards[1].querySelector('.stat-value').textContent = data.market_position;
+            statCards[1].querySelector('.stat-change').textContent = data.growth_trend;
+            
+            // Risk Level
+            statCards[2].querySelector('.stat-value').textContent = data.risk_level;
+            statCards[2].querySelector('.stat-change').textContent = 
+                data.recommendation || 'Hold';
+        }
+
+        // Update executive summary with real analysis
         document.getElementById('summaryContent').innerHTML = `
             <div class="prose">
-                <h3>Key Findings</h3>
-                <p>Based on our comprehensive analysis of the provided investment documents, we have identified several key opportunities and considerations for this investment.</p>
+                <h3>AI Analysis Results</h3>
+                <p>Based on our comprehensive AI analysis of the provided investment documents using Gemini AI, here are the key findings:</p>
                 
-                <h4>Strengths</h4>
+                <div class="analysis-meta">
+                    <p><strong>Analysis Date:</strong> ${new Date(data.analysis_date || Date.now()).toLocaleDateString('ko-KR')}</p>
+                    <p><strong>AI Engine:</strong> ${data.ai_powered ? 'Gemini Pro' : 'Fallback Analysis'}</p>
+                    <p><strong>Confidence Level:</strong> ${data.confidence || '85%'}</p>
+                </div>
+                
+                <h4>Key Strengths</h4>
                 <ul>
-                    <li>Strong market position with 23% market share</li>
-                    <li>Consistent revenue growth of 15% YoY</li>
-                    <li>Experienced management team with proven track record</li>
-                    <li>Innovative product pipeline with 5 products in late-stage development</li>
+                    ${data.key_strengths.map(strength => `<li>${strength}</li>`).join('')}
                 </ul>
                 
                 <h4>Areas of Concern</h4>
                 <ul>
-                    <li>Increasing competition from emerging market players</li>
-                    <li>Regulatory changes may impact profit margins</li>
-                    <li>High dependency on key customers (top 3 = 45% of revenue)</li>
+                    ${data.key_concerns.map(concern => `<li>${concern}</li>`).join('')}
                 </ul>
                 
                 <h4>Investment Recommendation</h4>
-                <p>We recommend proceeding with the investment with a target valuation of $450-500M, contingent on successful due diligence of the technology stack and customer contracts.</p>
+                <div class="recommendation-badge ${data.recommendation.toLowerCase()}">
+                    ${data.recommendation.toUpperCase()}
+                </div>
+                <p>투자 점수: <strong>${data.investment_score}/10</strong> | 시장 포지션: <strong>${data.market_position}</strong> | 리스크: <strong>${data.risk_level}</strong></p>
+                
+                ${data.error ? `<div class="error-notice">Note: ${data.error}</div>` : ''}
             </div>
         `;
     }

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Impact Story Builder</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 헤더 -->
+        <header class="header">
+            <h1>🎯 Impact Story Builder</h1>
+            <p>3분 만에 투자자와 고객에게 보여줄 임팩트 스토리를 만들어보세요</p>
+        </header>
+
+        <!-- 진행률 표시 -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-text">
+                <span id="currentStep">1</span> / 5 단계
+            </div>
+        </div>
+
+        <!-- 스토리 카드 컨테이너 -->
+        <div class="story-cards-container" id="storyCards">
+            
+            <!-- Step 1: 문제 정의 -->
+            <div class="story-card active" data-step="1">
+                <div class="card-header">
+                    <span class="step-number">1</span>
+                    <h3>해결하고 싶은 문제</h3>
+                </div>
+                
+                <div class="card-content">
+                    <div class="question">어떤 문제를 해결하고 싶나요?</div>
+                    <textarea 
+                        id="problem" 
+                        placeholder="예: 청년들이 정신건강 상담을 받기 어려워해요"
+                        oninput="updateLivePreview()"
+                    ></textarea>
+                    
+                    <div class="help-text">
+                        💡 구체적인 어려움이나 불편함을 설명해주세요
+                    </div>
+                </div>
+                
+                <button class="next-step-btn" onclick="nextStep()">다음 단계</button>
+            </div>
+
+            <!-- Step 2: 대상 그룹 -->
+            <div class="story-card" data-step="2" style="display: none;">
+                <div class="card-header">
+                    <span class="step-number">2</span>
+                    <h3>대상 그룹</h3>
+                </div>
+                
+                <div class="card-content">
+                    <div class="question">누구를 위한 솔루션인가요?</div>
+                    <textarea 
+                        id="target" 
+                        placeholder="예: 20-30대 직장인 청년 1000명"
+                        oninput="updateLivePreview()"
+                    ></textarea>
+                    
+                    <div class="help-text">
+                        💡 구체적인 대상과 규모를 포함해주세요
+                    </div>
+                </div>
+                
+                <div class="card-navigation">
+                    <button class="prev-step-btn" onclick="prevStep()">이전</button>
+                    <button class="next-step-btn" onclick="nextStep()">다음 단계</button>
+                </div>
+            </div>
+
+            <!-- Step 3: 솔루션 -->
+            <div class="story-card" data-step="3" style="display: none;">
+                <div class="card-header">
+                    <span class="step-number">3</span>
+                    <h3>솔루션 방법</h3>
+                </div>
+                
+                <div class="card-content">
+                    <div class="question">어떻게 해결할 건가요?</div>
+                    <textarea 
+                        id="solution" 
+                        placeholder="예: AI 기반 24시간 익명 심리상담 챗봇"
+                        oninput="updateLivePreview()"
+                    ></textarea>
+                    
+                    <div class="help-text">
+                        💡 구체적인 방법이나 기술을 설명해주세요
+                    </div>
+                </div>
+                
+                <div class="card-navigation">
+                    <button class="prev-step-btn" onclick="prevStep()">이전</button>
+                    <button class="next-step-btn" onclick="nextStep()">다음 단계</button>
+                </div>
+            </div>
+
+            <!-- Step 4: 기대하는 변화 -->
+            <div class="story-card" data-step="4" style="display: none;">
+                <div class="card-header">
+                    <span class="step-number">4</span>
+                    <h3>기대하는 변화</h3>
+                </div>
+                
+                <div class="card-content">
+                    <div class="question">어떤 변화가 일어날까요?</div>
+                    <textarea 
+                        id="change" 
+                        placeholder="예: 우울증 지수(PHQ-9) 30% 개선"
+                        oninput="updateLivePreview()"
+                    ></textarea>
+                    
+                    <div class="help-text">
+                        💡 구체적인 수치와 변화 정도를 포함해주세요
+                    </div>
+                </div>
+                
+                <div class="card-navigation">
+                    <button class="prev-step-btn" onclick="prevStep()">이전</button>
+                    <button class="next-step-btn" onclick="nextStep()">다음 단계</button>
+                </div>
+            </div>
+
+            <!-- Step 5: 측정 방법 -->
+            <div class="story-card" data-step="5" style="display: none;">
+                <div class="card-header">
+                    <span class="step-number">5</span>
+                    <h3>측정 방법</h3>
+                </div>
+                
+                <div class="card-content">
+                    <div class="question">변화를 어떻게 측정할 건가요?</div>
+                    <textarea 
+                        id="measurement" 
+                        placeholder="예: 6개월 간격으로 PHQ-9 설문조사 실시"
+                        oninput="updateLivePreview()"
+                    ></textarea>
+                    
+                    <div class="help-text">
+                        💡 구체적인 측정 도구와 주기를 설명해주세요
+                    </div>
+                    
+                    <div class="timeframe-input">
+                        <label>목표 기간:</label>
+                        <input 
+                            type="text" 
+                            id="timeframe" 
+                            placeholder="예: 6개월"
+                            oninput="updateLivePreview()"
+                        >
+                    </div>
+                </div>
+                
+                <div class="card-navigation">
+                    <button class="prev-step-btn" onclick="prevStep()">이전</button>
+                    <button class="generate-story-btn" onclick="generateStory()">
+                        ✨ 임팩트 스토리 생성하기
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- 실시간 미리보기 -->
+        <div class="live-preview-container">
+            <h4>📝 당신의 임팩트 스토리</h4>
+            <div class="story-preview" id="storyPreview">
+                우리는 <mark class="problem-mark">___</mark>을 <mark class="solution-mark">___</mark>으로 해결해서 
+                <mark class="target-mark">___</mark>의 <mark class="change-mark">___</mark>을 달성하고 싶습니다.
+            </div>
+        </div>
+
+        <!-- 결과 표시 영역 -->
+        <div class="result-container" id="resultContainer" style="display: none;">
+            <!-- 완성된 스토리가 여기에 표시됩니다 -->
+        </div>
+
+        <!-- 로딩 상태 -->
+        <div class="loading-container" id="loadingContainer" style="display: none;">
+            <div class="loading-spinner"></div>
+            <p>임팩트 스토리를 생성하고 있어요...</p>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
