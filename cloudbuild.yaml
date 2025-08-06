@@ -1,0 +1,22 @@
+# Google Cloud Build configuration
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/ir-analyzer', '.']
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/ir-analyzer']
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: gcloud
+    args: [
+      'run', 'deploy', 'ir-analyzer',
+      '--image', 'gcr.io/$PROJECT_ID/ir-analyzer',
+      '--region', 'asia-northeast3',
+      '--platform', 'managed',
+      '--allow-unauthenticated',
+      '--memory', '2Gi',
+      '--cpu', '2',
+      '--timeout', '3600',
+      '--max-instances', '5',        # 🛡️ 최대 5개 인스턴스로 제한
+      '--concurrency', '10',         # 🛡️ 동시 요청 제한
+      '--cpu-throttling',            # 🛡️ CPU 절약 모드
+      '--no-traffic'                 # 🛡️ 수동 트래픽 할당
+    ]

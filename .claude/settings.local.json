@@ -81,7 +81,20 @@
       "WebFetch(domain:ir-analyzer-ewhvukksi-minwooks-projects-4c467b76.vercel.app)",
       "Bash(timeout:*)",
       "Bash(railway logs:*)",
-      "Bash(railway status:*)"
+      "Bash(railway status:*)",
+      "Bash(gcloud run deploy:*)",
+      "Bash(powershell:*)",
+      "Bash(dir:*)",
+      "Bash(start /wait GoogleCloudSDKInstaller.exe /S)",
+      "Bash(gcloud:*)",
+      "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" --version)",
+      "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" auth login)",
+      "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" projects list)",
+      "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" config set project gen-lang-client-0653170082)",
+      "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" services enable run.googleapis.com)",
+      "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" config set project simsa-457200)",
+      "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" projects create ir-analyzer-mysc --name=\"MYSC IR Analyzer\")",
+      "WebFetch(domain:ir-analyzer-1070198801396.asia-northeast3.run.app)"
     ],
     "deny": []
   }

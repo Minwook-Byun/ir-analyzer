@@ -70,7 +70,7 @@ cipher_suite = Fernet(ENCRYPTION_KEY)
 # 비동기 작업 저장소 (Railway에서는 메모리 기반으로도 안정적)
 ANALYSIS_JOBS: Dict[str, dict] = {}
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
-PORT = int(os.getenv("PORT", 8000))
+PORT = int(os.getenv("PORT", 8080))  # Cloud Run 기본 포트
 
 def encrypt_api_key(api_key: str) -> str:
     """API 키를 암호화"""
@@ -696,8 +696,8 @@ async def handle_all_routes(request: Request, path: str = ""):
             if not api_key:
                 return JSONResponse({"success": False, "error": "API 키가 필요합니다"}, status_code=400)
             
-            # Gemini API 키 기본 형식 검증
-            if not api_key.startswith("AIza") or len(api_key) < 30:
+            # Gemini API 키 기본 형식 검증 (더 유연하게)
+            if not api_key.startswith("AIza") or len(api_key) < 25:
                 return JSONResponse({"success": False, "error": "유효하지 않은 Gemini API 키 형식입니다"}, status_code=401)
             
             # API 키 암호화 및 JWT 토큰 생성
