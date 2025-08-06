@@ -41,7 +41,7 @@ async def analyze_with_gemini(api_key: str, company_name: str, file_info: dict):
     """Gemini AI를 사용한 실제 투자 분석"""
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-1.5-pro')
         
         # 간소화된 투자 분석 프롬프트 (긴 프롬프트는 413 오류 발생)
         prompt = f"""
