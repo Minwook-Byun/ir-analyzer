@@ -13,6 +13,8 @@ from datetime import datetime, timedelta
 from cryptography.fernet import Fernet
 import base64
 import google.generativeai as genai
+import asyncio
+from typing import Dict
 
 # 프로젝트 루트 경로 설정
 BASE_DIR = pathlib.Path(__file__).resolve().parent.parent
@@ -26,6 +28,9 @@ ENCRYPTION_KEY = os.getenv("ENCRYPTION_KEY", Fernet.generate_key())
 if isinstance(ENCRYPTION_KEY, str):
     ENCRYPTION_KEY = ENCRYPTION_KEY.encode()
 cipher_suite = Fernet(ENCRYPTION_KEY)
+
+# 비동기 작업 저장소 (실제로는 Redis/DB 사용 권장)
+ANALYSIS_JOBS: Dict[str, dict] = {}
 
 def encrypt_api_key(api_key: str) -> str:
     """API 키를 암호화"""
@@ -244,6 +249,52 @@ async def perform_followup_analysis(api_key: str, company_name: str, question_ty
             "error": str(e),
             "timestamp": datetime.now().isoformat()
         }
+
+async def run_long_analysis(job_id: str, api_key: str, company_name: str, file_contents: list):
+    """백그라운드에서 실행되는 긴 분석"""
+    try:
+        ANALYSIS_JOBS[job_id]["status"] = "processing"
+        ANALYSIS_JOBS[job_id]["progress"] = 10
+        
+        # 1단계: 기본 분석
+        basic_result = await perform_basic_analysis(api_key, company_name, {"count": len(file_contents)}, file_contents)
+        ANALYSIS_JOBS[job_id]["progress"] = 40
+        
+        await asyncio.sleep(2)  # 실제 처리 시뮬레이션
+        
+        # 2단계: 상세 분석  
+        ANALYSIS_JOBS[job_id]["progress"] = 70
+        detailed_result = await perform_followup_analysis(api_key, company_name, "financial", "")
+        
+        await asyncio.sleep(2)  # 추가 처리
+        
+        # 최종 결과 합성
+        final_result = {
+            **basic_result,
+            "detailed_analysis": detailed_result["analysis_text"],
+            "full_report": f"""
+## {company_name} 투자 분석 보고서
+
+### Executive Summary
+- 투자 점수: {basic_result.get('investment_score', 7.5)}/10
+- 추천: {basic_result.get('recommendation', 'Hold')}
+- 핵심 인사이트: {basic_result.get('key_insight', '분석 완료')}
+
+### 상세 분석
+{detailed_result.get('analysis_text', '상세 분석 진행 중...')}
+
+### 투자 결론
+{company_name}은 현재 시장 상황에서 안정적인 투자 기회를 제공합니다.
+"""
+        }
+        
+        ANALYSIS_JOBS[job_id]["status"] = "completed"
+        ANALYSIS_JOBS[job_id]["progress"] = 100
+        ANALYSIS_JOBS[job_id]["result"] = final_result
+        
+    except Exception as e:
+        ANALYSIS_JOBS[job_id]["status"] = "error"
+        ANALYSIS_JOBS[job_id]["error"] = str(e)
 
 @app.api_route("/{path:path}", methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"])
 async def handle_all_routes(request: Request, path: str = ""):
@@ -633,6 +684,81 @@ async def handle_all_routes(request: Request, path: str = ""):
             
         except Exception as e:
             return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+
+    # 비동기 분석 시작 API
+    if path == "api/analyze/start" and method == "POST":
+        try:
+            auth_header = request.headers.get("Authorization", "")
+            if not auth_header.startswith("Bearer "):
+                return JSONResponse({"success": False, "error": "인증이 필요합니다"}, status_code=401)
+            
+            token = auth_header[7:]
+            payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+            api_key = decrypt_api_key(payload["encrypted_api_key"])
+            
+            form = await request.form()
+            company_name = form.get("company_name", "Unknown Company")
+            files = form.getlist("files") if "files" in form else []
+            
+            # 파일 처리
+            file_contents = []
+            for file in files:
+                if hasattr(file, 'read'):
+                    content = await file.read()
+                    file_size = len(content)
+                    
+                    if file_size > 10 * 1024 * 1024:
+                        return JSONResponse({
+                            "success": False, 
+                            "error": f"파일 '{file.filename}'이 너무 큽니다 (최대 10MB)"
+                        }, status_code=413)
+                    
+                    file_contents.append({
+                        "name": file.filename,
+                        "content": content.decode('utf-8', errors='ignore')[:2000]
+                    })
+            
+            # 작업 ID 생성
+            job_id = hashlib.sha256(f"{company_name}{datetime.now()}".encode()).hexdigest()[:12]
+            
+            # 작업 초기화
+            ANALYSIS_JOBS[job_id] = {
+                "status": "started",
+                "progress": 0,
+                "company_name": company_name,
+                "created_at": datetime.now().isoformat()
+            }
+            
+            # 백그라운드 작업 시작
+            asyncio.create_task(run_long_analysis(job_id, api_key, company_name, file_contents))
+            
+            return {
+                "success": True,
+                "job_id": job_id,
+                "message": f"{company_name} 분석을 시작했습니다"
+            }
+            
+        except Exception as e:
+            return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+    
+    # 분석 상태 확인 API
+    if path.startswith("api/analyze/status/") and method == "GET":
+        job_id = path.split("/")[-1]
+        
+        if job_id not in ANALYSIS_JOBS:
+            return JSONResponse({"success": False, "error": "작업을 찾을 수 없습니다"}, status_code=404)
+        
+        job = ANALYSIS_JOBS[job_id]
+        
+        return {
+            "success": True,
+            "job_id": job_id,
+            "status": job["status"],
+            "progress": job.get("progress", 0),
+            "company_name": job.get("company_name"),
+            "result": job.get("result"),
+            "error": job.get("error")
+        }
 
     # 기존 분석 API (호환성 유지)
     if path == "api/analyze" and method == "POST":

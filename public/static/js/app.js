@@ -506,7 +506,9 @@ class MYSCPlatform {
             });
             
             const token = localStorage.getItem('auth_token');
-            const response = await fetch('/api/conversation/start', {
+            
+            // 1. 분석 시작
+            const startResponse = await fetch('/api/analyze/start', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -514,25 +516,92 @@ class MYSCPlatform {
                 body: formData
             });
             
-            const result = await response.json();
+            const startResult = await startResponse.json();
             
-            // Remove typing indicator
-            const typingMessage = document.querySelector('.typing-message');
-            if (typingMessage) {
-                typingMessage.remove();
+            if (!startResult.success) {
+                this.displayError(startResult.error);
+                return;
             }
             
-            if (result.success) {
-                this.currentConversationId = result.conversation_id;
-                this.displayAnalysisResult(result);
-            } else {
-                this.displayError(result.error);
-            }
+            // 2. 상태 폴링
+            this.currentJobId = startResult.job_id;
+            this.pollAnalysisStatus();
             
         } catch (error) {
             console.error('Analysis error:', error);
             this.displayError('분석 중 오류가 발생했습니다.');
         }
+    }
+    
+    async pollAnalysisStatus() {
+        try {
+            const response = await fetch(`/api/analyze/status/${this.currentJobId}`);
+            const result = await response.json();
+            
+            if (!result.success) {
+                this.displayError(result.error);
+                return;
+            }
+            
+            // 진행률 업데이트
+            this.updateProgress(result.progress, result.status);
+            
+            if (result.status === 'completed') {
+                // Remove typing indicator
+                const typingMessage = document.querySelector('.typing-message');
+                if (typingMessage) {
+                    typingMessage.remove();
+                }
+                
+                // 완료된 결과 표시
+                this.displayCompletedAnalysis(result.result);
+                
+            } else if (result.status === 'error') {
+                this.displayError(result.error);
+                
+            } else {
+                // 2초 후 다시 확인
+                setTimeout(() => this.pollAnalysisStatus(), 2000);
+            }
+            
+        } catch (error) {
+            console.error('Polling error:', error);
+            setTimeout(() => this.pollAnalysisStatus(), 3000); // 재시도
+        }
+    }
+    
+    updateProgress(progress, status) {
+        const typingMessage = document.querySelector('.typing-message .typing-text');
+        if (typingMessage) {
+            const messages = {
+                'started': '분석을 시작합니다...',
+                'processing': `분석 진행 중... ${progress}%`
+            };
+            typingMessage.textContent = messages[status] || `처리 중... ${progress}%`;
+        }
+    }
+    
+    displayCompletedAnalysis(result) {
+        const messagesContainer = document.getElementById('conversationMessages');
+        
+        // 전체 보고서 표시
+        const reportContent = `
+            <div class="analysis-card">
+                <div class="analysis-card-header">
+                    <i data-feather="file-text" class="analysis-card-icon"></i>
+                    <span class="analysis-card-title">완전한 투자 분석 보고서</span>
+                </div>
+                <div class="full-report">
+                    ${result.full_report.replace(/\n/g, '<br>').replace(/#{2,3}/g, '<strong>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
+                </div>
+            </div>
+        `;
+        
+        const resultMessage = this.createMessage('ai', reportContent);
+        messagesContainer.appendChild(resultMessage);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+        feather.replace();
     }
     
     displayAnalysisResult(result) {
