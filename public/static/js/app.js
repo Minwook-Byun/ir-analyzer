@@ -202,9 +202,10 @@ class MYSCPlatform {
                 formData.append('files', file);
             });
             
-            // JWT 토큰 가져오기
-            const token = localStorage.getItem('auth_token');
+            // JWT 토큰 가져오기 - sessionStorage에서
+            const token = sessionStorage.getItem('auth_token');
             if (!token) {
+                console.error('No auth token found');
                 window.location.href = '/login';
                 return;
             }
@@ -212,8 +213,8 @@ class MYSCPlatform {
             // Progress simulation
             await this.simulateProgress();
             
-            // API 호출
-            const response = await fetch('/api/analyze', {
+            // API 호출 - 비동기 분석 시작 엔드포인트로 변경
+            const response = await fetch('/api/analyze/start', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -227,7 +228,7 @@ class MYSCPlatform {
                 this.showResults(result.analysis);
             } else {
                 if (response.status === 401) {
-                    localStorage.removeItem('auth_token');
+                    sessionStorage.removeItem('auth_token');
                     window.location.href = '/login';
                 } else {
                     this.showError(result.error || 'Analysis failed');
@@ -505,7 +506,7 @@ class MYSCPlatform {
                 formData.append('files', file);
             });
             
-            const token = localStorage.getItem('auth_token');
+            const token = sessionStorage.getItem('auth_token');
             
             // 1. 분석 시작
             const startResponse = await fetch('/api/analyze/start', {
@@ -685,7 +686,7 @@ class MYSCPlatform {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
         
         try {
-            const token = localStorage.getItem('auth_token');
+            const token = sessionStorage.getItem('auth_token');
             const response = await fetch('/api/conversation/followup', {
                 method: 'POST',
                 headers: {
@@ -768,7 +769,7 @@ class MYSCPlatform {
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
                 if (confirm('정말로 로그아웃 하시겠습니까?')) {
-                    localStorage.removeItem('auth_token');
+                    sessionStorage.removeItem('auth_token');
                     window.location.href = '/login';
                 }
             });
