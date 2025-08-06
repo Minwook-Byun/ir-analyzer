@@ -694,11 +694,11 @@ async def handle_all_routes(request: Request, path: str = ""):
             api_key = body.get("api_key", "").strip()
             
             if not api_key:
-                return JSONResponse({"success": False, "error": "API 키가 필요합니다"}, status_code=400)
+                return JSONResponse({"success": False, "error": "API key is required"}, status_code=400)
             
             # Gemini API 키 기본 형식 검증 (더 유연하게)
             if not api_key.startswith("AIza") or len(api_key) < 25:
-                return JSONResponse({"success": False, "error": "유효하지 않은 Gemini API 키 형식입니다"}, status_code=401)
+                return JSONResponse({"success": False, "error": "Invalid Gemini API key format"}, status_code=401)
             
             # API 키 암호화 및 JWT 토큰 생성
             encrypted_key = encrypt_api_key(api_key)
@@ -713,7 +713,12 @@ async def handle_all_routes(request: Request, path: str = ""):
             return {
                 "success": True,
                 "token": token,
-                "user": {"name": "MYSC 사용자", "expires": "24시간"}
+                "user": {"name": "MYSC User", "expires": "24 hours"},
+                "debug": {
+                    "api_key_length": len(api_key),
+                    "api_key_prefix": api_key[:10] + "...",
+                    "token_created": datetime.utcnow().isoformat()
+                }
             }
             
         except Exception as e:
