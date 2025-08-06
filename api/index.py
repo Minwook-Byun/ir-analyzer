@@ -29,8 +29,11 @@ if isinstance(ENCRYPTION_KEY, str):
     ENCRYPTION_KEY = ENCRYPTION_KEY.encode()
 cipher_suite = Fernet(ENCRYPTION_KEY)
 
-# 비동기 작업 저장소 (실제로는 Redis/DB 사용 권장)
+# Railway: 무제한 실행 시간, 영구 스토리지 사용 가능
+# 비동기 작업 저장소 (Railway에서는 메모리 기반으로도 안정적)
 ANALYSIS_JOBS: Dict[str, dict] = {}
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
+PORT = int(os.getenv("PORT", 8000))
 
 def encrypt_api_key(api_key: str) -> str:
     """API 키를 암호화"""
@@ -294,23 +297,20 @@ async def perform_followup_analysis(api_key: str, company_name: str, question_ty
         }
 
 async def run_long_analysis(job_id: str, api_key: str, company_name: str, file_contents: list):
-    """백그라운드에서 실행되는 VC급 분석 (1-2분 처리)"""
+    """Railway: 무제한 실행 시간으로 완전한 VC급 분석"""
     try:
-        # Stage 1: 파일 파싱 (5-10초)
-        ANALYSIS_JOBS[job_id]["status"] = "parsing"
-        ANALYSIS_JOBS[job_id]["progress"] = 10
-        ANALYSIS_JOBS[job_id]["eta"] = "1분 50초 남음"
+        # Stage 1: 파일 통합 및 전처리
+        ANALYSIS_JOBS[job_id]["status"] = "processing"
+        ANALYSIS_JOBS[job_id]["progress"] = 20
+        ANALYSIS_JOBS[job_id]["message"] = "문서 분석 중..."
         
-        # PDF 콘텐츠 통합
+        # Railway에서는 시간 제약이 없으므로 모든 파일을 완전히 처리
         full_content = "\n\n".join([f"=== {f['name']} ===\n{f['content']}" for f in file_contents])
         
-        await asyncio.sleep(1)  # 파싱 시뮬레이션
-        ANALYSIS_JOBS[job_id]["progress"] = 30
-        
-        # Stage 2: VC급 Gemini 분석 (30-60초)
+        # Stage 2: 완전한 VC급 분석 (Railway 무제한 시간 활용)
         ANALYSIS_JOBS[job_id]["status"] = "analyzing"
-        ANALYSIS_JOBS[job_id]["progress"] = 40
-        ANALYSIS_JOBS[job_id]["eta"] = "1분 20초 남음"
+        ANALYSIS_JOBS[job_id]["progress"] = 60
+        ANALYSIS_JOBS[job_id]["message"] = "AI 심화 분석 진행 중..."
         
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-2.5-pro')

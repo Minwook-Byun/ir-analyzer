@@ -77,7 +77,9 @@
       "WebFetch(domain:ir-analyzer-4fmhb7y7l-minwooks-projects-4c467b76.vercel.app)",
       "WebFetch(domain:ir-analyzer-n4zxvdqz5-minwooks-projects-4c467b76.vercel.app)",
       "WebFetch(domain:ir-analyzer-iw0bmr1y3-minwooks-projects-4c467b76.vercel.app)",
-      "WebFetch(domain:ir-analyzer-jjunp6vc3-minwooks-projects-4c467b76.vercel.app)"
+      "WebFetch(domain:ir-analyzer-jjunp6vc3-minwooks-projects-4c467b76.vercel.app)",
+      "WebFetch(domain:ir-analyzer-ewhvukksi-minwooks-projects-4c467b76.vercel.app)",
+      "Bash(timeout:*)"
     ],
     "deny": []
   }
