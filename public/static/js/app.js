@@ -183,9 +183,12 @@ class MYSCPlatform {
     async startAnalysis(companyName) {
         this.analysisInProgress = true;
         
-        // Hide form, show progress
+        // Hide form, show conversation
         document.querySelector('.upload-section').style.display = 'none';
-        document.getElementById('progressSection').style.display = 'block';
+        document.getElementById('conversationSection').style.display = 'block';
+        
+        // Initialize conversation
+        this.initializeConversation(companyName);
         
         try {
             // 실제 API 분석 호출
