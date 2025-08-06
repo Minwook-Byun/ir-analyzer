@@ -16,6 +16,7 @@ class MYSCPlatform {
         this.setupFormSubmission();
         this.setupTabNavigation();
         this.setupExportButtons();
+        this.setupLogout();
     }
 
     // Theme Management
@@ -429,6 +430,19 @@ class MYSCPlatform {
     showShareDialog() {
         // Implement share dialog
         console.log('Share dialog');
+    }
+
+    // Logout functionality
+    setupLogout() {
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to logout?')) {
+                    localStorage.removeItem('auth_token');
+                    window.location.href = '/login';
+                }
+            });
+        }
     }
 }
 

@@ -252,23 +252,44 @@ async def handle_all_routes(request: Request, path: str = ""):
     
     # 홈페이지 - 인증 확인
     if path == "" or path == "index.html":
-        # 간단한 토큰 확인 (실제로는 더 엄격한 검증 필요)
-        auth_header = request.headers.get("Authorization")
-        if not auth_header:
-            return HTMLResponse("""
-            <script>
-                const token = localStorage.getItem('auth_token');
-                if (!token) {
-                    window.location.href = '/login';
-                } else {
-                    location.reload();
-                }
-            </script>
-            """)
-        
         index_path = PUBLIC_DIR / "index.html"
         if index_path.exists():
-            return FileResponse(index_path, media_type="text/html")
+            # 원본 HTML을 읽어서 인증 스크립트 추가
+            with open(index_path, 'r', encoding='utf-8') as f:
+                html_content = f.read()
+            
+            # </body> 태그 앞에 인증 스크립트 삽입
+            auth_script = """
+            <script>
+                // 페이지 로드 시 인증 확인
+                window.addEventListener('DOMContentLoaded', function() {
+                    const token = localStorage.getItem('auth_token');
+                    if (!token) {
+                        window.location.href = '/login';
+                        return;
+                    }
+                    
+                    // 토큰 만료 확인 (간단한 체크)
+                    try {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        const exp = new Date(payload.exp * 1000);
+                        if (exp < new Date()) {
+                            localStorage.removeItem('auth_token');
+                            window.location.href = '/login';
+                            return;
+                        }
+                    } catch (e) {
+                        localStorage.removeItem('auth_token');
+                        window.location.href = '/login';
+                        return;
+                    }
+                });
+            </script>
+            """
+            
+            html_content = html_content.replace('</body>', auth_script + '</body>')
+            return HTMLResponse(html_content, media_type="text/html")
+        
         return HTMLResponse("""
         <html><head><title>MYSC IR Platform</title></head>
         <body><h1>MYSC IR Platform</h1><p>Professional Investment Analysis</p></body>
