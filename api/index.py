@@ -43,7 +43,13 @@ async def handle_all_routes(request: Request, path: str = ""):
     if path.startswith("static/"):
         file_path = PUBLIC_DIR / path
         if file_path.exists():
-            return FileResponse(file_path)
+            # MIME 타입 설정
+            if path.endswith('.css'):
+                return FileResponse(file_path, media_type="text/css")
+            elif path.endswith('.js'):
+                return FileResponse(file_path, media_type="application/javascript")
+            else:
+                return FileResponse(file_path)
     
     # API 엔드포인트들
     if path == "health":
