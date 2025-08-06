@@ -694,6 +694,443 @@
   color: var(--color-text-secondary);
 }
 
+/* Conversational Analysis Styles - Zenspark Inspired */
+.conversation-container {
+  background: linear-gradient(145deg, var(--color-surface), var(--color-background));
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: var(--space-8);
+  box-shadow: var(--shadow-lg);
+  position: relative;
+}
+
+.conversation-header {
+  padding: var(--space-6);
+  border-bottom: 1px solid var(--color-border);
+  background-color: var(--color-background);
+}
+
+.conversation-title {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.conversation-subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.conversation-messages {
+  padding: var(--space-6);
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.message {
+  margin-bottom: var(--space-6);
+  display: flex;
+  gap: var(--space-3);
+}
+
+.message.user {
+  flex-direction: row-reverse;
+}
+
+.message-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-brand) 0%, #0860ca 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-inverse);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  flex-shrink: 0;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(9, 105, 218, 0.3);
+  transition: all 0.3s ease;
+}
+
+.message-avatar::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(45deg, 
+    var(--color-brand), 
+    #10b981, 
+    var(--color-brand), 
+    #3b82f6
+  );
+  background-size: 400% 400%;
+  animation: gradientRotate 2s linear infinite;
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.message.ai .message-avatar::before {
+  opacity: 1;
+}
+
+.message.user .message-avatar {
+  background: linear-gradient(135deg, var(--color-surface) 0%, #f0f0f0 100%);
+  color: var(--color-text-primary);
+  border: 2px solid var(--color-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.message.ai .message-avatar {
+  background: linear-gradient(135deg, var(--color-brand) 0%, #0860ca 100%);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 12px rgba(9, 105, 218, 0.3);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(9, 105, 218, 0.4);
+  }
+}
+
+.message-content {
+  flex: 1;
+  max-width: 70%;
+}
+
+.message-bubble {
+  background: linear-gradient(135deg, var(--color-background) 0%, var(--color-surface) 100%);
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  padding: var(--space-4) var(--space-5);
+  position: relative;
+  backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.3s ease;
+}
+
+.message-bubble:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.message.user .message-bubble {
+  background: linear-gradient(135deg, var(--color-brand) 0%, #0860ca 100%);
+  border: none;
+  color: var(--color-text-inverse);
+  box-shadow: 0 4px 15px rgba(9, 105, 218, 0.2);
+}
+
+.message.ai .message-bubble {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(250, 250, 250, 0.95) 100%);
+  border: 1px solid rgba(229, 229, 229, 0.6);
+  backdrop-filter: blur(20px);
+}
+
+.message-text {
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.message-text:last-child {
+  margin-bottom: 0;
+}
+
+.message-time {
+  font-size: var(--text-xs);
+  color: var(--color-text-tertiary);
+  text-align: right;
+  margin-top: var(--space-2);
+}
+
+/* Analysis Cards in Messages */
+.analysis-card {
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  margin: var(--space-3) 0;
+}
+
+.analysis-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.analysis-card-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--color-brand);
+}
+
+.analysis-card-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.analysis-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.metric-item {
+  text-align: center;
+  padding: var(--space-2);
+  background-color: var(--color-background);
+  border-radius: var(--radius-sm);
+}
+
+.metric-value {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.metric-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-secondary);
+}
+
+/* Follow-up Options */
+.followup-options {
+  margin-top: var(--space-4);
+}
+
+.followup-title {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.followup-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.followup-btn {
+  background-color: var(--color-background);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.followup-btn:hover {
+  background-color: var(--color-surface);
+  border-color: var(--color-brand);
+  color: var(--color-text-primary);
+}
+
+.followup-btn.selected {
+  background-color: var(--color-brand-light);
+  border-color: var(--color-brand);
+  color: var(--color-brand);
+}
+
+/* Custom Question Input - Zenspark Style with Rotating Border */
+.custom-question {
+  margin-top: var(--space-4);
+  position: relative;
+}
+
+.question-input-wrapper {
+  position: relative;
+  border-radius: 24px;
+  padding: 2px;
+  background: linear-gradient(45deg, 
+    var(--color-brand), 
+    #10b981, 
+    var(--color-brand), 
+    #3b82f6
+  );
+  background-size: 400% 400%;
+  animation: gradientRotate 3s ease-in-out infinite;
+  transition: all 0.3s ease;
+}
+
+.question-input-wrapper:hover {
+  animation-duration: 1.5s;
+  box-shadow: 0 8px 32px rgba(9, 105, 218, 0.3);
+}
+
+.question-input {
+  width: 100%;
+  padding: var(--space-4) var(--space-6);
+  border: none;
+  border-radius: 22px;
+  font-size: var(--text-sm);
+  color: var(--color-text-primary);
+  background: linear-gradient(135deg, var(--color-background) 0%, var(--color-surface) 100%);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+  outline: none;
+}
+
+.question-input:focus {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(250, 250, 250, 0.98) 100%);
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.question-input::placeholder {
+  color: var(--color-text-tertiary);
+  font-style: italic;
+}
+
+/* Glowing Border Animation */
+@keyframes gradientRotate {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 100% 0%;
+  }
+  50% {
+    background-position: 100% 100%;
+  }
+  75% {
+    background-position: 0% 100%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Enhanced Send Button */
+.send-button {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-brand) 0%, #0860ca 100%);
+  color: var(--color-text-inverse);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(9, 105, 218, 0.3);
+}
+
+.send-button:hover {
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 20px rgba(9, 105, 218, 0.4);
+}
+
+.send-button:active {
+  transform: translateY(-50%) scale(0.95);
+}
+
+.question-input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+/* Enhanced Typing Indicator - Zenspark Style */
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  color: var(--color-text-secondary);
+  font-size: var(--text-sm);
+  padding: var(--space-3) var(--space-4);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.8) 0%, rgba(250, 250, 250, 0.9) 100%);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(229, 229, 229, 0.6);
+  box-shadow: var(--shadow-sm);
+}
+
+.typing-dots {
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
+}
+
+.typing-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(135deg, var(--color-brand) 0%, #0860ca 100%);
+  animation: typingZen 1.8s infinite ease-in-out;
+  box-shadow: 0 2px 8px rgba(9, 105, 218, 0.3);
+}
+
+.typing-dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.6s;
+}
+
+@keyframes typingZen {
+  0%, 60%, 100% {
+    opacity: 0.4;
+    transform: scale(0.8) translateY(0px);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1.2) translateY(-4px);
+    box-shadow: 0 4px 16px rgba(9, 105, 218, 0.5);
+  }
+  40% {
+    opacity: 1;
+    transform: scale(1) translateY(0px);
+  }
+}
+
+.typing-text {
+  font-style: italic;
+  background: linear-gradient(135deg, var(--color-text-secondary) 0%, var(--color-brand) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: textShimmer 2s ease-in-out infinite;
+}
+
+@keyframes textShimmer {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .header-container {
