@@ -397,8 +397,48 @@ async def handle_all_routes(request: Request, path: str = ""):
         """
         return HTMLResponse(login_html)
     
-    # 홈페이지 - 인증 확인
+    # 홈페이지 - 토큰이 있으면 메인, 없으면 로그인
     if path == "" or path == "index.html":
+        # 기본적으로 로그인 페이지로 리디렉션
+        return HTMLResponse("""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>MYSC IR Platform</title>
+            <script>
+                // 토큰 확인 후 적절한 페이지로 이동
+                window.addEventListener('DOMContentLoaded', function() {
+                    const token = localStorage.getItem('auth_token');
+                    if (token) {
+                        // 토큰 유효성 확인
+                        try {
+                            const payload = JSON.parse(atob(token.split('.')[1]));
+                            const exp = new Date(payload.exp * 1000);
+                            if (exp > new Date()) {
+                                // 유효한 토큰이 있으면 메인 페이지로
+                                window.location.href = '/dashboard';
+                                return;
+                            }
+                        } catch (e) {
+                            localStorage.removeItem('auth_token');
+                        }
+                    }
+                    // 토큰이 없거나 만료되면 로그인 페이지로
+                    window.location.href = '/login';
+                });
+            </script>
+        </head>
+        <body>
+            <div style="text-align: center; margin-top: 50px;">
+                <h2>MYSC IR Platform</h2>
+                <p>Loading...</p>
+            </div>
+        </body>
+        </html>
+        """)
+    
+    # 대시보드 (인증된 사용자용 메인 페이지)
+    if path == "dashboard":
         index_path = PUBLIC_DIR / "index.html"
         if index_path.exists():
             # 원본 HTML을 읽어서 인증 스크립트 추가
@@ -416,7 +456,7 @@ async def handle_all_routes(request: Request, path: str = ""):
                         return;
                     }
                     
-                    // 토큰 만료 확인 (간단한 체크)
+                    // 토큰 만료 확인
                     try {
                         const payload = JSON.parse(atob(token.split('.')[1]));
                         const exp = new Date(payload.exp * 1000);

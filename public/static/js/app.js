@@ -435,6 +435,168 @@ class MYSCPlatform {
         console.log('Share dialog');
     }
 
+    // Initialize conversation
+    initializeConversation(companyName) {
+        const messagesContainer = document.getElementById('conversationMessages');
+        
+        // Add welcome message
+        const welcomeMessage = this.createMessage('ai', `안녕하세요! ${companyName}의 투자 분석을 시작하겠습니다.`);
+        messagesContainer.appendChild(welcomeMessage);
+        
+        // Add typing indicator
+        const typingIndicator = this.createTypingIndicator();
+        messagesContainer.appendChild(typingIndicator);
+        
+        // Scroll to bottom
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+        // Start basic analysis after short delay
+        setTimeout(() => {
+            this.performBasicAnalysis(companyName);
+        }, 2000);
+    }
+    
+    createMessage(type, content) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${type}`;
+        
+        messageDiv.innerHTML = `
+            <div class="message-avatar">
+                ${type === 'ai' ? '🤖' : 'U'}
+            </div>
+            <div class="message-content">
+                <div class="message-bubble">
+                    <div class="message-text">${content}</div>
+                    <div class="message-time">${new Date().toLocaleTimeString('ko-KR')}</div>
+                </div>
+            </div>
+        `;
+        
+        return messageDiv;
+    }
+    
+    createTypingIndicator() {
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'message ai typing-message';
+        typingDiv.innerHTML = `
+            <div class="message-avatar">🤖</div>
+            <div class="message-content">
+                <div class="typing-indicator">
+                    <div class="typing-dots">
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                        <div class="typing-dot"></div>
+                    </div>
+                    <span class="typing-text">분석 중...</span>
+                </div>
+            </div>
+        `;
+        return typingDiv;
+    }
+    
+    async performBasicAnalysis(companyName) {
+        try {
+            const formData = new FormData();
+            formData.append('company_name', companyName);
+            
+            // Add selected files
+            this.selectedFiles.forEach(file => {
+                formData.append('files', file);
+            });
+            
+            const token = localStorage.getItem('auth_token');
+            const response = await fetch('/api/conversation/start', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData
+            });
+            
+            const result = await response.json();
+            
+            // Remove typing indicator
+            const typingMessage = document.querySelector('.typing-message');
+            if (typingMessage) {
+                typingMessage.remove();
+            }
+            
+            if (result.success) {
+                this.displayAnalysisResult(result);
+            } else {
+                this.displayError(result.error);
+            }
+            
+        } catch (error) {
+            console.error('Analysis error:', error);
+            this.displayError('분석 중 오류가 발생했습니다.');
+        }
+    }
+    
+    displayAnalysisResult(result) {
+        const messagesContainer = document.getElementById('conversationMessages');
+        
+        // Create analysis result message
+        const analysisContent = `
+            <div class="analysis-card">
+                <div class="analysis-card-header">
+                    <i data-feather="trending-up" class="analysis-card-icon"></i>
+                    <span class="analysis-card-title">기본 분석 완료</span>
+                </div>
+                <div class="analysis-metrics">
+                    <div class="metric-item">
+                        <div class="metric-value">${result.analysis.investment_score}/10</div>
+                        <div class="metric-label">투자 점수</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-value">${result.analysis.recommendation}</div>
+                        <div class="metric-label">추천</div>
+                    </div>
+                </div>
+                <p>${result.analysis.key_insight}</p>
+            </div>
+            
+            <div class="followup-options">
+                <div class="followup-title">추가로 어떤 분석이 필요하신가요?</div>
+                <div class="followup-buttons">
+                    ${result.next_options.map(option => `
+                        <button class="followup-btn" data-type="${option.id}">
+                            <i data-feather="${option.icon}"></i>
+                            ${option.title}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+        
+        const resultMessage = this.createMessage('ai', analysisContent);
+        messagesContainer.appendChild(resultMessage);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+        // Replace feather icons
+        feather.replace();
+        
+        // Add event listeners to followup buttons
+        document.querySelectorAll('.followup-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const questionType = e.currentTarget.getAttribute('data-type');
+                this.handleFollowupQuestion(questionType);
+            });
+        });
+    }
+    
+    displayError(error) {
+        const messagesContainer = document.getElementById('conversationMessages');
+        const errorMessage = this.createMessage('ai', `❌ 오류: ${error}`);
+        messagesContainer.appendChild(errorMessage);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+    
+    handleFollowupQuestion(questionType) {
+        // Implementation for followup questions
+        console.log('Followup question:', questionType);
+    }
+
     // Logout functionality
     setupLogout() {
         const logoutBtn = document.getElementById('logoutBtn');
