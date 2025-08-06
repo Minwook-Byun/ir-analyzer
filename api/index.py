@@ -55,15 +55,7 @@ async def get_homepage():
 @app.get("/health")
 async def health_check():
     """서버 상태 확인"""
-    return {
-        "status": "healthy", 
-        "message": "MYSC IR 분석 플랫폼이 실행 중입니다",
-        "platform": "mysc_ir_analyzer",
-        "blob_support": True,
-        "max_file_size": "50MB",
-        "version": "2.1.0",
-        "features": ["투자심사보고서_분석", "50MB_파일_업로드", "Vercel_Blob_지원"]
-    }
+    return {"status": "healthy", "platform": "MYSC IR Platform", "version": "3.0.0"}
 
 # ========== 통합 분석 엔드포인트 ==========
 @app.post("/api/analyze")
