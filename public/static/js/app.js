@@ -8,6 +8,8 @@ class MYSCPlatform {
         this.currentConversationId = null;
         this.currentCompanyName = null;
         
+        // 토큰 확인 및 인증 검증
+        this.checkAuthentication();
         this.init();
     }
 
@@ -19,6 +21,32 @@ class MYSCPlatform {
         this.setupTabNavigation();
         this.setupExportButtons();
         this.setupLogout();
+    }
+
+    // 인증 확인
+    checkAuthentication() {
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+            window.location.href = '/login';
+            return false;
+        }
+        
+        // 토큰 만료 확인
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const exp = new Date(payload.exp * 1000);
+            if (exp < new Date()) {
+                localStorage.removeItem('auth_token');
+                window.location.href = '/login';
+                return false;
+            }
+        } catch (e) {
+            localStorage.removeItem('auth_token');
+            window.location.href = '/login';
+            return false;
+        }
+        
+        return true;
     }
 
     // Theme Management
@@ -202,8 +230,8 @@ class MYSCPlatform {
                 formData.append('files', file);
             });
             
-            // JWT 토큰 가져오기 - sessionStorage에서
-            const token = sessionStorage.getItem('auth_token');
+            // JWT 토큰 가져오기 - localStorage에서
+            const token = localStorage.getItem('auth_token');
             if (!token) {
                 console.error('No auth token found');
                 window.location.href = '/login';
@@ -213,8 +241,8 @@ class MYSCPlatform {
             // Progress simulation
             await this.simulateProgress();
             
-            // API 호출 - 비동기 분석 시작 엔드포인트로 변경
-            const response = await fetch('/api/analyze/start', {
+            // API 호출 - 대화형 분석 시작
+            const response = await fetch('/api/conversation/start', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -222,17 +250,33 @@ class MYSCPlatform {
                 body: formData
             });
             
+            // 응답 상태 확인
+            if (!response.ok) {
+                if (response.status === 401) {
+                    console.error('Authentication failed');
+                    localStorage.removeItem('auth_token');
+                    window.location.href = '/login';
+                    return;
+                }
+                const errorResult = await response.json();
+                this.showError(errorResult.error || 'Analysis failed');
+                return;
+            }
+            
             const result = await response.json();
             
             if (result.success) {
+                this.currentConversationId = result.conversation_id;
+                this.currentCompanyName = companyName;
                 this.showResults(result.analysis);
+                
+                // 후속 질문 옵션 표시
+                // Follow-up options (to be implemented)
+                // if (result.next_options) {
+                //     this.showFollowUpOptions(result.next_options);
+                // }
             } else {
-                if (response.status === 401) {
-                    sessionStorage.removeItem('auth_token');
-                    window.location.href = '/login';
-                } else {
-                    this.showError(result.error || 'Analysis failed');
-                }
+                this.showError(result.error || 'Analysis failed');
             }
             
         } catch (error) {
@@ -506,7 +550,7 @@ class MYSCPlatform {
                 formData.append('files', file);
             });
             
-            const token = sessionStorage.getItem('auth_token');
+            const token = localStorage.getItem('auth_token');
             
             // 1. 분석 시작
             const startResponse = await fetch('/api/analyze/start', {
@@ -686,7 +730,7 @@ class MYSCPlatform {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
         
         try {
-            const token = sessionStorage.getItem('auth_token');
+            const token = localStorage.getItem('auth_token');
             const response = await fetch('/api/conversation/followup', {
                 method: 'POST',
                 headers: {
@@ -769,7 +813,7 @@ class MYSCPlatform {
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
                 if (confirm('정말로 로그아웃 하시겠습니까?')) {
-                    sessionStorage.removeItem('auth_token');
+                    localStorage.removeItem('auth_token');
                     window.location.href = '/login';
                 }
             });

@@ -66,6 +66,33 @@ elif isinstance(ENCRYPTION_KEY, str):
 
 cipher_suite = Fernet(ENCRYPTION_KEY)
 
+async def validate_gemini_api_key(api_key: str) -> tuple[bool, str]:
+    """Gemini API 키의 유효성을 실제 API 호출로 검증"""
+    try:
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-2.5-pro')
+        
+        # 간단한 테스트 프롬프트로 API 키 유효성 검증
+        test_prompt = "Hello, please respond with 'API key is valid'"
+        response = model.generate_content(test_prompt)
+        
+        # 응답이 있으면 API 키가 유효함
+        if hasattr(response, 'text') or hasattr(response, 'parts'):
+            return True, "API key is valid"
+        else:
+            return False, "No response from Gemini API"
+            
+    except Exception as e:
+        error_msg = str(e)
+        if "403" in error_msg or "invalid api key" in error_msg.lower():
+            return False, "Invalid API key"
+        elif "429" in error_msg:
+            return False, "API rate limit exceeded"
+        elif "quota" in error_msg.lower():
+            return False, "API quota exceeded"
+        else:
+            return False, f"API key validation failed: {error_msg}"
+
 # Railway: 무제한 실행 시간, 영구 스토리지 사용 가능
 # 비동기 작업 저장소 (Railway에서는 메모리 기반으로도 안정적)
 ANALYSIS_JOBS: Dict[str, dict] = {}
@@ -422,16 +449,16 @@ async def handle_all_routes(request: Request, path: str = ""):
     """단일 핸들러로 모든 요청 처리"""
     method = request.method
     
+    # 글로벌 CORS 헤더 설정
+    cors_headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With"
+    }
+    
     # CORS 처리
     if method == "OPTIONS":
-        return JSONResponse(
-            content={}, 
-            headers={
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Methods": "*",
-                "Access-Control-Allow-Headers": "*"
-            }
-        )
+        return JSONResponse(content={}, headers=cors_headers)
     
     # 로그인 페이지
     if path == "login" or path == "login.html":
@@ -549,7 +576,7 @@ async def handle_all_routes(request: Request, path: str = ""):
                 
                 if (data.success) {{
                     localStorage.setItem('auth_token', data.token);
-                    window.location.href = '/';
+                    window.location.href = '/dashboard';
                 }} else {{
                     alert('로그인 실패: ' + (data.error || '알 수 없는 오류'));
                 }}
@@ -569,42 +596,38 @@ async def handle_all_routes(request: Request, path: str = ""):
         """
         return HTMLResponse(login_html)
     
-    # 홈페이지 - 토큰이 있으면 메인, 없으면 로그인
+    # 홈페이지 - 인증 상태에 따라 리디렉션
     if path == "" or path == "index.html":
-        # 기본적으로 로그인 페이지로 리디렉션
+        # 클라이언트 사이드에서 토큰 확인 후 적절한 페이지로 리다이렉트
         return HTMLResponse("""
         <!DOCTYPE html>
         <html>
         <head>
             <title>MYSC IR Platform</title>
-            <script>
-                // 토큰 확인 후 적절한 페이지로 이동
-                window.addEventListener('DOMContentLoaded', function() {
-                    const token = localStorage.getItem('auth_token');
-                    if (token) {
-                        // 토큰 유효성 확인
-                        try {
-                            const payload = JSON.parse(atob(token.split('.')[1]));
-                            const exp = new Date(payload.exp * 1000);
-                            if (exp > new Date()) {
-                                // 유효한 토큰이 있으면 메인 페이지로
-                                window.location.href = '/dashboard';
-                                return;
-                            }
-                        } catch (e) {
-                            localStorage.removeItem('auth_token');
-                        }
-                    }
-                    // 토큰이 없거나 만료되면 로그인 페이지로
-                    window.location.href = '/login';
-                });
-            </script>
         </head>
         <body>
-            <div style="text-align: center; margin-top: 50px;">
-                <h2>MYSC IR Platform</h2>
-                <p>Loading...</p>
-            </div>
+            <script>
+                // 토큰 확인 후 적절한 페이지로 리다이렉트
+                const token = localStorage.getItem('auth_token');
+                if (!token) {
+                    window.location.href = '/login';
+                } else {
+                    // 토큰 만료 확인
+                    try {
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        const exp = new Date(payload.exp * 1000);
+                        if (exp < new Date()) {
+                            localStorage.removeItem('auth_token');
+                            window.location.href = '/login';
+                        } else {
+                            window.location.href = '/dashboard';
+                        }
+                    } catch (e) {
+                        localStorage.removeItem('auth_token');
+                        window.location.href = '/login';
+                    }
+                }
+            </script>
         </body>
         </html>
         """)
@@ -696,33 +719,43 @@ async def handle_all_routes(request: Request, path: str = ""):
             if not api_key:
                 return JSONResponse({"success": False, "error": "API key is required"}, status_code=400)
             
-            # Gemini API 키 기본 형식 검증 (더 유연하게)
-            if not api_key.startswith("AIza") or len(api_key) < 25:
-                return JSONResponse({"success": False, "error": "Invalid Gemini API key format"}, status_code=401)
+            # 기본 길이 검증
+            if len(api_key) < 20:
+                return JSONResponse({"success": False, "error": "API key too short"}, status_code=401)
+            
+            # 실제 Gemini API 키 검증
+            is_valid, validation_message = await validate_gemini_api_key(api_key)
+            
+            if not is_valid:
+                return JSONResponse({
+                    "success": False, 
+                    "error": f"Invalid API key: {validation_message}"
+                }, status_code=401, headers=cors_headers)
             
             # API 키 암호화 및 JWT 토큰 생성
             encrypted_key = encrypt_api_key(api_key)
             token_payload = {
                 "encrypted_api_key": encrypted_key,
                 "created_at": datetime.utcnow().isoformat(),
-                "exp": datetime.utcnow() + timedelta(hours=24)
+                "exp": datetime.utcnow() + timedelta(hours=72)
             }
             
             token = jwt.encode(token_payload, JWT_SECRET, algorithm="HS256")
             
-            return {
+            return JSONResponse({
                 "success": True,
                 "token": token,
-                "user": {"name": "MYSC User", "expires": "24 hours"},
+                "user": {"name": "MYSC User", "expires": "72 hours"},
+                "validation": validation_message,
                 "debug": {
                     "api_key_length": len(api_key),
                     "api_key_prefix": api_key[:10] + "...",
                     "token_created": datetime.utcnow().isoformat()
                 }
-            }
+            }, headers=cors_headers)
             
         except Exception as e:
-            return JSONResponse({"success": False, "error": str(e)}, status_code=500)
+            return JSONResponse({"success": False, "error": str(e)}, status_code=500, headers=cors_headers)
     
     # 대화형 분석 시작 API
     if path == "api/conversation/start" and method == "POST":
