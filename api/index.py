@@ -15,6 +15,8 @@ import base64
 import google.generativeai as genai
 import asyncio
 from typing import Dict
+import httpx
+import uuid
 
 # 프로젝트 루트 경로 설정 (Railway 환경 호환)
 try:
@@ -42,6 +44,11 @@ app = FastAPI(title="MYSC IR Platform", version="3.0.0")
 
 # JWT 및 암호화 설정
 JWT_SECRET = os.getenv("JWT_SECRET", "mysc-ir-platform-secret-2025")
+
+# Supabase 설정
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_ANON_KEY = os.getenv("SUPABASE_ANON_KEY")
+SUPABASE_SERVICE_KEY = os.getenv("SUPABASE_SERVICE_KEY")
 
 # Railway 환경에서 안정적인 암호화 키 생성
 DEFAULT_KEY = "mysc-ir-platform-encryption-key-2025-stable"
@@ -108,6 +115,180 @@ def decrypt_api_key(encrypted_key: str) -> str:
     """API 키를 복호화"""
     encrypted_bytes = base64.urlsafe_b64decode(encrypted_key.encode())
     return cipher_suite.decrypt(encrypted_bytes).decode()
+
+# Supabase 헬퍼 함수들
+class SupabaseClient:
+    def __init__(self):
+        self.url = SUPABASE_URL
+        self.anon_key = SUPABASE_ANON_KEY
+        self.service_key = SUPABASE_SERVICE_KEY
+        
+    async def create_user(self, email: str, api_key_hash: str) -> dict:
+        """사용자 생성 또는 업데이트"""
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{self.url}/rest/v1/users",
+                headers={
+                    "Authorization": f"Bearer {self.service_key}",
+                    "Content-Type": "application/json",
+                    "Prefer": "return=representation"
+                },
+                json={
+                    "email": email,
+                    "api_key_hash": api_key_hash,
+                    "last_login": datetime.utcnow().isoformat()
+                }
+            )
+            return response.json() if response.status_code < 400 else None
+    
+    async def get_user_by_email(self, email: str) -> dict:
+        """이메일로 사용자 조회"""
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{self.url}/rest/v1/users?email=eq.{email}&select=*",
+                headers={"Authorization": f"Bearer {self.service_key}"}
+            )
+            users = response.json() if response.status_code == 200 else []
+            return users[0] if users else None
+    
+    async def create_project(self, user_id: str, company_name: str, file_contents: str, file_names: list) -> dict:
+        """분석 프로젝트 생성"""
+        project_id = str(uuid.uuid4())
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{self.url}/rest/v1/analysis_projects",
+                headers={
+                    "Authorization": f"Bearer {self.service_key}",
+                    "Content-Type": "application/json",
+                    "Prefer": "return=representation"
+                },
+                json={
+                    "id": project_id,
+                    "user_id": user_id,
+                    "company_name": company_name,
+                    "file_contents": file_contents,
+                    "file_names": file_names,
+                    "status": "processing"
+                }
+            )
+            return response.json()[0] if response.status_code < 400 else None
+    
+    async def save_analysis_result(self, project_id: str, section_type: str, content: dict, tokens_used: int = 0) -> dict:
+        """분석 결과 저장"""
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{self.url}/rest/v1/analysis_results",
+                headers={
+                    "Authorization": f"Bearer {self.service_key}",
+                    "Content-Type": "application/json",
+                    "Prefer": "return=representation"
+                },
+                json={
+                    "project_id": project_id,
+                    "section_type": section_type,
+                    "content": content,
+                    "tokens_used": tokens_used
+                }
+            )
+            return response.json()[0] if response.status_code < 400 else None
+    
+    async def get_project_results(self, project_id: str) -> list:
+        """프로젝트의 모든 분석 결과 조회"""
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{self.url}/rest/v1/analysis_results?project_id=eq.{project_id}&select=*&order=created_at",
+                headers={"Authorization": f"Bearer {self.service_key}"}
+            )
+            return response.json() if response.status_code == 200 else []
+    
+    async def create_conversation_session(self, project_id: str, user_id: str) -> dict:
+        """대화 세션 생성"""
+        session_id = str(uuid.uuid4())
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{self.url}/rest/v1/conversation_sessions",
+                headers={
+                    "Authorization": f"Bearer {self.service_key}",
+                    "Content-Type": "application/json",
+                    "Prefer": "return=representation"
+                },
+                json={
+                    "id": session_id,
+                    "project_id": project_id,
+                    "user_id": user_id
+                }
+            )
+            return response.json()[0] if response.status_code < 400 else None
+    
+    async def save_message(self, session_id: str, message_type: str, content: str, metadata: dict = None) -> dict:
+        """대화 메시지 저장"""
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{self.url}/rest/v1/conversation_messages",
+                headers={
+                    "Authorization": f"Bearer {self.service_key}",
+                    "Content-Type": "application/json",
+                    "Prefer": "return=representation"
+                },
+                json={
+                    "session_id": session_id,
+                    "message_type": message_type,
+                    "content": content,
+                    "metadata": metadata or {}
+                }
+            )
+            return response.json()[0] if response.status_code < 400 else None
+    
+    async def get_conversation_history(self, session_id: str) -> list:
+        """대화 내역 조회"""
+        async with httpx.AsyncClient() as client:
+            response = await client.get(
+                f"{self.url}/rest/v1/conversation_messages?session_id=eq.{session_id}&select=*&order=created_at",
+                headers={"Authorization": f"Bearer {self.service_key}"}
+            )
+            return response.json() if response.status_code == 200 else []
+    
+    async def update_project_status(self, project_id: str, status: str) -> dict:
+        """프로젝트 상태 업데이트"""
+        async with httpx.AsyncClient() as client:
+            response = await client.patch(
+                f"{self.url}/rest/v1/analysis_projects?id=eq.{project_id}",
+                headers={
+                    "Authorization": f"Bearer {self.service_key}",
+                    "Content-Type": "application/json",
+                    "Prefer": "return=representation"
+                },
+                json={"status": status, "updated_at": datetime.utcnow().isoformat()}
+            )
+            return response.json()[0] if response.status_code < 400 else None
+
+# 전역 Supabase 클라이언트
+supabase_client = SupabaseClient()
+
+async def run_supabase_analysis(project_id: str, api_key: str, company_name: str, file_contents: list):
+    """Supabase 기반 백그라운드 분석 실행"""
+    try:
+        # 분석 시작 표시
+        await supabase_client.update_project_status(project_id, "processing")
+        
+        # Executive Summary 분석 및 저장
+        executive_result = await analyze_with_gemini(api_key, company_name, {
+            "files": file_contents,
+            "section": "executive_summary"
+        })
+        
+        if executive_result:
+            await supabase_client.save_analysis_result(
+                project_id, "executive_summary", executive_result, 
+                executive_result.get("tokens_used", 0)
+            )
+        
+        # 분석 완료 표시
+        await supabase_client.update_project_status(project_id, "completed")
+        
+    except Exception as e:
+        await supabase_client.update_project_status(project_id, "failed")
+        print(f"Analysis error for project {project_id}: {str(e)}")
 
 async def analyze_with_gemini(api_key: str, company_name: str, file_info: dict):
     """Gemini AI를 사용한 실제 투자 분석"""
@@ -987,9 +1168,19 @@ async def handle_all_routes(request: Request, path: str = ""):
                     "error": f"Invalid API key: {validation_message}"
                 }, status_code=401, headers=cors_headers)
             
-            # API 키 암호화 및 JWT 토큰 생성
+            # API 키 암호화 및 사용자 생성/업데이트 (Supabase)
             encrypted_key = encrypt_api_key(api_key)
+            email = f"user_{hashlib.md5(api_key.encode()).hexdigest()[:8]}@mysc.local"
+            api_key_hash = hashlib.sha256(api_key.encode()).hexdigest()
+            
+            user = await supabase_client.get_user_by_email(email)
+            if not user:
+                user = await supabase_client.create_user(email, api_key_hash)
+            
+            user_id = user["id"] if user else None
+            
             token_payload = {
+                "user_id": user_id,
                 "encrypted_api_key": encrypted_key,
                 "created_at": datetime.utcnow().isoformat(),
                 "exp": datetime.utcnow() + timedelta(hours=72)
@@ -1000,6 +1191,7 @@ async def handle_all_routes(request: Request, path: str = ""):
             return JSONResponse({
                 "success": True,
                 "token": token,
+                "user_id": user_id,
                 "user": {"name": "MYSC User", "expires": "72 hours"},
                 "validation": validation_message,
                 "debug": {
@@ -1088,21 +1280,47 @@ async def handle_all_routes(request: Request, path: str = ""):
             token = auth_header[7:]
             payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
             api_key = decrypt_api_key(payload["encrypted_api_key"])
+            user_id = payload.get("user_id")
             
             body = await request.json()
-            conversation_id = body.get("conversation_id")
+            project_id = body.get("project_id")
+            session_id = body.get("session_id")
             question_type = body.get("question_type")
             custom_question = body.get("custom_question", "")
             company_name = body.get("company_name", "Unknown Company")
+            
+            # 세션이 없으면 새로 생성
+            if not session_id:
+                session = await supabase_client.create_conversation_session(project_id, user_id)
+                session_id = session["id"] if session else None
+            
+            # 사용자 메시지 저장
+            question_text = custom_question if question_type == 'custom' else {
+                'financial': '재무 상세 분석을 요청합니다',
+                'market': '시장 경쟁 분석을 요청합니다', 
+                'risk': '리스크 심화 분석을 요청합니다',
+                'team': '팀 및 조직 분석을 요청합니다',
+                'product': '제품/서비스 분석을 요청합니다',
+                'exit': 'Exit 전략 분석을 요청합니다'
+            }.get(question_type, custom_question)
+            
+            await supabase_client.save_message(session_id, "user", question_text)
             
             # 후속 분석 수행
             followup_analysis = await perform_followup_analysis(
                 api_key, company_name, question_type, custom_question
             )
             
+            # AI 응답 저장
+            if followup_analysis:
+                await supabase_client.save_message(
+                    session_id, "ai", followup_analysis,
+                    {"question_type": question_type, "tokens_used": followup_analysis.get("tokens_used", 0)}
+                )
+            
             return {
                 "success": True,
-                "conversation_id": conversation_id,
+                "session_id": session_id,
                 "analysis": followup_analysis,
                 "question_type": question_type
             }
@@ -1120,6 +1338,7 @@ async def handle_all_routes(request: Request, path: str = ""):
             token = auth_header[7:]
             payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
             api_key = decrypt_api_key(payload["encrypted_api_key"])
+            user_id = payload.get("user_id")
             
             form = await request.form()
             company_name = form.get("company_name", "Unknown Company")
@@ -1127,6 +1346,7 @@ async def handle_all_routes(request: Request, path: str = ""):
             
             # 파일 처리
             file_contents = []
+            file_names = []
             for file in files:
                 if hasattr(file, 'read'):
                     content = await file.read()
@@ -1138,28 +1358,32 @@ async def handle_all_routes(request: Request, path: str = ""):
                             "error": f"파일 '{file.filename}'이 너무 큽니다 (최대 10MB)"
                         }, status_code=413)
                     
+                    file_names.append(file.filename)
                     file_contents.append({
                         "name": file.filename,
                         "content": content.decode('utf-8', errors='ignore')[:2000]
                     })
             
-            # 작업 ID 생성
-            job_id = hashlib.sha256(f"{company_name}{datetime.now()}".encode()).hexdigest()[:12]
+            # Supabase에 프로젝트 생성
+            combined_content = "\n\n".join([f"=== {fc['name']} ===\n{fc['content']}" for fc in file_contents])
+            project = await supabase_client.create_project(
+                user_id, company_name, combined_content, file_names
+            )
             
-            # 작업 초기화
-            ANALYSIS_JOBS[job_id] = {
-                "status": "started",
-                "progress": 0,
-                "company_name": company_name,
-                "created_at": datetime.now().isoformat()
-            }
+            if not project:
+                return JSONResponse({
+                    "success": False,
+                    "error": "프로젝트 생성에 실패했습니다"
+                }, status_code=500)
             
-            # 백그라운드 작업 시작
-            asyncio.create_task(run_long_analysis(job_id, api_key, company_name, file_contents))
+            project_id = project["id"]
+            
+            # 백그라운드 작업 시작 (Supabase 기반)
+            asyncio.create_task(run_supabase_analysis(project_id, api_key, company_name, file_contents))
             
             return {
                 "success": True,
-                "job_id": job_id,
+                "project_id": project_id,
                 "message": f"{company_name} 분석을 시작했습니다"
             }
             

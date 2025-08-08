@@ -5,12 +5,18 @@ class MYSCPlatform {
         this.currentSection = 'analysis';
         this.selectedFiles = [];
         this.analysisInProgress = false;
-        this.currentConversationId = null;
+        this.currentProjectId = null;
+        this.currentSessionId = null;
         this.currentCompanyName = null;
         
         // 토큰 확인 및 인증 검증
         this.checkAuthentication();
         this.init();
+        
+        // Supabase 실시간 연결 초기화
+        if (window.supabaseRealtime) {
+            window.supabaseRealtime.initializeConnection();
+        }
     }
 
     init() {
@@ -266,7 +272,7 @@ class MYSCPlatform {
             const result = await response.json();
             
             if (result.success) {
-                this.currentConversationId = result.conversation_id;
+                this.currentProjectId = result.project_id;
                 this.currentCompanyName = companyName;
                 this.showResults(result.analysis);
                 
@@ -786,7 +792,8 @@ class MYSCPlatform {
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    conversation_id: this.currentConversationId,
+                    project_id: this.currentProjectId,
+                    session_id: this.currentSessionId,
                     question_type: questionType,
                     company_name: this.currentCompanyName,
                     previous_context: this.currentAnalysisResult?.executive_summary || ''
@@ -802,6 +809,14 @@ class MYSCPlatform {
             }
             
             if (result.success) {
+                // 세션 ID 업데이트
+                this.currentSessionId = result.session_id;
+                
+                // 실시간 구독 설정 (아직 없는 경우)
+                if (!this.conversationSubscription && window.supabaseRealtime) {
+                    this.subscribeToConversation();
+                }
+                
                 this.displayNotebookFollowup(result);
             } else {
                 this.displayError(result.error);
@@ -1062,10 +1077,68 @@ class MYSCPlatform {
         if (logoutBtn) {
             logoutBtn.addEventListener('click', () => {
                 if (confirm('정말로 로그아웃 하시겠습니까?')) {
+                    // Supabase 연결 해제
+                    if (window.supabaseRealtime) {
+                        window.supabaseRealtime.disconnect();
+                    }
+                    
                     localStorage.removeItem('auth_token');
                     window.location.href = '/login';
                 }
             });
+        }
+    }
+    
+    // Supabase 실시간 구독 설정
+    subscribeToConversation() {
+        if (!this.currentSessionId || !window.supabaseRealtime) return;
+        
+        this.conversationSubscription = window.supabaseRealtime.subscribeToConversation(
+            this.currentSessionId,
+            (record, eventType) => {
+                if (eventType === 'INSERT') {
+                    this.handleRealtimeMessage(record);
+                }
+            }
+        );
+    }
+    
+    // 실시간 메시지 처리
+    handleRealtimeMessage(record) {
+        const messagesContainer = document.getElementById('conversationMessages');
+        
+        // 중복 메시지 방지 (이미 화면에 있는 메시지인지 확인)
+        const existingMessage = document.querySelector(`[data-message-id="${record.id}"]`);
+        if (existingMessage) return;
+        
+        // 메시지 타입에 따라 처리
+        if (record.message_type === 'ai') {
+            const aiMessage = this.createMessage('ai', record.content);
+            aiMessage.setAttribute('data-message-id', record.id);
+            messagesContainer.appendChild(aiMessage);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    }
+    
+    // 분석 결과 실시간 구독
+    subscribeToAnalysisResults() {
+        if (!this.currentProjectId || !window.supabaseRealtime) return;
+        
+        this.analysisSubscription = window.supabaseRealtime.subscribeToAnalysisResults(
+            this.currentProjectId,
+            (record, eventType) => {
+                if (eventType === 'INSERT') {
+                    this.handleRealtimeAnalysisResult(record);
+                }
+            }
+        );
+    }
+    
+    // 실시간 분석 결과 처리
+    handleRealtimeAnalysisResult(record) {
+        if (record.section_type === 'executive_summary') {
+            // Executive Summary 업데이트
+            this.showResults(record.content);
         }
     }
 }

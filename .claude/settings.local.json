@@ -98,7 +98,10 @@
       "Bash(git checkout:*)",
       "Bash(true)",
       "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" run deploy ir-analyzer --source . --platform managed --region asia-northeast3 --allow-unauthenticated --project simsa-457200)",
-      "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" run deploy ir-analyzer --source . --platform managed --region asia-northeast3 --allow-unauthenticated --project gen-lang-client-0653170082)"
+      "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" run deploy ir-analyzer --source . --platform managed --region asia-northeast3 --allow-unauthenticated --project gen-lang-client-0653170082)",
+      "Bash(npx create-supabase-project:*)",
+      "Bash(docker:*)",
+      "Bash(start cmd /c:*)"
     ],
     "deny": []
   }
