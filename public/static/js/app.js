@@ -208,7 +208,7 @@ class MYSCPlatform {
             const companyName = document.getElementById('companyName').value;
             
             if (!companyName || this.selectedFiles.length === 0) {
-                this.showError('Please enter company name and select files');
+                this.showError('분석 대상과 파일을 선택해 주세요');
                 return;
             }
             
@@ -248,7 +248,7 @@ class MYSCPlatform {
             await this.simulateProgress();
             
             // API 호출 - 대화형 분석 시작
-            const response = await fetch('/api/conversation/start', {
+            const response = await fetch(window.location.origin + '/api/conversation/start', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -265,7 +265,7 @@ class MYSCPlatform {
                     return;
                 }
                 const errorResult = await response.json();
-                this.showError(errorResult.error || 'Analysis failed');
+                this.showError(errorResult.error || '분석에 실패했습니다');
                 return;
             }
             
@@ -282,12 +282,12 @@ class MYSCPlatform {
                 //     this.showFollowUpOptions(result.next_options);
                 // }
             } else {
-                this.showError(result.error || 'Analysis failed');
+                this.showError(result.error || '분석에 실패했습니다');
             }
             
         } catch (error) {
             console.error('Analysis error:', error);
-            this.showError('Network error occurred');
+            this.showError('네트워크 오류가 발생했습니다');
         } finally {
             this.analysisInProgress = false;
         }
@@ -436,12 +436,12 @@ class MYSCPlatform {
     // Export Functions
     setupExportButtons() {
         document.getElementById('exportPdf').addEventListener('click', () => {
-            this.showNotification('Preparing PDF export...');
+            this.showNotification('PDF 내보내기 준비 중...');
             // Implement PDF export
         });
         
         document.getElementById('exportWord').addEventListener('click', () => {
-            this.showNotification('Preparing Word export...');
+            this.showNotification('Word 내보내기 준비 중...');
             // Implement Word export
         });
         
@@ -563,7 +563,7 @@ class MYSCPlatform {
             const token = localStorage.getItem('auth_token');
             
             // 1. 분석 시작
-            const startResponse = await fetch('/api/analyze/start', {
+            const startResponse = await fetch(window.location.origin + '/api/analyze/start', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -590,7 +590,7 @@ class MYSCPlatform {
     
     async pollAnalysisStatus() {
         try {
-            const response = await fetch(`/api/analyze/status/${this.currentJobId}`);
+            const response = await fetch(window.location.origin + `/api/analyze/status/${this.currentJobId}`);
             const result = await response.json();
             
             if (!result.success) {
@@ -785,7 +785,7 @@ class MYSCPlatform {
         
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await fetch('/api/conversation/followup', {
+            const response = await fetch(window.location.origin + '/api/conversation/followup', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -895,7 +895,7 @@ class MYSCPlatform {
         
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await fetch('/api/conversation/followup', {
+            const response = await fetch(window.location.origin + '/api/conversation/followup', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1016,7 +1016,7 @@ class MYSCPlatform {
         
         try {
             const token = localStorage.getItem('auth_token');
-            const response = await fetch(`/api/analyze/section/${sectionId}`, {
+            const response = await fetch(window.location.origin + `/api/analyze/section/${sectionId}`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -194,8 +194,8 @@
     <div class="login-container">
         <div class="login-header">
             <div class="logo">AI</div>
-            <h1 class="login-title">로그인</h1>
-            <p class="login-subtitle">MYSC AI Agent에 접속하세요</p>
+            <h1 class="login-title">시작하기</h1>
+            <p class="login-subtitle">MYSC AI 플랫폼에 오신 것을 환영합니다</p>
         </div>
 
         <form id="loginForm">
@@ -203,13 +203,13 @@
             <div class="success-message" id="successMessage"></div>
 
             <div class="form-group">
-                <label for="apiKey" class="form-label">API 키</label>
+                <label for="apiKey" class="form-label">액세스 키</label>
                 <input 
                     type="password" 
                     id="apiKey" 
                     name="apiKey" 
                     class="form-input" 
-                    placeholder="Gemini API 키를 입력하세요"
+                    placeholder="키를 입력하세요"
                     required
                     autocomplete="current-password"
                 >
@@ -217,15 +217,15 @@
 
             <button type="submit" class="login-button" id="loginButton">
                 <span class="loading-spinner" id="loadingSpinner"></span>
-                <span id="buttonText">로그인</span>
+                <span id="buttonText">시작하기</span>
             </button>
         </form>
 
         <div class="security-note">
-            <div class="security-note-title">🔒 보안 안내</div>
+            <div class="security-note-title">🔒 안전한 연결</div>
             <div class="security-note-text">
-                API 키는 안전하게 암호화되어 저장되며, 세션 종료 시 자동으로 삭제됩니다.
-                개인 API 키를 안전하게 보호하세요.
+                모든 데이터는 암호화되어 안전하게 처리됩니다.
+                귀하의 정보는 보호됩니다.
             </div>
         </div>
     </div>
@@ -243,7 +243,7 @@
 
             // 입력 검증
             if (!apiKey) {
-                showError('API 키를 입력해주세요.');
+                showError('액세스 키를 입력해주세요.');
                 return;
             }
 
@@ -252,7 +252,8 @@
             hideMessages();
 
             try {
-                const response = await fetch('/api/login', {
+                const apiUrl = window.location.origin + '/api/login';
+                const response = await fetch(apiUrl, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -265,7 +266,7 @@
 
                 if (response.ok) {
                     // 로그인 성공
-                    showSuccess('로그인 성공! 메인 페이지로 이동합니다...');
+                    showSuccess('환영합니다! 플랫폼으로 이동 중...');
                     
                     // 토큰을 세션 스토리지에 저장
                     sessionStorage.setItem('auth_token', data.access_token);
@@ -278,11 +279,11 @@
                         window.location.href = '/';
                     }, 2000);
                 } else {
-                    showError(data.detail || '로그인에 실패했습니다.');
+                    showError(data.detail || '연결에 실패했습니다.');
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                showError('네트워크 오류가 발생했습니다. 다시 시도해주세요.');
+                showError('연결 실패: 다시 시도해 주세요.');
             } finally {
                 setLoading(false);
             }
@@ -290,7 +291,7 @@
             function setLoading(isLoading) {
                 loginButton.disabled = isLoading;
                 loadingSpinner.style.display = isLoading ? 'inline-block' : 'none';
-                buttonText.textContent = isLoading ? '로그인 중...' : '로그인';
+                buttonText.textContent = isLoading ? '확인 중...' : '시작하기';
             }
 
             function showError(message) {

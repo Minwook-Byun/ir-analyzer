@@ -101,7 +101,10 @@
       "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" run deploy ir-analyzer --source . --platform managed --region asia-northeast3 --allow-unauthenticated --project gen-lang-client-0653170082)",
       "Bash(npx create-supabase-project:*)",
       "Bash(docker:*)",
-      "Bash(start cmd /c:*)"
+      "Bash(start cmd /c:*)",
+      "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" run services list --project gen-lang-client-0653170082)",
+      "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" config set project ir-analyzer-mysc-2025)",
+      "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" run deploy ir-analyzer --source . --platform managed --region asia-northeast3 --allow-unauthenticated --project ir-analyzer-mysc-2025)"
     ],
     "deny": []
   }

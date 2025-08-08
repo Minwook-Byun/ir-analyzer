@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MYSC IR Platform - Professional Investment Analysis</title>
-    <meta name="description" content="Enterprise-grade investment report analysis platform with AI-powered insights">
+    <title>MYSC AI 플랫폼 - 지능형 분석 솔루션</title>
+    <meta name="description" content="차세대 AI 기반 문서 분석 플랫폼">
     
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiByeD0iOCIgZmlsbD0iIzA5NjlkYSIvPgo8cGF0aCBkPSJNOCAxNkgxNlYyNEg4VjE2WiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTE2IDhIMjRWMTZIMTZWOFoiIGZpbGw9IndoaXRlIi8+Cjwvc3ZnPg==">
@@ -22,16 +22,16 @@
             <div class="header-container">
                 <div class="header-brand">
                     <div class="brand-logo">M</div>
-                    <div class="brand-name">MYSC IR Platform</div>
+                    <div class="brand-name">MYSC AI 플랫폼</div>
                 </div>
                 
                 <nav class="nav">
-                    <a href="#analysis" class="nav-item active">Analysis</a>
-                    <a href="#impact" class="nav-item">Impact</a>
-                    <a href="#usage" class="nav-item">Usage</a>
+                    <a href="#analysis" class="nav-item active">분석</a>
+                    <a href="#impact" class="nav-item">영향력</a>
+                    <a href="#usage" class="nav-item">사용량</a>
                     <button class="logout-btn" id="logoutBtn" title="로그아웃">
                         <i data-feather="log-out" width="16" height="16"></i>
-                        <span>로그아웃</span>
+                        <span>나가기</span>
                     </button>
                     <button class="theme-toggle" id="themeToggle" title="Toggle theme">
                         <i data-feather="moon" width="20" height="20"></i>
@@ -45,9 +45,9 @@
             <!-- Analysis Section -->
             <section id="analysis" class="section active">
                 <div class="page-header">
-                    <h1 class="page-title">Investment Report Analysis</h1>
+                    <h1 class="page-title">지능형 문서 분석</h1>
                     <p class="page-subtitle">
-                        Upload your IR documents for AI-powered analysis. Supports files up to 50MB with secure cloud processing.
+                        문서를 업로드하여 AI 기반 분석을 시작하세요. 최대 50MB까지 지원합니다.
                     </p>
                 </div>
 
@@ -56,14 +56,14 @@
                     <form id="analysisForm">
                         <div class="form-group mb-6">
                             <label for="companyName" class="form-label">
-                                Company Name
+                                분석 대상
                             </label>
                             <input 
                                 type="text" 
                                 id="companyName" 
                                 name="companyName" 
                                 class="form-input" 
-                                placeholder="Enter company name"
+                                placeholder="이름을 입력하세요"
                                 required
                             >
                         </div>
@@ -77,8 +77,8 @@
                                 <div class="upload-icon">
                                     <i data-feather="upload-cloud"></i>
                                 </div>
-                                <div class="upload-title">Drop files here or click to upload</div>
-                                <div class="upload-subtitle">PDF, Excel, Word documents (max 10MB per file)</div>
+                                <div class="upload-title">파일을 여기에 끌어다 놓거나 클릭하세요</div>
+                                <div class="upload-subtitle">PDF, Excel, Word 문서 (최대 10MB)</div>
                             </div>
                             
                             <div id="fileList" class="file-list" style="display: none;"></div>
@@ -87,7 +87,7 @@
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary btn-lg" id="analyzeBtn">
                                 <i data-feather="zap" width="20" height="20"></i>
-                                <span>Start Analysis</span>
+                                <span>분석 시작</span>
                             </button>
                         </div>
                     </form>
@@ -96,8 +96,8 @@
                 <!-- Progress Section -->
                 <div id="progressSection" class="progress-section" style="display: none;">
                     <div class="progress-header">
-                        <h2 class="progress-title">Analyzing Investment Report</h2>
-                        <p class="progress-subtitle">Processing your documents with advanced AI algorithms</p>
+                        <h2 class="progress-title">문서 분석 중</h2>
+                        <p class="progress-subtitle">AI가 문서를 분석하고 있습니다</p>
                     </div>
 
                     <div class="progress-steps">
@@ -105,7 +105,7 @@
                             <div class="step-circle">
                                 <i data-feather="upload" width="16" height="16"></i>
                             </div>
-                            <span class="step-label">Upload</span>
+                            <span class="step-label">업로드</span>
                         </div>
                         <div class="progress-step" id="step2">
                             <div class="step-circle">
@@ -160,7 +160,7 @@
                 <!-- Results Section -->
                 <div id="resultsSection" class="results-section" style="display: none;">
                     <div class="results-header">
-                        <h2 class="results-title">Analysis Complete</h2>
+                        <h2 class="results-title">분석 완료</h2>
                         <div class="results-actions">
                             <button class="btn btn-secondary" id="exportPdf">
                                 <i data-feather="download" width="16" height="16"></i>
@@ -178,11 +178,11 @@
                     </div>
 
                     <div class="results-tabs">
-                        <button class="tab-button active" data-tab="summary">Executive Summary</button>
+                        <button class="tab-button active" data-tab="summary">요약 보고서</button>
                         <button class="tab-button" data-tab="investment">Investment Analysis</button>
                         <button class="tab-button" data-tab="market">Market Analysis</button>
-                        <button class="tab-button" data-tab="financial">Financial Analysis</button>
-                        <button class="tab-button" data-tab="risk">Risk Assessment</button>
+                        <button class="tab-button" data-tab="financial">재무 분석</button>
+                        <button class="tab-button" data-tab="risk">위험 평가</button>
                         <button class="tab-button" data-tab="recommendations">Recommendations</button>
                     </div>
 
@@ -195,7 +195,7 @@
                                     <div class="stat-change positive">+15% from last quarter</div>
                                 </div>
                                 <div class="stat-card">
-                                    <div class="stat-label">Market Position</div>
+                                    <div class="stat-label">시장 위치</div>
                                     <div class="stat-value">#2</div>
                                     <div class="stat-change">Stable</div>
                                 </div>
@@ -228,9 +228,9 @@
                                 <div class="empty-state-icon">
                                     <i data-feather="bar-chart-2"></i>
                                 </div>
-                                <h3 class="empty-state-title">Financial Analysis Coming Soon</h3>
+                                <h3 class="empty-state-title">재무 분석 준비 중</h3>
                                 <p class="empty-state-subtitle">
-                                    We're working on advanced financial modeling features that will provide deeper insights into company performance.
+                                    고급 재무 모델링 기능을 개발 중입니다.
                                 </p>
                             </div>
                         </div>
@@ -240,7 +240,7 @@
                                 <div class="empty-state-icon">
                                     <i data-feather="shield"></i>
                                 </div>
-                                <h3 class="empty-state-title">Risk Assessment Coming Soon</h3>
+                                <h3 class="empty-state-title">위험 평가 준비 중</h3>
                                 <p class="empty-state-subtitle">
                                     Comprehensive risk analysis features are under development to help you make informed investment decisions.
                                 </p>
@@ -273,7 +273,7 @@
                 <div class="page-header">
                     <h1 class="page-title">Usage Dashboard</h1>
                     <p class="page-subtitle">
-                        Monitor your platform usage, API consumption, and processing statistics.
+                        플랫폼 사용량과 처리 통계를 확인하세요.
                     </p>
                 </div>
                 
