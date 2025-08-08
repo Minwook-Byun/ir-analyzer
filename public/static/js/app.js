@@ -371,12 +371,16 @@ class MYSCPlatform {
                 
                 <h4>Key Strengths</h4>
                 <ul>
-                    ${data.key_strengths.map(strength => `<li>${strength}</li>`).join('')}
+                    ${data.key_strengths && Array.isArray(data.key_strengths) ? 
+                      data.key_strengths.map(strength => `<li>${strength}</li>`).join('') : 
+                      '<li>분석 중...</li>'}
                 </ul>
                 
                 <h4>Areas of Concern</h4>
                 <ul>
-                    ${data.key_concerns.map(concern => `<li>${concern}</li>`).join('')}
+                    ${data.key_concerns && Array.isArray(data.key_concerns) ? 
+                      data.key_concerns.map(concern => `<li>${concern}</li>`).join('') : 
+                      '<li>분석 중...</li>'}
                 </ul>
                 
                 <h4>Investment Recommendation</h4>
@@ -674,13 +678,19 @@ class MYSCPlatform {
             
             <div class="followup-options">
                 <div class="followup-title">추가로 어떤 분석이 필요하신가요?</div>
-                <div class="followup-buttons">
-                    ${result.next_options.map(option => `
-                        <button class="followup-btn" data-type="${option.id}">
-                            <i data-feather="${option.icon}"></i>
-                            ${option.title}
+                <div class="followup-grid">
+                    ${result.next_options && Array.isArray(result.next_options) ? 
+                      result.next_options.map(option => `
+                        <button class="followup-card" data-type="${option.id}">
+                            <div class="followup-card-icon">
+                                <i data-feather="${option.icon || 'file-text'}"></i>
+                            </div>
+                            <div class="followup-card-content">
+                                <div class="followup-card-title">${option.title}</div>
+                                <div class="followup-card-desc">${option.description || ''}</div>
+                            </div>
                         </button>
-                    `).join('')}
+                    `).join('') : '<p>추가 분석 옵션을 불러오는 중...</p>'}
                 </div>
             </div>
         `;
@@ -693,7 +703,7 @@ class MYSCPlatform {
         feather.replace();
         
         // Add event listeners to followup buttons
-        document.querySelectorAll('.followup-btn').forEach(btn => {
+        document.querySelectorAll('.followup-card').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const questionType = e.currentTarget.getAttribute('data-type');
                 this.handleFollowupQuestion(questionType);
@@ -716,6 +726,9 @@ class MYSCPlatform {
             'financial': '재무 상세 분석을 요청합니다',
             'market': '시장 경쟁 분석을 요청합니다', 
             'risk': '리스크 심화 분석을 요청합니다',
+            'team': '팀 및 조직 분석을 요청합니다',
+            'product': '제품/서비스 분석을 요청합니다',
+            'exit': 'Exit 전략 분석을 요청합니다',
             'custom': '직접 질문하기'
         };
         
@@ -789,6 +802,9 @@ class MYSCPlatform {
             'financial': '재무 상세 분석 결과',
             'market': '시장 경쟁 분석 결과', 
             'risk': '리스크 심화 분석 결과',
+            'team': '팀 및 조직 분석 결과',
+            'product': '제품/서비스 분석 결과',
+            'exit': 'Exit 전략 분석 결과',
             'custom': '추가 분석 결과'
         };
         return titles[questionType] || '분석 결과';

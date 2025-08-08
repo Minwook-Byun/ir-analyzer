@@ -306,18 +306,172 @@ IR 자료: {file_context}
             "error": str(e)
         }
 
-async def perform_followup_analysis(api_key: str, company_name: str, question_type: str, custom_question: str):
-    """2단계: 후속 상세 분석 수행"""
+async def perform_followup_analysis(api_key: str, company_name: str, question_type: str, custom_question: str, previous_context: str = ""):
+    """2단계: 후속 상세 분석 수행 - 더 깊이 있는 분석"""
     try:
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-2.5-pro')
         
-        # 질문 유형별 간단한 프롬프트
+        # 질문 유형별 전문 프롬프트
         prompts = {
-            "financial": f"{company_name} 재무분석: 매출, 이익, 성장률",
-            "market": f"{company_name} 시장분석: 경쟁우위, 시장점유율",  
-            "risk": f"{company_name} 리스크분석: 주요위험요소, 대응방안",
-            "custom": custom_question or f"{company_name}에 대해 더 자세히 설명해주세요"
+            "financial": f"""
+            {company_name}의 재무 상세 분석을 수행하세요:
+            
+            1. 재무 성과 분석
+            - 최근 3년간 매출 추이 및 성장률
+            - 매출총이익률 및 영업이익률 변화
+            - EBITDA 및 순이익 분석
+            
+            2. 재무 건전성 평가
+            - 유동비율 및 부채비율
+            - 현금흐름 분석 (영업/투자/재무)
+            - 운전자본 관리 현황
+            
+            3. 성장성 지표
+            - 매출 성장률 (YoY, QoQ)
+            - 고객 획득 비용 (CAC) vs 생애가치 (LTV)
+            - Unit Economics 분석
+            
+            4. 투자 관점 재무 평가
+            - Burn Rate 및 Runway
+            - 손익분기점 예상 시점
+            - 추가 자금 소요 예측
+            
+            {previous_context}
+            """,
+            
+            "market": f"""
+            {company_name}의 시장 및 경쟁 분석을 수행하세요:
+            
+            1. 시장 규모 및 성장성
+            - TAM (Total Addressable Market)
+            - SAM (Serviceable Available Market)
+            - SOM (Serviceable Obtainable Market)
+            - 시장 성장률 및 동인
+            
+            2. 경쟁 환경 분석
+            - 주요 경쟁사 및 시장 점유율
+            - 경쟁 우위 요소 (기술, 가격, 서비스)
+            - 진입 장벽 및 대체재 위협
+            
+            3. 고객 분석
+            - 타겟 고객 세그먼트
+            - 고객 니즈 및 Pain Points
+            - 고객 확보 및 유지 전략
+            
+            4. 시장 포지셔닝
+            - 차별화 전략
+            - 가격 전략
+            - Go-to-Market 전략
+            
+            {previous_context}
+            """,
+            
+            "risk": f"""
+            {company_name}의 리스크 심층 분석을 수행하세요:
+            
+            1. 사업 리스크
+            - 제품/서비스 리스크
+            - 기술 리스크 및 진부화 가능성
+            - 운영 리스크 및 확장성 이슈
+            
+            2. 시장 리스크
+            - 시장 변동성 및 불확실성
+            - 규제 리스크 및 정책 변화
+            - 경쟁 심화 리스크
+            
+            3. 재무 리스크
+            - 자금 조달 리스크
+            - 유동성 리스크
+            - 환율 및 금리 리스크
+            
+            4. 리스크 완화 방안
+            - 리스크별 대응 전략
+            - 컨틴전시 플랜
+            - 리스크 모니터링 체계
+            
+            {previous_context}
+            """,
+            
+            "team": f"""
+            {company_name}의 팀 및 조직 역량 분석을 수행하세요:
+            
+            1. 창업팀 평가
+            - 창업자 배경 및 경험
+            - 핵심 역량 및 전문성
+            - 과거 성과 및 트랙 레코드
+            
+            2. 조직 구성
+            - 핵심 인력 현황
+            - 조직 구조 및 문화
+            - 인재 확보 및 유지 전략
+            
+            3. 실행 역량
+            - 전략 실행 능력
+            - 제품 개발 역량
+            - 시장 확장 경험
+            
+            4. 거버넌스
+            - 이사회 구성
+            - 의사결정 구조
+            - 주주 구성 및 지분 구조
+            
+            {previous_context}
+            """,
+            
+            "product": f"""
+            {company_name}의 제품/서비스 상세 분석을 수행하세요:
+            
+            1. 제품/서비스 개요
+            - 핵심 제품/서비스 라인업
+            - 고객 가치 제안 (Value Proposition)
+            - 제품 차별화 요소
+            
+            2. 기술 및 혁신
+            - 핵심 기술 및 IP
+            - R&D 투자 및 혁신 역량
+            - 기술 로드맵
+            
+            3. 제품 성과
+            - 사용자 지표 (MAU, DAU, Retention)
+            - 제품-시장 적합성 (Product-Market Fit)
+            - 고객 만족도 및 NPS
+            
+            4. 개발 계획
+            - 제품 로드맵
+            - 신제품 개발 계획
+            - 확장 전략
+            
+            {previous_context}
+            """,
+            
+            "exit": f"""
+            {company_name}의 Exit 전략 분석을 수행하세요:
+            
+            1. Exit 시나리오
+            - IPO 가능성 및 시기
+            - M&A 가능성 (잠재 인수자)
+            - Secondary Sale 옵션
+            
+            2. 밸류에이션 전망
+            - 현재 밸류에이션 적정성
+            - Comparable 기업 분석
+            - 예상 Exit 밸류에이션
+            
+            3. Exit 준비도
+            - 재무 투명성 및 감사
+            - 법적 이슈 정리
+            - 경영진 Lock-up
+            
+            4. 투자 수익 예측
+            - 예상 IRR
+            - Multiple 전망
+            - 시나리오별 수익률
+            
+            {previous_context}
+            """,
+            
+            "custom": custom_question or f"{company_name}에 대해 더 자세히 설명해주세요. {previous_context}"
         }
         
         prompt = prompts.get(question_type, prompts["custom"])
@@ -361,77 +515,197 @@ async def perform_followup_analysis(api_key: str, company_name: str, question_ty
         }
 
 async def run_long_analysis(job_id: str, api_key: str, company_name: str, file_contents: list):
-    """Railway: 무제한 실행 시간으로 완전한 VC급 분석"""
+    """완전한 VC급 전문 투자 보고서 생성"""
     try:
         # Stage 1: 파일 통합 및 전처리
         ANALYSIS_JOBS[job_id]["status"] = "processing"
-        ANALYSIS_JOBS[job_id]["progress"] = 20
-        ANALYSIS_JOBS[job_id]["message"] = "문서 분석 중..."
+        ANALYSIS_JOBS[job_id]["progress"] = 10
+        ANALYSIS_JOBS[job_id]["message"] = "IR 자료 분석 중..."
         
-        # Railway에서는 시간 제약이 없으므로 모든 파일을 완전히 처리
+        # 모든 파일을 완전히 처리
         full_content = "\n\n".join([f"=== {f['name']} ===\n{f['content']}" for f in file_contents])
         
-        # Stage 2: 완전한 VC급 분석 (Railway 무제한 시간 활용)
+        # Stage 2: 완전한 VC급 분석
         ANALYSIS_JOBS[job_id]["status"] = "analyzing"
-        ANALYSIS_JOBS[job_id]["progress"] = 60
-        ANALYSIS_JOBS[job_id]["message"] = "AI 심화 분석 진행 중..."
+        ANALYSIS_JOBS[job_id]["progress"] = 30
+        ANALYSIS_JOBS[job_id]["message"] = "투자 개요 분석 중..."
         
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-2.5-pro')
         
-        # 최적화된 VC 프롬프트 (압축버전)
-        prompt = f"""VC 파트너로서 {company_name}의 Investment Thesis Memo 작성:
+        # 전문 VC 투자 보고서 프롬프트
+        prompt = f"""당신은 한국 최고의 VC 투자 심사역입니다. {company_name}의 IR 자료를 기반으로 다음 구조의 전문 투자 검토 보고서를 작성하세요.
 
 # Executive Summary
-투자 논지: {company_name}는 [핵심 가치]로 시장을 선도할 것
+{company_name}의 핵심 투자 포인트와 투자 논지를 2-3문단으로 요약
+- 투자 매력도: X.X/10
+- 투자 추천: Strong Buy/Buy/Hold/Sell
+- 핵심 투자 논지
 
-## 1. 투자 개요
-### 기업: {company_name}
-### 투자 점수: X.X/10
-### 추천: Buy/Hold/Sell
+## I. 투자 개요
+### 1. 기업 개요
+- 기업명: {company_name}
+- 사업 분야
+- 핵심 제품/서비스
+- 설립일 및 현재 단계
 
-## 2-4. 기업현황/시장/사업분석
-[핵심 내용 요약]
+### 2. 투자 조건
+- 투자 규모
+- 밸류에이션
+- 투자 구조
+- Exit 전략
 
-## 5. 투자적합성과 임팩트
-### 투자 적합성: [핵심 강점]
-### 소셜임팩트: [경제적 해자와 연결]
+### 3. 손익 추정 및 수익성
+- 예상 수익률
+- 투자 회수 기간
+- 리스크 대비 수익
 
-## 6. 종합결론
-[최종 투자 의견]
+## II. 기업 현황
+### 1. 일반 현황
+- 법인 정보
+- 사업장 현황
+- 주요 연혁
 
-분석자료: {full_content[:3000]}
+### 2. 주주현황 및 자금 변동내역
+- 현재 지분 구조
+- 기존 투자 라운드
+- 자금 사용 내역
 
-VC급 전문보고서로 한국어 작성하세요."""
+### 3. 조직 및 핵심 구성원
+- 창업팀 배경 및 역량
+- 핵심 인력 현황
+- 조직 문화 및 역량
 
-        ANALYSIS_JOBS[job_id]["progress"] = 60
+### 4. 재무 관련 현황
+- 매출 및 손익 현황
+- 현금흐름
+- 재무 건전성
+
+## III. 시장 분석
+### 1. 시장 현황
+- TAM/SAM/SOM 분석
+- 시장 성장률
+- 시장 트렌드
+
+### 2. 경쟁사 분석
+- 주요 경쟁사
+- 경쟁 우위
+- 진입 장벽
+
+## IV. 사업(Business Model) 분석
+### 1. 사업 개요
+- 비즈니스 모델
+- 수익 구조
+- 핵심 가치 제안
+
+### 2. 향후 전략 및 계획
+- 성장 전략
+- 제품 로드맵
+- 시장 확장 계획
+
+## V. 투자 적합성과 임팩트
+### 1. 투자 적합성
+- 투자 기준 부합도
+- 포트폴리오 적합성
+- 시너지 가능성
+
+### 2. 소셜임팩트
+- ESG 요소
+- 사회적 가치 창출
+- 지속가능성
+
+### 3. 투자사 성장지원 전략
+- 멘토링 및 네트워킹
+- 후속 투자 연계
+- 전략적 파트너십
+
+## VI. 손익 추정 및 수익성 분석
+### 1. 손익 추정
+- 5개년 매출 전망
+- 손익분기점 예상
+- 시나리오별 분석
+
+### 2. 기업가치평가 및 수익성 분석
+- DCF 분석
+- Comparable 분석
+- 예상 Exit 가치
+
+## VII. 종합 결론
+### 투자 결정
+- 최종 투자 의견
+- 핵심 투자 포인트 3가지
+- 주요 리스크 요인 3가지
+- 투자 실행 조건
+
+분석 자료:
+{full_content[:5000]}
+
+위 구조에 따라 전문적이고 상세한 한국어 투자 검토 보고서를 작성하세요. 각 섹션별로 구체적인 분석과 인사이트를 포함하세요."""
+
+        ANALYSIS_JOBS[job_id]["progress"] = 50
         
         # Gemini API 호출
         response = model.generate_content(prompt)
         response_text = response.text if hasattr(response, 'text') else str(response)
         
-        # Stage 3: 결과 정제 (1초)
+        # Stage 3: 보고서 구조화
         ANALYSIS_JOBS[job_id]["status"] = "finalizing"
-        ANALYSIS_JOBS[job_id]["progress"] = 90
-        ANALYSIS_JOBS[job_id]["eta"] = "10초 남음"
+        ANALYSIS_JOBS[job_id]["progress"] = 80
+        ANALYSIS_JOBS[job_id]["message"] = "최종 보고서 생성 중..."
         
         # 투자 점수 추출
-        investment_score = 8.7  # 기본값
+        investment_score = 7.5  # 기본값
         if "/10" in response_text:
             import re
             score_match = re.search(r'(\d+\.?\d*)/10', response_text)
             if score_match:
                 investment_score = float(score_match.group(1))
         
-        # 최종 결과
+        # 추천 등급 추출
+        recommendation = "Hold"
+        if "Strong Buy" in response_text or "강력 매수" in response_text:
+            recommendation = "Strong Buy"
+        elif "Buy" in response_text or "매수" in response_text:
+            recommendation = "Buy"
+        elif "Sell" in response_text or "매도" in response_text:
+            recommendation = "Sell"
+        
+        # 보고서 섹션 파싱
+        sections = {
+            "executive_summary": "",
+            "investment_overview": "",
+            "company_status": "",
+            "market_analysis": "",
+            "business_model": "",
+            "investment_fit": "",
+            "financial_analysis": "",
+            "conclusion": ""
+        }
+        
+        # 섹션별 내용 추출 시도
+        if "Executive Summary" in response_text:
+            sections["executive_summary"] = response_text.split("Executive Summary")[1].split("##")[0] if "##" in response_text else response_text[:1000]
+        
+        # 최종 결과 구조화
         final_result = {
             "investment_score": investment_score,
-            "recommendation": "Strong Buy" if "Strong Buy" in response_text else "Buy",
-            "key_insight": f"{company_name}의 Investment Thesis 확립 완료",
+            "recommendation": recommendation,
+            "key_insight": f"{company_name}의 전문 투자 검토 보고서",
             "full_report": response_text,
-            "analysis_summary": response_text[:800] + "...",
+            "sections": sections,
+            "analysis_summary": response_text[:1000] + "...",
             "ai_powered": True,
-            "processing_time": "VC급 심층 분석 완료"
+            "report_structure": [
+                "Executive Summary",
+                "I. 투자 개요",
+                "II. 기업 현황",
+                "III. 시장 분석",
+                "IV. 사업 분석",
+                "V. 투자 적합성과 임팩트",
+                "VI. 손익 추정 및 수익성 분석",
+                "VII. 종합 결론"
+            ],
+            "processing_time": "전문 VC급 분석 완료"
         }
         
         ANALYSIS_JOBS[job_id]["status"] = "completed"
@@ -806,10 +1080,13 @@ async def handle_all_routes(request: Request, path: str = ""):
                 "message": f"{company_name} 기본 분석이 완료되었습니다",
                 "analysis": basic_analysis,
                 "next_options": [
-                    {"id": "financial", "title": "재무 상세 분석", "icon": "bar-chart"},
-                    {"id": "market", "title": "시장 경쟁 분석", "icon": "trending-up"},
-                    {"id": "risk", "title": "리스크 심화 분석", "icon": "shield"},
-                    {"id": "custom", "title": "직접 질문하기", "icon": "message-circle"}
+                    {"id": "financial", "title": "재무 상세 분석", "icon": "bar-chart", "description": "매출, 수익성, 재무건전성 분석"},
+                    {"id": "market", "title": "시장 경쟁 분석", "icon": "trending-up", "description": "TAM/SAM/SOM, 경쟁사 분석"},
+                    {"id": "risk", "title": "리스크 심화 분석", "icon": "shield", "description": "사업, 시장, 재무 리스크 평가"},
+                    {"id": "team", "title": "팀 및 조직 분석", "icon": "users", "description": "창업팀, 조직역량, 거버넌스"},
+                    {"id": "product", "title": "제품/서비스 분석", "icon": "package", "description": "제품 차별화, 기술력, 로드맵"},
+                    {"id": "exit", "title": "Exit 전략 분석", "icon": "target", "description": "IPO/M&A 가능성, 수익률 예측"},
+                    {"id": "custom", "title": "직접 질문하기", "icon": "message-circle", "description": "특정 주제에 대한 상세 질문"}
                 ]
             }
             
