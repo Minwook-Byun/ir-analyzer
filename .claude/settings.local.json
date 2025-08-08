@@ -104,7 +104,11 @@
       "Bash(start cmd /c:*)",
       "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" run services list --project gen-lang-client-0653170082)",
       "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" config set project ir-analyzer-mysc-2025)",
-      "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" run deploy ir-analyzer --source . --platform managed --region asia-northeast3 --allow-unauthenticated --project ir-analyzer-mysc-2025)"
+      "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" run deploy ir-analyzer --source . --platform managed --region asia-northeast3 --allow-unauthenticated --project ir-analyzer-mysc-2025)",
+      "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" run services describe ir-analyzer --region asia-northeast3 --project ir-analyzer-mysc-2025 --format=\"value(status.url,status.latestReadyRevisionName)\")",
+      "WebFetch(domain:ir-analyzer-uvl6dumfxq-du.a.run.app)",
+      "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" run revisions list --service ir-analyzer --region asia-northeast3 --project ir-analyzer-mysc-2025 --limit 3)",
+      "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" run deploy ir-analyzer --source . --platform managed --region asia-northeast3 --allow-unauthenticated --project ir-analyzer-mysc-2025 --no-cache)"
     ],
     "deny": []
   }
