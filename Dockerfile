@@ -3,7 +3,8 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Force rebuild - Updated 2025-08-08
-ENV REBUILD_TIMESTAMP=20250808_1
+ENV REBUILD_TIMESTAMP=20250808_2
+ENV CACHE_BREAKER=v2
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
