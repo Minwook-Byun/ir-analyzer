@@ -515,7 +515,7 @@ async def perform_followup_analysis(api_key: str, company_name: str, question_ty
         }
 
 async def run_long_analysis(job_id: str, api_key: str, company_name: str, file_contents: list):
-    """완전한 VC급 전문 투자 보고서 생성"""
+    """NotebookLM 스타일 분석: Executive Summary + 섹션별 분석"""
     try:
         # Stage 1: 파일 통합 및 전처리
         ANALYSIS_JOBS[job_id]["status"] = "processing"
@@ -525,16 +525,46 @@ async def run_long_analysis(job_id: str, api_key: str, company_name: str, file_c
         # 모든 파일을 완전히 처리
         full_content = "\n\n".join([f"=== {f['name']} ===\n{f['content']}" for f in file_contents])
         
-        # Stage 2: 완전한 VC급 분석
+        # Stage 2: Executive Summary 생성 (토큰 절약)
         ANALYSIS_JOBS[job_id]["status"] = "analyzing"
         ANALYSIS_JOBS[job_id]["progress"] = 30
-        ANALYSIS_JOBS[job_id]["message"] = "투자 개요 분석 중..."
+        ANALYSIS_JOBS[job_id]["message"] = "Executive Summary 생성 중..."
         
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-2.5-pro')
         
-        # 전문 VC 투자 보고서 프롬프트
-        prompt = f"""당신은 한국 최고의 VC 투자 심사역입니다. {company_name}의 IR 자료를 기반으로 다음 구조의 전문 투자 검토 보고서를 작성하세요.
+        # Executive Summary만 먼저 생성
+        executive_prompt = f"""당신은 한국 최고의 VC 투자 심사역입니다. {company_name}의 IR 자료를 기반으로 Executive Summary만 작성하세요.
+        
+# Executive Summary
+{company_name}의 핵심 투자 포인트와 투자 논지를 2-3문단으로 요약
+
+## 투자 하이라이트
+- 투자 매력도: X.X/10
+- 투자 추천: Strong Buy/Buy/Hold/Sell
+- 핵심 투자 논지 3가지
+
+## 투자 개요 요약
+- 기업명: {company_name}
+- 사업 분야: [핵심 사업영역]
+- 투자 규모: [예상 투자금액]
+- 예상 수익률: [IRR 추정]
+
+분석 자료:
+{full_content[:3000]}
+
+위 내용을 바탕으로 Executive Summary만 간결하고 전문적으로 작성하세요."""
+        
+        ANALYSIS_JOBS[job_id]["progress"] = 50
+        
+        # Executive Summary 생성
+        exec_response = model.generate_content(executive_prompt)
+        exec_summary = exec_response.text if hasattr(exec_response, 'text') else str(exec_response)
+        
+        # Stage 3: 섹션 구조 생성 (실제 내용은 요청 시 생성)
+        ANALYSIS_JOBS[job_id]["status"] = "finalizing"
+        ANALYSIS_JOBS[job_id]["progress"] = 80
+        ANALYSIS_JOBS[job_id]["message"] = "보고서 구조 생성 중..."
 
 # Executive Summary
 {company_name}의 핵심 투자 포인트와 투자 논지를 2-3문단으로 요약
@@ -644,68 +674,45 @@ async def run_long_analysis(job_id: str, api_key: str, company_name: str, file_c
 
         ANALYSIS_JOBS[job_id]["progress"] = 50
         
-        # Gemini API 호출
-        response = model.generate_content(prompt)
-        response_text = response.text if hasattr(response, 'text') else str(response)
+        # 섹션별 구조 정의
+        sections = [
+            {"id": "investment_overview", "title": "I. 투자 개요", "subtitle": "기업 개요, 투자 조건, 손익 추정"},
+            {"id": "company_status", "title": "II. 기업 현황", "subtitle": "일반 현황, 주주현황, 조직 및 핵심 구성원, 재무 현황"},
+            {"id": "market_analysis", "title": "III. 시장 분석", "subtitle": "시장 현황, 경쟁사 분석"},
+            {"id": "business_model", "title": "IV. 사업 분석", "subtitle": "사업 개요, 향후 전략 및 계획"},
+            {"id": "investment_fit", "title": "V. 투자 적합성과 임팩트", "subtitle": "투자 적합성, 소셜임팩트, 투자사 성장지원 전략"},
+            {"id": "financial_analysis", "title": "VI. 손익 추정 및 수익성 분석", "subtitle": "손익 추정, 기업가치평가 및 수익성 분석"},
+            {"id": "conclusion", "title": "VII. 종합 결론", "subtitle": "투자 결정, 핵심 포인트, 리스크 요인"}
+        ]
         
-        # Stage 3: 보고서 구조화
-        ANALYSIS_JOBS[job_id]["status"] = "finalizing"
-        ANALYSIS_JOBS[job_id]["progress"] = 80
-        ANALYSIS_JOBS[job_id]["message"] = "최종 보고서 생성 중..."
+        # 투자 점수 및 추천 등급 추출
+        investment_score = 7.5
+        recommendation = "Hold"
         
-        # 투자 점수 추출
-        investment_score = 7.5  # 기본값
-        if "/10" in response_text:
+        if "/10" in exec_summary:
             import re
-            score_match = re.search(r'(\d+\.?\d*)/10', response_text)
+            score_match = re.search(r'(\d+\.?\d*)/10', exec_summary)
             if score_match:
                 investment_score = float(score_match.group(1))
         
-        # 추천 등급 추출
-        recommendation = "Hold"
-        if "Strong Buy" in response_text or "강력 매수" in response_text:
+        if "Strong Buy" in exec_summary or "강력 매수" in exec_summary:
             recommendation = "Strong Buy"
-        elif "Buy" in response_text or "매수" in response_text:
+        elif "Buy" in exec_summary or "매수" in exec_summary:
             recommendation = "Buy"
-        elif "Sell" in response_text or "매도" in response_text:
+        elif "Sell" in exec_summary or "매도" in exec_summary:
             recommendation = "Sell"
         
-        # 보고서 섹션 파싱
-        sections = {
-            "executive_summary": "",
-            "investment_overview": "",
-            "company_status": "",
-            "market_analysis": "",
-            "business_model": "",
-            "investment_fit": "",
-            "financial_analysis": "",
-            "conclusion": ""
-        }
-        
-        # 섹션별 내용 추출 시도
-        if "Executive Summary" in response_text:
-            sections["executive_summary"] = response_text.split("Executive Summary")[1].split("##")[0] if "##" in response_text else response_text[:1000]
-        
-        # 최종 결과 구조화
+        # NotebookLM 스타일 결과
         final_result = {
             "investment_score": investment_score,
             "recommendation": recommendation,
-            "key_insight": f"{company_name}의 전문 투자 검토 보고서",
-            "full_report": response_text,
+            "key_insight": f"{company_name}의 투자 검토 완료",
+            "executive_summary": exec_summary,
             "sections": sections,
-            "analysis_summary": response_text[:1000] + "...",
+            "company_data": full_content,  # 섹션별 분석에 사용
             "ai_powered": True,
-            "report_structure": [
-                "Executive Summary",
-                "I. 투자 개요",
-                "II. 기업 현황",
-                "III. 시장 분석",
-                "IV. 사업 분석",
-                "V. 투자 적합성과 임팩트",
-                "VI. 손익 추정 및 수익성 분석",
-                "VII. 종합 결론"
-            ],
-            "processing_time": "전문 VC급 분석 완료"
+            "notebook_style": True,
+            "processing_time": "Executive Summary 및 구조 생성 완료"
         }
         
         ANALYSIS_JOBS[job_id]["status"] = "completed"
@@ -870,37 +877,18 @@ async def handle_all_routes(request: Request, path: str = ""):
         """
         return HTMLResponse(login_html)
     
-    # 홈페이지 - 인증 상태에 따라 리디렉션
+    # 홈페이지 - 항상 로그인 페이지 먼저 표시
     if path == "" or path == "index.html":
-        # 클라이언트 사이드에서 토큰 확인 후 적절한 페이지로 리다이렉트
         return HTMLResponse("""
         <!DOCTYPE html>
         <html>
         <head>
             <title>MYSC IR Platform</title>
+            <meta http-equiv="refresh" content="0; url=/login">
         </head>
         <body>
             <script>
-                // 토큰 확인 후 적절한 페이지로 리다이렉트
-                const token = localStorage.getItem('auth_token');
-                if (!token) {
-                    window.location.href = '/login';
-                } else {
-                    // 토큰 만료 확인
-                    try {
-                        const payload = JSON.parse(atob(token.split('.')[1]));
-                        const exp = new Date(payload.exp * 1000);
-                        if (exp < new Date()) {
-                            localStorage.removeItem('auth_token');
-                            window.location.href = '/login';
-                        } else {
-                            window.location.href = '/dashboard';
-                        }
-                    } catch (e) {
-                        localStorage.removeItem('auth_token');
-                        window.location.href = '/login';
-                    }
-                }
+                window.location.href = '/login';
             </script>
         </body>
         </html>
@@ -1204,6 +1192,246 @@ async def handle_all_routes(request: Request, path: str = ""):
             "result": job.get("result"),
             "error": job.get("error")
         }
+    
+    # 섹션별 상세 분석 API
+    if path.startswith("api/analyze/section/") and method == "POST":
+        try:
+            # JWT 토큰에서 API 키 추출
+            auth_header = request.headers.get("Authorization", "")
+            if not auth_header.startswith("Bearer "):
+                return JSONResponse({"success": False, "error": "인증이 필요합니다"}, status_code=401)
+            
+            token = auth_header[7:]
+            payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+            api_key = decrypt_api_key(payload["encrypted_api_key"])
+            
+            # 섹션 ID와 컨텍스트 추출
+            section_id = path.split("/")[-1]
+            body = await request.json()
+            company_name = body.get("company_name", "")
+            company_data = body.get("company_data", "")
+            
+            # 섹션별 프롬프트 정의
+            section_prompts = {
+                "investment_overview": f"""
+                {company_name}의 투자 개요를 다음 구조로 상세히 분석하세요:
+                
+                # I. 투자 개요
+                
+                ## 1. 기업 개요
+                - 기업명: {company_name}
+                - 사업 분야 및 핵심 제품/서비스
+                - 설립일 및 현재 단계 (Pre-A, Series A/B/C 등)
+                - 주요 연혁 및 마일스톤
+                
+                ## 2. 투자 조건
+                - 투자 규모 (목표 조달 금액)
+                - 밸류에이션 (Pre-money, Post-money)
+                - 투자 구조 (지분율, 우선주 조건)
+                - 투자자 권리 (이사회 참여, 거부권 등)
+                
+                ## 3. 손익 추정 및 수익성
+                - 예상 수익률 (IRR, Multiple)
+                - 투자 회수 기간
+                - 리스크 대비 수익 평가
+                - Exit 시나리오별 수익성 분석
+                
+                분석 자료:
+                {company_data[:4000]}
+                
+                위 구조에 따라 투자 개요를 전문적이고 상세하게 분석하세요.
+                """,
+                
+                "company_status": f"""
+                {company_name}의 기업 현황을 다음 구조로 상세히 분석하세요:
+                
+                # II. 기업 현황
+                
+                ## 1. 일반 현황
+                - 법인 정보 (설립일, 본사 위치, 법인 형태)
+                - 사업장 현황 (규모, 위치, 시설)
+                - 사업 허가 및 인증 현황
+                
+                ## 2. 주주현황 및 자금 변동내역
+                - 현재 지분 구조 (창업자, 기존 투자자, 임직원)
+                - 기존 투자 라운드 (시기, 금액, 투자자)
+                - 자금 사용 내역 및 효과
+                - 희석 방지 조항 및 반희석 조항
+                
+                ## 3. 조직 및 핵심 구성원
+                - 창업팀 배경 및 역량 (CEO, CTO, 핵심 임원)
+                - 조직 구조 및 팀 규모
+                - 핵심 인력의 과거 경험 및 성과
+                - 인재 확보 및 유지 전략
+                
+                ## 4. 재무 관련 현황
+                - 최근 3년간 재무 성과 (매출, 손익)
+                - 현금흐름 및 유동성 현황
+                - 주요 재무 지표 (성장률, 수익성 지표)
+                - 재무 건전성 평가
+                
+                분석 자료:
+                {company_data[:4000]}
+                
+                위 구조에 따라 기업 현황을 전문적이고 상세하게 분석하세요.
+                """,
+                
+                "market_analysis": f"""
+                {company_name}의 시장 분석을 다음 구조로 상세히 분석하세요:
+                
+                # III. 시장 분석
+                
+                ## 1. 시장 현황
+                - TAM (Total Addressable Market) 규모 및 성장률
+                - SAM (Serviceable Available Market) 분석
+                - SOM (Serviceable Obtainable Market) 추정
+                - 시장 성장 동인 및 트렌드
+                - 시장 세분화 및 타겟 세그먼트
+                
+                ## 2. 경쟁사 분석
+                - 주요 경쟁사 현황 (직접/간접 경쟁사)
+                - 경쟁사 대비 차별화 요소
+                - 시장 점유율 및 포지셔닝
+                - 진입 장벽 분석
+                - 대체재 위협 및 신규 진입자 분석
+                
+                분석 자료:
+                {company_data[:4000]}
+                
+                위 구조에 따라 시장 분석을 전문적이고 상세하게 분석하세요.
+                """,
+                
+                "business_model": f"""
+                {company_name}의 사업 분석을 다음 구조로 상세히 분석하세요:
+                
+                # IV. 사업(Business Model) 분석
+                
+                ## 1. 사업 개요
+                - 비즈니스 모델 (B2B, B2C, Platform, SaaS 등)
+                - 수익 구조 (구독, 거래 수수료, 광고 등)
+                - 핵심 가치 제안 (Value Proposition)
+                - 고객 획득 및 유지 전략
+                - Unit Economics (CAC, LTV, Payback Period)
+                
+                ## 2. 향후 전략 및 계획
+                - 단기/중기/장기 성장 전략
+                - 제품 로드맵 및 신규 서비스 계획
+                - 시장 확장 계획 (국내/해외)
+                - 파트너십 및 제휴 전략
+                - 확장 가능성 (Scalability) 평가
+                
+                분석 자료:
+                {company_data[:4000]}
+                
+                위 구조에 따라 사업 분석을 전문적이고 상세하게 분석하세요.
+                """,
+                
+                "investment_fit": f"""
+                {company_name}의 투자 적합성과 임팩트를 다음 구조로 상세히 분석하세요:
+                
+                # V. 투자 적합성과 임팩트
+                
+                ## 1. 투자 적합성
+                - 투자 기준 부합도 (Growth, Profitability, Team)
+                - 포트폴리오 적합성 및 시너지 가능성
+                - 투자 규모 대비 기대 수익
+                - Due Diligence 결과 및 리스크 평가
+                
+                ## 2. 소셜임팩트
+                - ESG 요소 (Environmental, Social, Governance)
+                - 사회적 가치 창출 및 임팩트 측정
+                - 지속가능성 및 사회적 책임
+                - Impact Investing 관점에서의 가치
+                
+                ## 3. 투자사 성장지원 전략
+                - 멘토링 및 네트워킹 지원 계획
+                - 후속 투자 연계 전략
+                - 전략적 파트너십 연결
+                - Exit 지원 및 IPO 준비
+                
+                분석 자료:
+                {company_data[:4000]}
+                
+                위 구조에 따라 투자 적합성과 임팩트를 전문적이고 상세하게 분석하세요.
+                """,
+                
+                "financial_analysis": f"""
+                {company_name}의 손익 추정 및 수익성 분석을 다음 구조로 상세히 분석하세요:
+                
+                # VI. 손익 추정 및 수익성 분석
+                
+                ## 1. 손익 추정
+                - 5개년 매출 전망 (Conservative, Base, Optimistic)
+                - 손익분기점 예상 시점
+                - EBITDA 및 순이익 추정
+                - 시나리오별 재무 모델링
+                
+                ## 2. 기업가치평가 및 수익성 분석
+                - DCF (Discounted Cash Flow) 분석
+                - Comparable Company 분석
+                - Precedent Transaction 분석
+                - 예상 Exit 가치 (IPO vs M&A)
+                - IRR 및 Multiple 계산
+                
+                분석 자료:
+                {company_data[:4000]}
+                
+                위 구조에 따라 재무 분석을 전문적이고 상세하게 분석하세요.
+                """,
+                
+                "conclusion": f"""
+                {company_name}의 종합 결론을 다음 구조로 상세히 분석하세요:
+                
+                # VII. 종합 결론
+                
+                ## 투자 결정
+                - 최종 투자 의견 (Strong Buy/Buy/Hold/Sell)
+                - 투자 결정 근거 및 핵심 논리
+                - 투자 조건 협상 포인트
+                - 투자 실행 조건 및 타임라인
+                
+                ## 핵심 투자 포인트 3가지
+                1. [가장 강력한 투자 포인트]
+                2. [두 번째 투자 포인트]
+                3. [세 번째 투자 포인트]
+                
+                ## 주요 리스크 요인 3가지
+                1. [가장 중요한 리스크]
+                2. [두 번째 리스크]
+                3. [세 번째 리스크]
+                
+                ## 투자 실행 조건
+                - 필수 조건 (Must-have conditions)
+                - 우선 조건 (Nice-to-have conditions)
+                - 모니터링 지표
+                - Exit 전략 및 시점
+                
+                분석 자료:
+                {company_data[:4000]}
+                
+                위 구조에 따라 종합 결론을 전문적이고 상세하게 분석하세요.
+                """
+            }
+            
+            if section_id not in section_prompts:
+                return JSONResponse({"success": False, "error": "유효하지 않은 섹션입니다"}, status_code=400)
+            
+            # Gemini AI로 섹션 분석
+            genai.configure(api_key=api_key)
+            model = genai.GenerativeModel('gemini-2.5-pro')
+            
+            response = model.generate_content(section_prompts[section_id])
+            section_content = response.text if hasattr(response, 'text') else str(response)
+            
+            return {
+                "success": True,
+                "section_id": section_id,
+                "content": section_content,
+                "company_name": company_name
+            }
+            
+        except Exception as e:
+            return JSONResponse({"success": False, "error": str(e)}, status_code=500)
 
     # 기존 분석 API (호환성 유지)
     if path == "api/analyze" and method == "POST":

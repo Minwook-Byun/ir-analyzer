@@ -633,22 +633,54 @@ class MYSCPlatform {
     displayCompletedAnalysis(result) {
         const messagesContainer = document.getElementById('conversationMessages');
         
-        // 전체 보고서 표시
-        const reportContent = `
-            <div class="analysis-card">
-                <div class="analysis-card-header">
-                    <i data-feather="file-text" class="analysis-card-icon"></i>
-                    <span class="analysis-card-title">완전한 투자 분석 보고서</span>
-                </div>
-                <div class="full-report">
-                    ${result.full_report.replace(/\n/g, '<br>').replace(/#{2,3}/g, '<strong>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
+        // NotebookLM 스타일: Executive Summary + 섹션 탐색
+        const notebookContent = `
+            <div class="notebook-analysis">
+                <div class="analysis-card">
+                    <div class="analysis-card-header">
+                        <i data-feather="book-open" class="analysis-card-icon"></i>
+                        <span class="analysis-card-title">투자 분석 완료</span>
+                    </div>
+                    
+                    <!-- Executive Summary -->
+                    <div class="executive-summary">
+                        <h3>Executive Summary</h3>
+                        <div class="summary-content">
+                            ${result.executive_summary ? 
+                              result.executive_summary.replace(/\n/g, '<br>').replace(/#{1,3}/g, '<strong>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') : 
+                              '분석을 완료했습니다. 아래 섹션들을 클릭하여 상세한 분석 내용을 확인하세요.'}
+                        </div>
+                    </div>
+                    
+                    <!-- 섹션 탐색 -->
+                    <div class="section-explorer">
+                        <h4>상세 분석 섹션</h4>
+                        <p class="section-help">각 섹션을 클릭하면 상세한 분석 내용을 확인할 수 있습니다.</p>
+                        <div class="sections-grid">
+                            ${result.sections && Array.isArray(result.sections) ? 
+                              result.sections.map(section => `
+                                <button class="section-card" data-section="${section.id}">
+                                    <div class="section-card-header">
+                                        <h5>${section.title}</h5>
+                                        <i data-feather="chevron-right" class="section-arrow"></i>
+                                    </div>
+                                    <p class="section-subtitle">${section.subtitle}</p>
+                                    <div class="section-status">클릭하여 분석</div>
+                                </button>
+                            `).join('') : 
+                              '<p>섹션 정보를 불러오는 중...</p>'}
+                        </div>
+                    </div>
                 </div>
             </div>
         `;
         
-        const resultMessage = this.createMessage('ai', reportContent);
+        const resultMessage = this.createMessage('ai', notebookContent);
         messagesContainer.appendChild(resultMessage);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+        // 섹션 클릭 이벤트 추가
+        this.setupSectionExploration(result);
         
         feather.replace();
     }
@@ -706,7 +738,7 @@ class MYSCPlatform {
         document.querySelectorAll('.followup-card').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const questionType = e.currentTarget.getAttribute('data-type');
-                this.handleFollowupQuestion(questionType);
+                this.handleNotebookQuestion(questionType);
             });
         });
     }
@@ -718,26 +750,29 @@ class MYSCPlatform {
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
     }
     
-    async handleFollowupQuestion(questionType) {
+    // NotebookLM 스타일 질문 처리
+    async handleNotebookQuestion(questionType) {
+        if (questionType === 'custom') {
+            this.showCustomQuestionDialog();
+            return;
+        }
+        
         const messagesContainer = document.getElementById('conversationMessages');
         
-        // Add user question message
+        // 질문 메시지
         const questionTexts = {
             'financial': '재무 상세 분석을 요청합니다',
             'market': '시장 경쟁 분석을 요청합니다', 
             'risk': '리스크 심화 분석을 요청합니다',
             'team': '팀 및 조직 분석을 요청합니다',
             'product': '제품/서비스 분석을 요청합니다',
-            'exit': 'Exit 전략 분석을 요청합니다',
-            'custom': '직접 질문하기'
+            'exit': 'Exit 전략 분석을 요청합니다'
         };
         
-        if (questionType !== 'custom') {
-            const userMessage = this.createMessage('user', questionTexts[questionType]);
-            messagesContainer.appendChild(userMessage);
-        }
+        const userMessage = this.createMessage('user', questionTexts[questionType]);
+        messagesContainer.appendChild(userMessage);
         
-        // Add typing indicator
+        // 로딩 표시
         const typingIndicator = this.createTypingIndicator();
         messagesContainer.appendChild(typingIndicator);
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
@@ -753,27 +788,133 @@ class MYSCPlatform {
                 body: JSON.stringify({
                     conversation_id: this.currentConversationId,
                     question_type: questionType,
-                    company_name: this.currentCompanyName
+                    company_name: this.currentCompanyName,
+                    previous_context: this.currentAnalysisResult?.executive_summary || ''
                 })
             });
             
             const result = await response.json();
             
-            // Remove typing indicator
+            // 로딩 제거
             const typingMessage = document.querySelector('.typing-message');
             if (typingMessage) {
                 typingMessage.remove();
             }
             
             if (result.success) {
-                this.displayFollowupResult(result);
+                this.displayNotebookFollowup(result);
             } else {
                 this.displayError(result.error);
             }
             
         } catch (error) {
             console.error('Followup error:', error);
+            const typingMessage = document.querySelector('.typing-message');
+            if (typingMessage) {
+                typingMessage.remove();
+            }
             this.displayError('추가 분석 중 오류가 발생했습니다.');
+        }
+    }
+    
+    // NotebookLM 스타일 후속 분석 결과 표시
+    displayNotebookFollowup(result) {
+        const messagesContainer = document.getElementById('conversationMessages');
+        
+        const followupContent = `
+            <div class="notebook-followup">
+                <div class="analysis-card">
+                    <div class="analysis-card-header">
+                        <i data-feather="brain" class="analysis-card-icon"></i>
+                        <span class="analysis-card-title">${this.getFollowupTitle(result.question_type)}</span>
+                    </div>
+                    <div class="followup-content">
+                        ${result.analysis.analysis_text.replace(/\n/g, '<br>').replace(/#{1,4}/g, '<strong>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
+                    </div>
+                    ${result.analysis.metrics ? this.renderFollowupMetrics(result.analysis.metrics) : ''}
+                </div>
+            </div>
+        `;
+        
+        const resultMessage = this.createMessage('ai', followupContent);
+        messagesContainer.appendChild(resultMessage);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        feather.replace();
+    }
+    
+    // 후속 분석 메트릭 렌더링
+    renderFollowupMetrics(metrics) {
+        return `
+            <div class="followup-metrics">
+                <h4>핵심 지표</h4>
+                <div class="metrics-grid">
+                    ${Object.entries(metrics).map(([key, value]) => `
+                        <div class="metric-card">
+                            <div class="metric-value">${value}</div>
+                            <div class="metric-label">${key}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+    
+    // 커스텀 질문 다이얼로그
+    showCustomQuestionDialog() {
+        const question = prompt('어떤 내용에 대해 더 자세히 알고 싶으신가요?');
+        if (question && question.trim()) {
+            this.handleCustomQuestion(question.trim());
+        }
+    }
+    
+    // 커스텀 질문 처리
+    async handleCustomQuestion(question) {
+        const messagesContainer = document.getElementById('conversationMessages');
+        
+        const userMessage = this.createMessage('user', question);
+        messagesContainer.appendChild(userMessage);
+        
+        const typingIndicator = this.createTypingIndicator();
+        messagesContainer.appendChild(typingIndicator);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+        try {
+            const token = localStorage.getItem('auth_token');
+            const response = await fetch('/api/conversation/followup', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    conversation_id: this.currentConversationId,
+                    question_type: 'custom',
+                    custom_question: question,
+                    company_name: this.currentCompanyName,
+                    previous_context: this.currentAnalysisResult?.executive_summary || ''
+                })
+            });
+            
+            const result = await response.json();
+            
+            const typingMessage = document.querySelector('.typing-message');
+            if (typingMessage) {
+                typingMessage.remove();
+            }
+            
+            if (result.success) {
+                this.displayNotebookFollowup(result);
+            } else {
+                this.displayError(result.error);
+            }
+            
+        } catch (error) {
+            console.error('Custom question error:', error);
+            const typingMessage = document.querySelector('.typing-message');
+            if (typingMessage) {
+                typingMessage.remove();
+            }
+            this.displayError('질문 처리 중 오류가 발생했습니다.');
         }
     }
     
@@ -823,6 +964,98 @@ class MYSCPlatform {
         `;
     }
 
+    // 섹션 탐색 설정
+    setupSectionExploration(analysisResult) {
+        this.currentAnalysisResult = analysisResult;
+        
+        document.querySelectorAll('.section-card').forEach(card => {
+            card.addEventListener('click', async (e) => {
+                const sectionId = e.currentTarget.getAttribute('data-section');
+                await this.loadSectionAnalysis(sectionId);
+            });
+        });
+    }
+    
+    // 섹션별 상세 분석 로드
+    async loadSectionAnalysis(sectionId) {
+        const messagesContainer = document.getElementById('conversationMessages');
+        
+        // 섹션 요청 메시지 표시
+        const sectionTitles = {
+            'investment_overview': 'I. 투자 개요',
+            'company_status': 'II. 기업 현황',
+            'market_analysis': 'III. 시장 분석', 
+            'business_model': 'IV. 사업 분석',
+            'investment_fit': 'V. 투자 적합성과 임팩트',
+            'financial_analysis': 'VI. 손익 추정 및 수익성 분석',
+            'conclusion': 'VII. 종합 결론'
+        };
+        
+        const userMessage = this.createMessage('user', `${sectionTitles[sectionId] || sectionId} 상세 분석을 요청합니다`);
+        messagesContainer.appendChild(userMessage);
+        
+        // 로딩 표시
+        const typingIndicator = this.createTypingIndicator();
+        messagesContainer.appendChild(typingIndicator);
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+        try {
+            const token = localStorage.getItem('auth_token');
+            const response = await fetch(`/api/analyze/section/${sectionId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    company_name: this.currentCompanyName,
+                    company_data: this.currentAnalysisResult?.company_data || ''
+                })
+            });
+            
+            const result = await response.json();
+            
+            // 로딩 제거
+            const typingMessage = document.querySelector('.typing-message');
+            if (typingMessage) {
+                typingMessage.remove();
+            }
+            
+            if (result.success) {
+                // 섹션 분석 결과 표시
+                const sectionContent = `
+                    <div class="section-analysis">
+                        <div class="analysis-card">
+                            <div class="analysis-card-header">
+                                <i data-feather="file-text" class="analysis-card-icon"></i>
+                                <span class="analysis-card-title">${sectionTitles[sectionId]}</span>
+                            </div>
+                            <div class="section-content">
+                                ${result.content.replace(/\n/g, '<br>').replace(/#{1,4}/g, '<strong>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                const resultMessage = this.createMessage('ai', sectionContent);
+                messagesContainer.appendChild(resultMessage);
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                
+                feather.replace();
+            } else {
+                this.displayError(result.error || '섹션 분석 중 오류가 발생했습니다.');
+            }
+            
+        } catch (error) {
+            console.error('Section analysis error:', error);
+            const typingMessage = document.querySelector('.typing-message');
+            if (typingMessage) {
+                typingMessage.remove();
+            }
+            this.displayError('섹션 분석 중 네트워크 오류가 발생했습니다.');
+        }
+    }
+    
     // Logout functionality
     setupLogout() {
         const logoutBtn = document.getElementById('logoutBtn');
