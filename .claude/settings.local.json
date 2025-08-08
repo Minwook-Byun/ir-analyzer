@@ -96,7 +96,9 @@
       "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" projects create ir-analyzer-mysc --name=\"MYSC IR Analyzer\")",
       "WebFetch(domain:ir-analyzer-1070198801396.asia-northeast3.run.app)",
       "Bash(git checkout:*)",
-      "Bash(true)"
+      "Bash(true)",
+      "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" run deploy ir-analyzer --source . --platform managed --region asia-northeast3 --allow-unauthenticated --project simsa-457200)",
+      "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" run deploy ir-analyzer --source . --platform managed --region asia-northeast3 --allow-unauthenticated --project gen-lang-client-0653170082)"
     ],
     "deny": []
   }

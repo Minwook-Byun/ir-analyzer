@@ -839,6 +839,10 @@
 }
 
 /* Dark mode message styles */
+[data-theme="dark"] .message-content {
+  color: #f1f5f9;
+}
+
 [data-theme="dark"] .message-bubble {
   background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
   border: 1px solid rgba(71, 85, 105, 0.5);

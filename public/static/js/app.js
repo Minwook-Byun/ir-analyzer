@@ -512,7 +512,7 @@ class MYSCPlatform {
         
         messageDiv.innerHTML = `
             <div class="message-avatar">
-                ${type === 'ai' ? '🤖' : 'U'}
+                ${type === 'ai' ? 'M' : 'U'}
             </div>
             <div class="message-content">
                 <div class="message-bubble">
@@ -529,7 +529,7 @@ class MYSCPlatform {
         const typingDiv = document.createElement('div');
         typingDiv.className = 'message ai typing-message';
         typingDiv.innerHTML = `
-            <div class="message-avatar">🤖</div>
+            <div class="message-avatar">M</div>
             <div class="message-content">
                 <div class="typing-indicator">
                     <div class="typing-dots">
