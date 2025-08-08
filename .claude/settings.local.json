@@ -112,7 +112,11 @@
       "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" builds list --project ir-analyzer-mysc-2025 --limit 1 --format=\"value(id)\")",
       "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" run deploy ir-analyzer-v2 --source . --platform managed --region asia-northeast3 --allow-unauthenticated --project ir-analyzer-mysc-2025)",
       "WebFetch(domain:ir-analyzer-v2-1070198801396.asia-northeast3.run.app)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" run deploy ir-analyzer-final --source . --platform managed --region asia-northeast3 --allow-unauthenticated --project ir-analyzer-mysc-2025)",
+      "WebFetch(domain:ir-analyzer-final-1070198801396.asia-northeast3.run.app)",
+      "Bash(\"C:\\Users\\USER\\AppData\\Local\\Google\\Cloud SDK\\google-cloud-sdk\\bin\\gcloud.cmd\" run deploy ir-analyzer-git --source https://github.com/Minwook-Byun/ir-analyzer.git --platform managed --region asia-northeast3 --allow-unauthenticated --project ir-analyzer-mysc-2025)",
+      "Bash(tar:*)"
     ],
     "deny": []
   }
