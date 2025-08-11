@@ -463,12 +463,15 @@ async def analyze_with_gemini(api_key: str, company_name: str, file_info: dict):
     except Exception as e:
         # Gemini API 오류 시 폴백 (더 상세한 오류 정보)
         error_msg = str(e)
-        if "async_generator" in error_msg:
+        print(f"❌ [DEBUG] Gemini API error: {error_msg}")
+        
+        if "429" in error_msg or "quota" in error_msg.lower():
+            error_msg = "API 할당량 초과 - 기본 분석 제공 중"
+            print(f"⚠️ [DEBUG] Using fallback analysis due to quota limits")
+        elif "async_generator" in error_msg:
             error_msg = "Gemini API 응답 처리 오류"
         elif "403" in error_msg:
             error_msg = "API 키 권한 오류" 
-        elif "429" in error_msg:
-            error_msg = "API 요청 한도 초과"
         else:
             error_msg = "Gemini API 연결 오류"
             
@@ -505,7 +508,7 @@ async def perform_basic_analysis(api_key: str, company_name: str, file_info: dic
             raise ValueError(f"Invalid API key format")
             
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-pro')
+        model = genai.GenerativeModel('gemini-1.5-flash')
         
         # VC급 Investment Thesis Memo 프롬프트
         file_context = "\n".join([f"파일: {f['name']}\n내용: {f['content'][:500]}..." for f in file_contents])
@@ -589,7 +592,7 @@ async def perform_followup_analysis(api_key: str, company_name: str, question_ty
             raise ValueError(f"Invalid API key format")
             
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-pro')
+        model = genai.GenerativeModel('gemini-1.5-flash')
         
         # 질문 유형별 전문 프롬프트
         prompts = {
@@ -818,7 +821,7 @@ async def run_long_analysis(job_id: str, api_key: str, company_name: str, file_c
             raise ValueError(f"Invalid API key format")
             
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-pro')
+        model = genai.GenerativeModel('gemini-1.5-flash')
         
         # 전문 VC 투자 보고서 프롬프트
         prompt = f"""당신은 한국 최고의 VC 투자 심사역입니다. {company_name}의 IR 자료를 기반으로 다음 구조의 전문 투자 검토 보고서를 작성하세요.
