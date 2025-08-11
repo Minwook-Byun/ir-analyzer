@@ -76,29 +76,40 @@ cipher_suite = Fernet(ENCRYPTION_KEY)
 async def validate_gemini_api_key(api_key: str) -> tuple[bool, str]:
     """Gemini API 키의 유효성을 실제 API 호출로 검증"""
     try:
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-2.5-pro')
+        # API 키 형식 검증
+        if not api_key or not api_key.startswith('AIza'):
+            return False, "Invalid API key format"
         
-        # 간단한 테스트 프롬프트로 API 키 유효성 검증
-        test_prompt = "Hello, please respond with 'API key is valid'"
+        # Google AI SDK를 사용해 API 키 설정 및 테스트
+        import google.generativeai as genai
+        genai.configure(api_key=api_key)
+        
+        # 모델 생성 및 간단한 테스트
+        model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        test_prompt = "Hello, respond with 'OK'"
+        
+        # 비동기가 아닌 동기 호출로 변경
         response = model.generate_content(test_prompt)
         
-        # 응답이 있으면 API 키가 유효함
-        if hasattr(response, 'text') or hasattr(response, 'parts'):
+        # 응답 확인
+        if response and hasattr(response, 'text') and response.text:
+            return True, "API key is valid"
+        elif response and hasattr(response, 'parts') and response.parts:
             return True, "API key is valid"
         else:
-            return False, "No response from Gemini API"
+            return False, "No valid response from Gemini API"
             
     except Exception as e:
         error_msg = str(e)
-        if "403" in error_msg or "invalid api key" in error_msg.lower():
+        # URL 관련 오류 메시지 확인
+        if "http" in error_msg.lower() and "protocol" in error_msg.lower():
+            return False, "API configuration error - please check API key format"
+        elif "403" in error_msg or "invalid" in error_msg.lower():
             return False, "Invalid API key"
-        elif "429" in error_msg:
-            return False, "API rate limit exceeded"
-        elif "quota" in error_msg.lower():
-            return False, "API quota exceeded"
+        elif "429" in error_msg or "quota" in error_msg.lower():
+            return False, "API rate limit or quota exceeded"
         else:
-            return False, f"API key validation failed: {error_msg}"
+            return False, f"API validation error: {error_msg[:100]}"
 
 # Railway: 무제한 실행 시간, 영구 스토리지 사용 가능
 # 비동기 작업 저장소 (Railway에서는 메모리 기반으로도 안정적)
