@@ -74,7 +74,7 @@ elif isinstance(ENCRYPTION_KEY, str):
 cipher_suite = Fernet(ENCRYPTION_KEY)
 
 async def validate_gemini_api_key(api_key: str) -> tuple[bool, str]:
-    """Gemini API 키의 유효성을 검증 - 할당량 문제 시 기본 허용"""
+    """Gemini API 키의 유효성을 검증 - 형식 검증 우선"""
     try:
         # API 키 형식 검증
         if not api_key or not api_key.startswith('AIza'):
@@ -84,42 +84,16 @@ async def validate_gemini_api_key(api_key: str) -> tuple[bool, str]:
         if len(api_key) < 30:
             return False, "API key too short"
         
-        # Google AI SDK를 사용해 API 키 설정 및 테스트 (가벼운 테스트)
-        try:
-            import google.generativeai as genai
-            genai.configure(api_key=api_key)
-            
-            # 매우 간단한 테스트만 수행
-            model = genai.GenerativeModel('gemini-1.5-flash')  # 더 가벼운 모델 사용
-            test_prompt = "Hi"  # 더 짧은 프롬프트
-            
-            response = model.generate_content(test_prompt)
-            
-            # 응답 확인
-            if response and (hasattr(response, 'text') or hasattr(response, 'parts')):
-                return True, "API key validated successfully"
-            else:
-                # 응답이 없어도 API 키 형식이 맞으면 허용 (할당량 문제일 수 있음)
-                return True, "API key format valid (validation limited by quota)"
-                
-        except Exception as validation_error:
-            error_msg = str(validation_error)
-            
-            # 할당량 관련 오류는 허용 (API 키는 유효할 가능성)
-            if any(keyword in error_msg.lower() for keyword in ['quota', '429', 'rate limit', 'usage limit']):
-                return True, "API key accepted (quota/rate limit detected but key format valid)"
-            
-            # 권한 오류만 실제 무효 키로 판단
-            elif any(keyword in error_msg.lower() for keyword in ['403', 'permission denied', 'invalid api key', 'api key not valid']):
-                return False, "Invalid API key - authentication failed"
-            
-            # 기타 오류는 허용 (네트워크, 일시적 문제 등)
-            else:
-                return True, f"API key accepted (validation skipped due to: {error_msg[:50]}...)"
-                
+        # API 키 형식이 올바르면 일단 허용 (실제 검증은 분석 시점에)
+        # 이렇게 하면 할당량/레이트 리미트 문제를 우회할 수 있음
+        return True, "API key format valid - validation will occur during analysis"
+        
     except Exception as e:
-        # 전체적인 예외 처리 - 형식이 맞으면 허용
-        return True, "API key accepted (external validation failed, using format validation)"
+        # 예외 발생 시에도 형식이 맞으면 허용
+        if api_key and api_key.startswith('AIza') and len(api_key) >= 30:
+            return True, "API key format valid (exception during validation)"
+        else:
+            return False, f"API key validation failed: {str(e)[:100]}"
 
 # Railway: 무제한 실행 시간, 영구 스토리지 사용 가능
 # 비동기 작업 저장소 (Railway에서는 메모리 기반으로도 안정적)
