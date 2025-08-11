@@ -328,18 +328,55 @@ async def run_local_analysis(project_id: str, api_key: str, company_name: str, f
 
 async def analyze_with_gemini(api_key: str, company_name: str, file_info: dict):
     """Gemini AI를 사용한 실제 투자 분석"""
+    debug_info = {
+        "function": "analyze_with_gemini",
+        "company_name": company_name,
+        "file_info": file_info,
+        "timestamp": datetime.now().isoformat()
+    }
+    
     try:
+        # API 키 디버깅
+        print(f"🔍 [DEBUG] Starting Gemini analysis for {company_name}")
+        print(f"🔍 [DEBUG] API key type: {type(api_key)}")
+        print(f"🔍 [DEBUG] API key length: {len(api_key) if api_key else 0}")
+        
         # API 키가 문자열인지 확인하고 정리
         if not isinstance(api_key, str):
+            print(f"🔍 [DEBUG] Converting API key from {type(api_key)} to string")
             api_key = str(api_key)
+        
         api_key = api_key.strip()
+        print(f"🔍 [DEBUG] API key after strip - length: {len(api_key)}")
+        print(f"🔍 [DEBUG] API key prefix: {api_key[:10] if len(api_key) >= 10 else api_key}...")
+        print(f"🔍 [DEBUG] API key suffix: ...{api_key[-5:] if len(api_key) >= 5 else api_key}")
         
         # API 키 형식 확인
         if not api_key.startswith('AIza'):
-            raise ValueError(f"Invalid API key format: {api_key[:10]}...")
-            
-        genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-pro')
+            error_msg = f"Invalid API key format: {api_key[:10]}..."
+            print(f"❌ [DEBUG] {error_msg}")
+            raise ValueError(error_msg)
+        
+        print(f"✅ [DEBUG] API key format validation passed")
+        
+        # Gemini 설정 시도
+        print(f"🔍 [DEBUG] Attempting genai.configure() call...")
+        try:
+            genai.configure(api_key=api_key)
+            print(f"✅ [DEBUG] genai.configure() successful")
+        except Exception as config_error:
+            print(f"❌ [DEBUG] genai.configure() failed: {str(config_error)}")
+            print(f"❌ [DEBUG] genai.configure() error type: {type(config_error)}")
+            raise config_error
+        
+        # 모델 초기화
+        print(f"🔍 [DEBUG] Initializing Gemini model...")
+        try:
+            model = genai.GenerativeModel('gemini-1.5-flash')  # Flash로 변경
+            print(f"✅ [DEBUG] Model initialization successful: gemini-1.5-flash")
+        except Exception as model_error:
+            print(f"❌ [DEBUG] Model initialization failed: {str(model_error)}")
+            raise model_error
         
         # 간소화된 투자 분석 프롬프트
         prompt = f"""{company_name} 투자분석 리포트를 한국어로 작성하세요.
@@ -1215,21 +1252,60 @@ async def handle_all_routes(request: Request, path: str = ""):
             "ready": True
         }
     
+    # 디버그 정보 엔드포인트
+    if path == "api/debug" and method == "GET":
+        return {
+            "system_info": {
+                "environment": ENVIRONMENT,
+                "port": PORT,
+                "base_dir": str(BASE_DIR),
+                "public_dir_exists": PUBLIC_DIR.exists()
+            },
+            "supabase_config": {
+                "url_set": bool(SUPABASE_URL),
+                "url_preview": SUPABASE_URL[:30] + "..." if SUPABASE_URL else "Not set",
+                "anon_key_set": bool(SUPABASE_ANON_KEY),
+                "service_key_set": bool(SUPABASE_SERVICE_KEY)
+            },
+            "encryption_config": {
+                "jwt_secret_set": bool(JWT_SECRET),
+                "encryption_key_set": bool(ENCRYPTION_KEY),
+                "encryption_key_type": str(type(ENCRYPTION_KEY))
+            },
+            "analysis_jobs": {
+                "total_jobs": len(ANALYSIS_JOBS),
+                "job_statuses": {status: len([j for j in ANALYSIS_JOBS.values() if j.get("status") == status]) 
+                               for status in ["processing", "completed", "failed"]}
+            },
+            "timestamp": datetime.now().isoformat()
+        }
+    
     # 로그인 API
     if path == "api/login" and method == "POST":
         try:
+            print(f"🔍 [LOGIN DEBUG] Login request received")
             body = await request.json()
             api_key = body.get("api_key", "").strip()
             
+            print(f"🔍 [LOGIN DEBUG] Raw API key length: {len(body.get('api_key', ''))}")
+            print(f"🔍 [LOGIN DEBUG] Stripped API key length: {len(api_key)}")
+            print(f"🔍 [LOGIN DEBUG] API key prefix: {api_key[:10] if len(api_key) >= 10 else api_key}...")
+            
             if not api_key:
+                print(f"❌ [LOGIN DEBUG] API key is empty")
                 return JSONResponse({"success": False, "error": "API key is required"}, status_code=400)
             
             # 기본 길이 검증
             if len(api_key) < 20:
+                print(f"❌ [LOGIN DEBUG] API key too short: {len(api_key)} characters")
                 return JSONResponse({"success": False, "error": "API key too short"}, status_code=401)
             
+            print(f"✅ [LOGIN DEBUG] Basic validation passed")
+            
             # 실제 Gemini API 키 검증
+            print(f"🔍 [LOGIN DEBUG] Starting API key validation...")
             is_valid, validation_message = await validate_gemini_api_key(api_key)
+            print(f"🔍 [LOGIN DEBUG] Validation result: {is_valid}, message: {validation_message}")
             
             if not is_valid:
                 return JSONResponse({
@@ -1238,24 +1314,50 @@ async def handle_all_routes(request: Request, path: str = ""):
                 }, status_code=401, headers=cors_headers)
             
             # API 키 암호화 및 사용자 생성/업데이트 (Supabase)
-            encrypted_key = encrypt_api_key(api_key)
+            print(f"🔍 [LOGIN DEBUG] Starting API key encryption...")
+            try:
+                encrypted_key = encrypt_api_key(api_key)
+                print(f"✅ [LOGIN DEBUG] API key encryption successful")
+                print(f"🔍 [LOGIN DEBUG] Encrypted key length: {len(encrypted_key)}")
+            except Exception as encrypt_error:
+                print(f"❌ [LOGIN DEBUG] Encryption failed: {str(encrypt_error)}")
+                raise encrypt_error
+                
             email = f"user_{hashlib.md5(api_key.encode()).hexdigest()[:8]}@mysc.local"
             api_key_hash = hashlib.sha256(api_key.encode()).hexdigest()
+            print(f"🔍 [LOGIN DEBUG] Generated email: {email}")
+            print(f"🔍 [LOGIN DEBUG] API key hash: {api_key_hash[:20]}...")
+            
+            # Supabase 연결 상태 확인
+            print(f"🔍 [SUPABASE DEBUG] SUPABASE_URL: {'✅ Set' if SUPABASE_URL else '❌ Not set'}")
+            print(f"🔍 [SUPABASE DEBUG] SUPABASE_SERVICE_KEY: {'✅ Set' if SUPABASE_SERVICE_KEY else '❌ Not set'}")
             
             # Supabase가 설정된 경우에만 사용자 생성/조회
             user_id = None
             if SUPABASE_URL and SUPABASE_SERVICE_KEY:
+                print(f"🔍 [SUPABASE DEBUG] Attempting Supabase user operations...")
                 try:
+                    print(f"🔍 [SUPABASE DEBUG] Getting user by email: {email}")
                     user = await supabase_client.get_user_by_email(email)
+                    print(f"🔍 [SUPABASE DEBUG] User found: {'✅ Yes' if user else '❌ No'}")
+                    
                     if not user:
+                        print(f"🔍 [SUPABASE DEBUG] Creating new user...")
                         user = await supabase_client.create_user(email, api_key_hash)
+                        print(f"🔍 [SUPABASE DEBUG] User created: {'✅ Success' if user else '❌ Failed'}")
+                    
                     user_id = user["id"] if user else None
+                    print(f"🔍 [SUPABASE DEBUG] Final user_id: {user_id}")
+                    
                 except Exception as supabase_error:
                     # Supabase 오류 무시하고 계속 진행
-                    print(f"Supabase error (ignored): {supabase_error}")
+                    print(f"❌ [SUPABASE DEBUG] Supabase error (ignored): {str(supabase_error)}")
+                    print(f"❌ [SUPABASE DEBUG] Error type: {type(supabase_error)}")
                     user_id = email  # 임시 user_id 사용
+                    print(f"🔍 [SUPABASE DEBUG] Using fallback user_id: {user_id}")
             else:
                 # Supabase 없이 임시 user_id 사용
+                print(f"🔍 [SUPABASE DEBUG] Supabase not configured, using email as user_id")
                 user_id = email
             
             token_payload = {
@@ -1410,14 +1512,42 @@ async def handle_all_routes(request: Request, path: str = ""):
     # 비동기 분석 시작 API
     if path == "api/analyze/start" and method == "POST":
         try:
+            print(f"🔍 [ANALYZE DEBUG] Analysis start request received")
             auth_header = request.headers.get("Authorization", "")
+            print(f"🔍 [ANALYZE DEBUG] Auth header present: {'✅ Yes' if auth_header else '❌ No'}")
+            
             if not auth_header.startswith("Bearer "):
+                print(f"❌ [ANALYZE DEBUG] Invalid auth header format")
                 return JSONResponse({"success": False, "error": "인증이 필요합니다"}, status_code=401)
             
             token = auth_header[7:]
-            payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
-            api_key = decrypt_api_key(payload["encrypted_api_key"])
+            print(f"🔍 [ANALYZE DEBUG] JWT token length: {len(token)}")
+            
+            try:
+                payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+                print(f"✅ [ANALYZE DEBUG] JWT decode successful")
+                print(f"🔍 [ANALYZE DEBUG] Token payload keys: {list(payload.keys())}")
+            except jwt.ExpiredSignatureError:
+                print(f"❌ [ANALYZE DEBUG] JWT token expired")
+                raise
+            except jwt.InvalidTokenError as jwt_error:
+                print(f"❌ [ANALYZE DEBUG] JWT decode failed: {str(jwt_error)}")
+                raise
+            
+            print(f"🔍 [ANALYZE DEBUG] Starting API key decryption...")
+            try:
+                encrypted_key = payload["encrypted_api_key"]
+                print(f"🔍 [ANALYZE DEBUG] Encrypted key length: {len(encrypted_key)}")
+                api_key = decrypt_api_key(encrypted_key)
+                print(f"✅ [ANALYZE DEBUG] API key decryption successful")
+                print(f"🔍 [ANALYZE DEBUG] Decrypted API key length: {len(api_key)}")
+                print(f"🔍 [ANALYZE DEBUG] Decrypted API key prefix: {api_key[:10] if len(api_key) >= 10 else api_key}...")
+            except Exception as decrypt_error:
+                print(f"❌ [ANALYZE DEBUG] API key decryption failed: {str(decrypt_error)}")
+                raise decrypt_error
+                
             user_id = payload.get("user_id")
+            print(f"🔍 [ANALYZE DEBUG] User ID: {user_id}")
             
             form = await request.form()
             company_name = form.get("company_name", "Unknown Company")
