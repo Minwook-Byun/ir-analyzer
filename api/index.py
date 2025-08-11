@@ -1313,15 +1313,10 @@ async def handle_all_routes(request: Request, path: str = ""):
                     "error": f"Invalid API key: {validation_message}"
                 }, status_code=401, headers=cors_headers)
             
-            # API 키 암호화 및 사용자 생성/업데이트 (Supabase)
-            print(f"🔍 [LOGIN DEBUG] Starting API key encryption...")
-            try:
-                encrypted_key = encrypt_api_key(api_key)
-                print(f"✅ [LOGIN DEBUG] API key encryption successful")
-                print(f"🔍 [LOGIN DEBUG] Encrypted key length: {len(encrypted_key)}")
-            except Exception as encrypt_error:
-                print(f"❌ [LOGIN DEBUG] Encryption failed: {str(encrypt_error)}")
-                raise encrypt_error
+            # API 키 직접 사용 (암호화 건너뛰기)
+            print(f"🔍 [LOGIN DEBUG] Skipping encryption - using API key directly")
+            print(f"🔍 [LOGIN DEBUG] Direct API key length: {len(api_key)}")
+            print(f"🔍 [LOGIN DEBUG] Direct API key prefix: {api_key[:15]}...")
                 
             email = f"user_{hashlib.md5(api_key.encode()).hexdigest()[:8]}@mysc.local"
             api_key_hash = hashlib.sha256(api_key.encode()).hexdigest()
@@ -1362,7 +1357,7 @@ async def handle_all_routes(request: Request, path: str = ""):
             
             token_payload = {
                 "user_id": user_id,
-                "encrypted_api_key": encrypted_key,
+                "api_key": api_key,  # 직접 저장 (암호화 없이)
                 "created_at": datetime.utcnow().isoformat(),
                 "exp": datetime.utcnow() + timedelta(hours=72)
             }
@@ -1395,7 +1390,7 @@ async def handle_all_routes(request: Request, path: str = ""):
             
             token = auth_header[7:]
             payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
-            api_key = decrypt_api_key(payload["encrypted_api_key"])
+            api_key = payload.get("api_key") or decrypt_api_key(payload.get("encrypted_api_key", ""))
             
             form = await request.form()
             company_name = form.get("company_name", "Unknown Company")
@@ -1460,7 +1455,7 @@ async def handle_all_routes(request: Request, path: str = ""):
             
             token = auth_header[7:]
             payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
-            api_key = decrypt_api_key(payload["encrypted_api_key"])
+            api_key = payload.get("api_key") or decrypt_api_key(payload.get("encrypted_api_key", ""))
             user_id = payload.get("user_id")
             
             body = await request.json()
@@ -1534,17 +1529,24 @@ async def handle_all_routes(request: Request, path: str = ""):
                 print(f"❌ [ANALYZE DEBUG] JWT decode failed: {str(jwt_error)}")
                 raise
             
-            print(f"🔍 [ANALYZE DEBUG] Starting API key decryption...")
+            print(f"🔍 [ANALYZE DEBUG] Getting API key directly from JWT...")
             try:
-                encrypted_key = payload["encrypted_api_key"]
-                print(f"🔍 [ANALYZE DEBUG] Encrypted key length: {len(encrypted_key)}")
-                api_key = decrypt_api_key(encrypted_key)
-                print(f"✅ [ANALYZE DEBUG] API key decryption successful")
-                print(f"🔍 [ANALYZE DEBUG] Decrypted API key length: {len(api_key)}")
-                print(f"🔍 [ANALYZE DEBUG] Decrypted API key prefix: {api_key[:10] if len(api_key) >= 10 else api_key}...")
-            except Exception as decrypt_error:
-                print(f"❌ [ANALYZE DEBUG] API key decryption failed: {str(decrypt_error)}")
-                raise decrypt_error
+                api_key = payload.get("api_key")
+                if not api_key:
+                    # 호환성을 위해 기존 암호화된 키도 시도
+                    encrypted_key = payload.get("encrypted_api_key")
+                    if encrypted_key:
+                        print(f"🔍 [ANALYZE DEBUG] Found encrypted key, decrypting...")
+                        api_key = decrypt_api_key(encrypted_key)
+                    else:
+                        raise ValueError("No API key found in token")
+                
+                print(f"✅ [ANALYZE DEBUG] API key obtained successfully")
+                print(f"🔍 [ANALYZE DEBUG] API key length: {len(api_key)}")
+                print(f"🔍 [ANALYZE DEBUG] API key prefix: {api_key[:15] if len(api_key) >= 15 else api_key}...")
+            except Exception as key_error:
+                print(f"❌ [ANALYZE DEBUG] API key retrieval failed: {str(key_error)}")
+                raise key_error
                 
             user_id = payload.get("user_id")
             print(f"🔍 [ANALYZE DEBUG] User ID: {user_id}")
@@ -1636,7 +1638,7 @@ async def handle_all_routes(request: Request, path: str = ""):
             
             token = auth_header[7:]  # Remove "Bearer "
             payload = jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
-            api_key = decrypt_api_key(payload["encrypted_api_key"])
+            api_key = payload.get("api_key") or decrypt_api_key(payload.get("encrypted_api_key", ""))
             
             # 폼 데이터 처리
             form = await request.form()
