@@ -285,6 +285,47 @@ async def run_supabase_analysis(project_id: str, api_key: str, company_name: str
         await supabase_client.update_project_status(project_id, "failed")
         print(f"Analysis error for project {project_id}: {str(e)}")
 
+async def run_local_analysis(project_id: str, api_key: str, company_name: str, file_contents: list):
+    """로컬 저장소 기반 백그라운드 분석 실행 (Supabase 없이)"""
+    try:
+        # 로컬 분석 작업 초기화
+        ANALYSIS_JOBS[project_id] = {
+            "status": "processing",
+            "progress": 10,
+            "message": f"{company_name} 분석 시작 중...",
+            "company_name": company_name,
+            "created_at": datetime.now().isoformat()
+        }
+        
+        # 분석 수행
+        ANALYSIS_JOBS[project_id]["progress"] = 30
+        ANALYSIS_JOBS[project_id]["message"] = "AI 분석 실행 중..."
+        
+        # Gemini AI로 분석 실행
+        analysis_result = await analyze_with_gemini(api_key, company_name, {
+            "files": file_contents,
+            "section": "executive_summary"
+        })
+        
+        ANALYSIS_JOBS[project_id]["progress"] = 80
+        ANALYSIS_JOBS[project_id]["message"] = "분석 결과 정리 중..."
+        
+        # 분석 완료
+        ANALYSIS_JOBS[project_id]["status"] = "completed"
+        ANALYSIS_JOBS[project_id]["progress"] = 100
+        ANALYSIS_JOBS[project_id]["message"] = "분석 완료"
+        ANALYSIS_JOBS[project_id]["result"] = analysis_result
+        ANALYSIS_JOBS[project_id]["completed_at"] = datetime.now().isoformat()
+        
+        print(f"Local analysis completed for project {project_id}")
+        
+    except Exception as e:
+        ANALYSIS_JOBS[project_id]["status"] = "failed"
+        ANALYSIS_JOBS[project_id]["progress"] = 0
+        ANALYSIS_JOBS[project_id]["error"] = str(e)
+        ANALYSIS_JOBS[project_id]["failed_at"] = datetime.now().isoformat()
+        print(f"Local analysis error for project {project_id}: {str(e)}")
+
 async def analyze_with_gemini(api_key: str, company_name: str, file_info: dict):
     """Gemini AI를 사용한 실제 투자 분석"""
     try:
@@ -1402,22 +1443,29 @@ async def handle_all_routes(request: Request, path: str = ""):
                         "content": content.decode('utf-8', errors='ignore')[:2000]
                     })
             
-            # Supabase에 프로젝트 생성
-            combined_content = "\n\n".join([f"=== {fc['name']} ===\n{fc['content']}" for fc in file_contents])
-            project = await supabase_client.create_project(
-                user_id, company_name, combined_content, file_names
-            )
+            # Supabase에 프로젝트 생성 (Supabase가 설정된 경우에만)
+            project_id = None
+            if SUPABASE_URL and SUPABASE_SERVICE_KEY:
+                try:
+                    combined_content = "\n\n".join([f"=== {fc['name']} ===\n{fc['content']}" for fc in file_contents])
+                    project = await supabase_client.create_project(
+                        user_id, company_name, combined_content, file_names
+                    )
+                    project_id = project["id"] if project else None
+                except Exception as supabase_error:
+                    print(f"Supabase project creation error (ignored): {supabase_error}")
+                    
+            # 프로젝트 ID가 없으면 임시 ID 생성
+            if not project_id:
+                import uuid
+                project_id = str(uuid.uuid4())
             
-            if not project:
-                return JSONResponse({
-                    "success": False,
-                    "error": "프로젝트 생성에 실패했습니다"
-                }, status_code=500)
-            
-            project_id = project["id"]
-            
-            # 백그라운드 작업 시작 (Supabase 기반)
-            asyncio.create_task(run_supabase_analysis(project_id, api_key, company_name, file_contents))
+            # 백그라운드 작업 시작 (Supabase가 있으면 Supabase 기반, 없으면 로컬 저장소 기반)
+            if SUPABASE_URL and SUPABASE_SERVICE_KEY:
+                asyncio.create_task(run_supabase_analysis(project_id, api_key, company_name, file_contents))
+            else:
+                # Supabase 없이 로컬 분석 실행
+                asyncio.create_task(run_local_analysis(project_id, api_key, company_name, file_contents))
             
             return {
                 "success": True,
