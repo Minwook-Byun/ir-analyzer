@@ -288,6 +288,15 @@ async def run_supabase_analysis(project_id: str, api_key: str, company_name: str
 async def analyze_with_gemini(api_key: str, company_name: str, file_info: dict):
     """Gemini AI를 사용한 실제 투자 분석"""
     try:
+        # API 키가 문자열인지 확인하고 정리
+        if not isinstance(api_key, str):
+            api_key = str(api_key)
+        api_key = api_key.strip()
+        
+        # API 키 형식 확인
+        if not api_key.startswith('AIza'):
+            raise ValueError(f"Invalid API key format: {api_key[:10]}...")
+            
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-1.5-pro')
         
@@ -409,6 +418,14 @@ async def analyze_with_gemini(api_key: str, company_name: str, file_info: dict):
 async def perform_basic_analysis(api_key: str, company_name: str, file_info: dict, file_contents: list):
     """1단계: 기본 투자 분석 수행"""
     try:
+        # API 키 정리 및 검증
+        if not isinstance(api_key, str):
+            api_key = str(api_key)
+        api_key = api_key.strip()
+        
+        if not api_key.startswith('AIza'):
+            raise ValueError(f"Invalid API key format")
+            
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-1.5-pro')
         
@@ -485,6 +502,14 @@ IR 자료: {file_context}
 async def perform_followup_analysis(api_key: str, company_name: str, question_type: str, custom_question: str, previous_context: str = ""):
     """2단계: 후속 상세 분석 수행 - 더 깊이 있는 분석"""
     try:
+        # API 키 정리 및 검증
+        if not isinstance(api_key, str):
+            api_key = str(api_key)
+        api_key = api_key.strip()
+        
+        if not api_key.startswith('AIza'):
+            raise ValueError(f"Invalid API key format")
+            
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-1.5-pro')
         
@@ -706,6 +731,14 @@ async def run_long_analysis(job_id: str, api_key: str, company_name: str, file_c
         ANALYSIS_JOBS[job_id]["progress"] = 30
         ANALYSIS_JOBS[job_id]["message"] = "투자 개요 분석 중..."
         
+        # API 키 정리 및 검증
+        if not isinstance(api_key, str):
+            api_key = str(api_key)
+        api_key = api_key.strip()
+        
+        if not api_key.startswith('AIza'):
+            raise ValueError(f"Invalid API key format")
+            
         genai.configure(api_key=api_key)
         model = genai.GenerativeModel('gemini-1.5-pro')
         
