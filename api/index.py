@@ -85,7 +85,7 @@ async def validate_gemini_api_key(api_key: str) -> tuple[bool, str]:
         genai.configure(api_key=api_key)
         
         # 모델 생성 및 간단한 테스트
-        model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        model = genai.GenerativeModel('gemini-1.5-pro')
         test_prompt = "Hello, respond with 'OK'"
         
         # 비동기가 아닌 동기 호출로 변경
@@ -305,7 +305,7 @@ async def analyze_with_gemini(api_key: str, company_name: str, file_info: dict):
     """Gemini AI를 사용한 실제 투자 분석"""
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-2.5-pro')
+        model = genai.GenerativeModel('gemini-1.5-pro')
         
         # 간소화된 투자 분석 프롬프트
         prompt = f"""{company_name} 투자분석 리포트를 한국어로 작성하세요.
@@ -426,7 +426,7 @@ async def perform_basic_analysis(api_key: str, company_name: str, file_info: dic
     """1단계: 기본 투자 분석 수행"""
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-2.5-pro')
+        model = genai.GenerativeModel('gemini-1.5-pro')
         
         # VC급 Investment Thesis Memo 프롬프트
         file_context = "\n".join([f"파일: {f['name']}\n내용: {f['content'][:500]}..." for f in file_contents])
@@ -502,7 +502,7 @@ async def perform_followup_analysis(api_key: str, company_name: str, question_ty
     """2단계: 후속 상세 분석 수행 - 더 깊이 있는 분석"""
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-2.5-pro')
+        model = genai.GenerativeModel('gemini-1.5-pro')
         
         # 질문 유형별 전문 프롬프트
         prompts = {
@@ -723,7 +723,7 @@ async def run_long_analysis(job_id: str, api_key: str, company_name: str, file_c
         ANALYSIS_JOBS[job_id]["message"] = "투자 개요 분석 중..."
         
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-2.5-pro')
+        model = genai.GenerativeModel('gemini-1.5-pro')
         
         # 전문 VC 투자 보고서 프롬프트
         prompt = f"""당신은 한국 최고의 VC 투자 심사역입니다. {company_name}의 IR 자료를 기반으로 다음 구조의 전문 투자 검토 보고서를 작성하세요.
