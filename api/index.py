@@ -1168,11 +1168,21 @@ async def handle_all_routes(request: Request, path: str = ""):
             email = f"user_{hashlib.md5(api_key.encode()).hexdigest()[:8]}@mysc.local"
             api_key_hash = hashlib.sha256(api_key.encode()).hexdigest()
             
-            user = await supabase_client.get_user_by_email(email)
-            if not user:
-                user = await supabase_client.create_user(email, api_key_hash)
-            
-            user_id = user["id"] if user else None
+            # Supabase가 설정된 경우에만 사용자 생성/조회
+            user_id = None
+            if SUPABASE_URL and SUPABASE_SERVICE_KEY:
+                try:
+                    user = await supabase_client.get_user_by_email(email)
+                    if not user:
+                        user = await supabase_client.create_user(email, api_key_hash)
+                    user_id = user["id"] if user else None
+                except Exception as supabase_error:
+                    # Supabase 오류 무시하고 계속 진행
+                    print(f"Supabase error (ignored): {supabase_error}")
+                    user_id = email  # 임시 user_id 사용
+            else:
+                # Supabase 없이 임시 user_id 사용
+                user_id = email
             
             token_payload = {
                 "user_id": user_id,
