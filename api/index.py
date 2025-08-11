@@ -378,29 +378,90 @@ async def analyze_with_gemini(api_key: str, company_name: str, file_info: dict):
             print(f"❌ [DEBUG] Model initialization failed: {str(model_error)}")
             raise model_error
         
-        # 간소화된 투자 분석 프롬프트
-        prompt = f"""{company_name} 투자분석 리포트를 한국어로 작성하세요.
+        # VC급 전문 투자 분석 프롬프트 (로마자 목차)
+        prompt = f"""{company_name}의 전문 투자 검토 보고서를 다음 구조로 작성하세요:
 
-# Executive Summary
-투자 논지와 핵심 가치
+# I. Executive Summary
+{company_name}의 핵심 투자 포인트와 투자 논지 (2-3문단)
+- 투자 매력도: X.X/10
+- 투자 추천: Strong Buy/Buy/Hold/Sell
+- 핵심 투자 논지
 
-## 1. 투자 개요
-- 기업: {company_name}
-- 점수: /10
-- 추천: Buy/Hold/Sell
+# II. 투자 개요
+## 1. 기업 개요
+- 기업명: {company_name}
+- 사업 분야 및 핵심 제품/서비스
+- 설립일 및 현재 발전 단계
 
-## 2. 시장 분석  
-- 시장 현황
-- 경쟁 우위
+## 2. 투자 조건
+- 예상 투자 규모 및 밸류에이션
+- 투자 구조 및 Exit 전략
+- 예상 수익률 및 회수 기간
 
-## 3. 리스크 분석
-- 강점
-- 우려사항
+# III. 기업 현황
+## 1. 일반 현황
+- 법인 정보 및 사업장
+- 주요 연혁 및 발전사
 
-## 4. 결론
-- 최종 의견
+## 2. 주주현황 및 자금
+- 현재 지분 구조
+- 기존 투자 라운드 및 자금 사용
 
-파일: {file_info.get('count', 0)}개"""
+## 3. 조직 및 핵심 구성원
+- 창업팀 배경 및 역량
+- 핵심 인력 현황
+
+## 4. 재무 현황
+- 매출 및 손익 현황
+- 현금흐름 및 재무 건전성
+
+# IV. 시장 분석
+## 1. 시장 현황
+- TAM/SAM/SOM 분석
+- 시장 성장률 및 트렌드
+
+## 2. 경쟁사 분석
+- 주요 경쟁사 및 경쟁 우위
+- 시장 점유율 및 진입 장벽
+
+# V. 사업 분석
+## 1. 사업 개요
+- 비즈니스 모델 및 수익 구조
+- 핵심 가치 제안
+
+## 2. 향후 전략 및 계획
+- 성장 전략 및 제품 로드맵
+- 시장 확장 계획
+
+# VI. 투자 적합성과 임팩트
+## 1. 투자 적합성
+- 투자 기준 부합도
+- 포트폴리오 적합성
+
+## 2. 소셜임팩트
+- ESG 요소 및 사회적 가치
+- 지속가능성 평가
+
+# VII. 손익 추정 및 수익성
+## 1. 손익 추정
+- 5개년 매출 전망
+- 손익분기점 및 시나리오 분석
+
+## 2. 기업가치평가
+- DCF 및 Comparable 분석
+- 예상 Exit 가치
+
+# VIII. 종합 결론
+## 투자 결정
+- 최종 투자 의견
+- 핵심 투자 포인트 3가지
+- 주요 리스크 요인 3가지
+- 투자 실행 조건
+
+분석 대상: {company_name}
+파일 수: {file_info.get('count', 0)}개
+
+각 섹션을 상세하게 분석하여 VC급 전문 투자 검토 보고서를 작성하세요."""
         
         response = model.generate_content(prompt)
         
@@ -437,15 +498,43 @@ async def analyze_with_gemini(api_key: str, company_name: str, file_info: dict):
         elif "낮은 리스크" in response_text or "low risk" in text_lower:
             risk_level = "Low"
         
+        # 섹션별 파싱
+        sections = {}
+        section_titles = [
+            "I. Executive Summary",
+            "II. 투자 개요", 
+            "III. 기업 현황",
+            "IV. 시장 분석",
+            "V. 사업 분석", 
+            "VI. 투자 적합성과 임팩트",
+            "VII. 손익 추정 및 수익성",
+            "VIII. 종합 결론"
+        ]
+        
+        # 섹션별로 텍스트 분할
+        current_section = ""
+        for i, title in enumerate(section_titles):
+            if title in response_text:
+                if i + 1 < len(section_titles):
+                    next_title = section_titles[i + 1]
+                    if next_title in response_text:
+                        section_content = response_text.split(title)[1].split(next_title)[0]
+                    else:
+                        section_content = response_text.split(title)[1]
+                else:
+                    section_content = response_text.split(title)[1]
+                
+                sections[title] = section_content.strip()
+        
         # 실제 Gemini AI 분석 결과 활용
         result = {
             "investment_score": investment_score,
-            "market_position": "#2",  # Gemini가 좋은 분석을 했다면 상위권으로
+            "market_position": "#2",
             "risk_level": risk_level,
             "growth_trend": "Positive",
             "key_strengths": [
-                f"{company_name}의 AI 분석 기반 강점",
-                "전문 투자 분석",
+                f"{company_name}의 AI 기반 경쟁력",
+                "전문 투자 분석 완료",
                 "데이터 기반 인사이트"
             ],
             "key_concerns": [
@@ -453,7 +542,16 @@ async def analyze_with_gemini(api_key: str, company_name: str, file_info: dict):
                 "경쟁 심화"
             ],
             "recommendation": recommendation,
-            "analysis_text": response_text  # 전체 Gemini 응답 포함
+            "analysis_text": response_text,  # 전체 분석 텍스트
+            "sections": sections,  # 섹션별 구조화된 데이터
+            "structure": [
+                {"id": "summary", "title": "요약 보고서", "content": sections.get("I. Executive Summary", "")},
+                {"id": "investment", "title": "Investment Analysis", "content": sections.get("II. 투자 개요", "") + "\n\n" + sections.get("VI. 투자 적합성과 임팩트", "")},
+                {"id": "market", "title": "Market Analysis", "content": sections.get("IV. 시장 분석", "") + "\n\n" + sections.get("V. 사업 분석", "")},
+                {"id": "financial", "title": "재무 분석", "content": sections.get("VII. 손익 추정 및 수익성", "")},
+                {"id": "risk", "title": "위험 평가", "content": sections.get("III. 기업 현황", "")},
+                {"id": "recommendations", "title": "Recommendations", "content": sections.get("VIII. 종합 결론", "")}
+            ]
         }
         
         result["analysis_date"] = datetime.now().isoformat()
