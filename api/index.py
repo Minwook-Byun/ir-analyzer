@@ -1605,6 +1605,7 @@ async def handle_all_routes(request: Request, path: str = ""):
             return {
                 "success": True,
                 "project_id": project_id,
+                "job_id": project_id,  # JavaScript 호환성을 위해 job_id도 포함
                 "message": f"{company_name} 분석을 시작했습니다"
             }
             
