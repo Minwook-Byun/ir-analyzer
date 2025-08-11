@@ -363,41 +363,61 @@ class MYSCPlatform {
                 data.recommendation || 'Hold';
         }
 
-        // Update executive summary with real analysis
-        document.getElementById('summaryContent').innerHTML = `
-            <div class="prose">
-                <h3>AI Analysis Results</h3>
-                <p>Based on our comprehensive AI analysis of the provided investment documents using Gemini AI, here are the key findings:</p>
-                
-                <div class="analysis-meta">
-                    <p><strong>Analysis Date:</strong> ${new Date(data.analysis_date || Date.now()).toLocaleDateString('ko-KR')}</p>
-                    <p><strong>AI Engine:</strong> ${data.ai_powered ? 'Gemini Pro' : 'Fallback Analysis'}</p>
-                    <p><strong>Confidence Level:</strong> ${data.confidence || '85%'}</p>
+        // Update all tab contents with structured data
+        if (data.structure && Array.isArray(data.structure)) {
+            data.structure.forEach(section => {
+                const targetElement = document.getElementById(`${section.id}Content`);
+                if (targetElement && section.content) {
+                    targetElement.innerHTML = `
+                        <div class="prose">
+                            <div class="analysis-meta">
+                                <p><strong>분석일:</strong> ${new Date(data.analysis_date || Date.now()).toLocaleDateString('ko-KR')}</p>
+                                <p><strong>AI 엔진:</strong> ${data.ai_powered ? 'Gemini Flash' : 'Fallback Analysis'}</p>
+                                <p><strong>신뢰도:</strong> ${data.confidence || '85%'}</p>
+                            </div>
+                            <div class="section-content">
+                                ${section.content.replace(/\n/g, '<br>').replace(/#{1,4}\s*/g, '<h4>').replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+        } else {
+            // Fallback: 기존 방식으로 요약만 표시
+            document.getElementById('summaryContent').innerHTML = `
+                <div class="prose">
+                    <h3>AI Analysis Results</h3>
+                    <p>Based on our comprehensive AI analysis:</p>
+                    
+                    <div class="analysis-meta">
+                        <p><strong>Analysis Date:</strong> ${new Date(data.analysis_date || Date.now()).toLocaleDateString('ko-KR')}</p>
+                        <p><strong>AI Engine:</strong> ${data.ai_powered ? 'Gemini Flash' : 'Fallback Analysis'}</p>
+                    </div>
+                    
+                    <h4>Key Strengths</h4>
+                    <ul>
+                        ${data.key_strengths && Array.isArray(data.key_strengths) ? 
+                          data.key_strengths.map(strength => `<li>${strength}</li>`).join('') : 
+                          '<li>분석 중...</li>'}
+                    </ul>
+                    
+                    <h4>Areas of Concern</h4>
+                    <ul>
+                        ${data.key_concerns && Array.isArray(data.key_concerns) ? 
+                          data.key_concerns.map(concern => `<li>${concern}</li>`).join('') : 
+                          '<li>분석 중...</li>'}
+                    </ul>
+                    
+                    <h4>Investment Recommendation</h4>
+                    <div class="recommendation-badge ${data.recommendation ? data.recommendation.toLowerCase() : 'hold'}">
+                        ${data.recommendation ? data.recommendation.toUpperCase() : 'HOLD'}
+                    </div>
+                    <p>투자 점수: <strong>${data.investment_score}/10</strong> | 시장 포지션: <strong>${data.market_position}</strong> | 리스크: <strong>${data.risk_level}</strong></p>
+                    
+                    ${data.error ? `<div class="error-notice">Note: ${data.error}</div>` : ''}
                 </div>
-                
-                <h4>Key Strengths</h4>
-                <ul>
-                    ${data.key_strengths && Array.isArray(data.key_strengths) ? 
-                      data.key_strengths.map(strength => `<li>${strength}</li>`).join('') : 
-                      '<li>분석 중...</li>'}
-                </ul>
-                
-                <h4>Areas of Concern</h4>
-                <ul>
-                    ${data.key_concerns && Array.isArray(data.key_concerns) ? 
-                      data.key_concerns.map(concern => `<li>${concern}</li>`).join('') : 
-                      '<li>분석 중...</li>'}
-                </ul>
-                
-                <h4>Investment Recommendation</h4>
-                <div class="recommendation-badge ${data.recommendation.toLowerCase()}">
-                    ${data.recommendation.toUpperCase()}
-                </div>
-                <p>투자 점수: <strong>${data.investment_score}/10</strong> | 시장 포지션: <strong>${data.market_position}</strong> | 리스크: <strong>${data.risk_level}</strong></p>
-                
-                ${data.error ? `<div class="error-notice">Note: ${data.error}</div>` : ''}
-            </div>
-        `;
+            `;
+        }
     }
 
     // Tab Navigation
